@@ -10,6 +10,15 @@ export function normalizeActionName(actionName: string): string {
     return ACTION_NAME_ALIASES[actionName] ?? actionName;
 }
 
+/** 将 CLI 字符串值做基础类型转换 */
+function coerceValue(raw: string): unknown {
+    if (raw === 'true') return true;
+    if (raw === 'false') return false;
+    if (/^-?\d+$/.test(raw)) return Number(raw);
+    if (/^-?\d+\.\d+$/.test(raw)) return Number(raw);
+    return raw;
+}
+
 /**
  * 将 CLI 选项与位置参数组装成 SDK `request()` 可消费的参数对象。
  *
@@ -55,15 +64,20 @@ export function buildParams(
         }
     }
 
-    for (const arg of extraArgs) {
+    for (let i = 0; i < extraArgs.length; i++) {
+        const arg = extraArgs[i];
+        // --key=value 形式
         const match = arg.match(/^--(\w[\w.-]*)=(.*)$/);
-        if (!match) continue;
-        const key = match[1];
-        let value: unknown = match[2];
-        if (value === 'true') value = true;
-        else if (value === 'false') value = false;
-        else if (/^\d+$/.test(value as string)) value = Number(value);
-        params[key] = value;
+        if (match) {
+            params[match[1]] = coerceValue(match[2]);
+            continue;
+        }
+        // --key value 形式（空格分隔，Commander 未注册的选项会落入 args）
+        const flagMatch = arg.match(/^--(\w[\w.-]*)$/);
+        if (flagMatch && i + 1 < extraArgs.length && !extraArgs[i + 1].startsWith('-')) {
+            params[flagMatch[1]] = coerceValue(extraArgs[i + 1]);
+            i++;
+        }
     }
 
     if (positionalID !== undefined) {
