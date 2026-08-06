@@ -170,14 +170,14 @@ export async function handleModuleCommand(
     const params = buildParams(options, actionName, args);
     const hasId = params.id !== undefined && params.id !== '';
 
+    if (!hasId && (action.type === 'delete' || action.type === 'update' || action.type === 'action')) {
+        throw new ZentaoError('E2009', { option: 'id', reason: '必须提供要操作的对象 ID' });
+    }
+
     if (action.type === 'delete' && !options.yes) {
         if (!await confirmDelete(format, hasId ? 1 : 0)) {
             return;
         }
-    }
-
-    if (!hasId && (action.type === 'delete' || action.type === 'update' || action.type === 'action')) {
-        throw new ZentaoError('E2009', { option: 'id', reason: '必须提供要操作的对象 ID' });
     }
 
     await renderModuleExecution(client, module, actionName, args, options, config);

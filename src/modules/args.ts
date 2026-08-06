@@ -20,6 +20,19 @@ function coerceValue(raw: string): unknown {
 }
 
 /**
+ * 将一个 flag 值写入 params。当同一 key 重复出现时，累积为逗号分隔字符串，
+ * 以兼容禅道多值字段（如 reviewer / openedBuild / mailto）的约定格式。
+ */
+function assignFlag(params: Record<string, unknown>, key: string, value: unknown): void {
+    const existing = params[key];
+    if (existing === undefined || existing === true) {
+        params[key] = value;
+    } else {
+        params[key] = `${existing},${value}`;
+    }
+}
+
+/**
  * 将 CLI 选项与位置参数组装成 SDK `request()` 可消费的参数对象。
  *
  * 负责 CLI 专属的 argv 解析：
@@ -74,14 +87,19 @@ export function buildParams(
         // --key=value 形式
         const match = arg.match(/^--(\w[\w.-]*)=(.*)$/);
         if (match) {
-            params[match[1]] = coerceValue(match[2]);
+            assignFlag(params, match[1], coerceValue(match[2]));
             continue;
         }
         // --key value 形式（空格分隔，Commander 未注册的选项会落入 args）
         const flagMatch = arg.match(/^--(\w[\w.-]*)$/);
-        if (flagMatch && i + 1 < extraArgs.length && !extraArgs[i + 1].startsWith('-')) {
-            params[flagMatch[1]] = coerceValue(extraArgs[i + 1]);
-            i++;
+        if (flagMatch) {
+            if (i + 1 < extraArgs.length && !extraArgs[i + 1].startsWith('--')) {
+                assignFlag(params, flagMatch[1], coerceValue(extraArgs[i + 1]));
+                i++;
+            } else {
+                // 无后续值的裸 flag（末尾或紧随另一个 --flag），视为布尔 true
+                assignFlag(params, flagMatch[1], true);
+            }
         }
     }
 
