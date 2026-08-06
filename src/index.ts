@@ -3,6 +3,7 @@
  */
 import { Command, CommanderError } from 'commander';
 import { registerAllCommands } from './commands/index.js';
+import { applyZentaoCompatibilityOverrides } from './modules/overrides.js';
 import { ZentaoError, formatError } from './errors.js';
 import { getAllProfiles, getCurrentProfile, getUpdateCheckData, setConfigPath, setUpdateCheckData } from './config/store.js';
 import { asyncCheckForUpdate, showUpdateNotification, type UpdateCheckResult } from './utils/update-notifier.js';
@@ -38,6 +39,9 @@ function resolveCustomConfigPath(argv: readonly string[], env: NodeJS.ProcessEnv
 }
 
 resolveCustomConfigPath(process.argv.slice(2), process.env);
+
+// 在任何模块命令注册之前应用禅道兼容性覆盖，修正模块注册表与禅道服务端实际行为的差异。
+applyZentaoCompatibilityOverrides();
 
 /**
  * 支持 `zentao --version` 作为 `zentao version` 的别名。
