@@ -36,6 +36,75 @@ function parseFields(fields?: string): string[] | undefined {
 }
 
 /**
+ * 将 `action.params` 声明的查询参数同步到顶层 `params`。
+ *
+ * 部分禅道接口要求上下文 ID 以查询参数形式传递，但用户可能通过以下方式传入：
+ * 1. `--data '{"productID":1,…}'`：整体 JSON 中包含查询字段
+ * 2. 位置 ID（`zentao testcase review 1`）：当查询参数名与路径参数名一致时
+ *    （如 caseID），把已解析的 `params.id` 提升为查询参数。
+ */
+function syncQueryParams(
+    params: Record<string, unknown>,
+    action: ModuleAction,
+): void {
+    const queryFields = action.params;
+    if (!queryFields?.length) return;
+
+    let dataRecord: Record<string, unknown> | undefined;
+    if (params.data !== undefined) {
+        let data: unknown = params.data;
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch {
+                data = undefined;
+            }
+        }
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+            dataRecord = data as Record<string, unknown>;
+        }
+    }
+
+    const pathParamNames = new Set(Object.keys(action.pathParams ?? {}));
+
+    for (const field of queryFields) {
+        if (params[field.name] !== undefined) continue;
+        if (dataRecord && dataRecord[field.name] !== undefined) {
+            params[field.name] = dataRecord[field.name];
+            continue;
+        }
+        if (pathParamNames.has(field.name) && params.id !== undefined) {
+            params[field.name] = params.id;
+        }
+    }
+}
+
+/**
+ * 将短名上下文参数（product / project / execution）映射到路径占位符所需的全名形式
+ *（productID / projectID / executionID）。
+ *
+ * 作用域（scope）列表接口（如 story、bug）由 SDK 的 `pickScope` 自动处理短名；
+ * 但显式路径接口（如 `GET /products/{productID}/releases`）只认 `productID`，
+ * 此函数补齐短名 → 全名的映射，使 `--product=1` 在两种接口中都能使用。
+ */
+function syncContextParams(
+    params: Record<string, unknown>,
+    action: ModuleAction,
+): void {
+    const pathParamNames = action.pathParams ? Object.keys(action.pathParams) : [];
+    const map: Array<[string, string]> = [
+        ['product', 'productID'],
+        ['project', 'projectID'],
+        ['execution', 'executionID'],
+    ];
+    for (const [shortName, fullName] of map) {
+        if (pathParamNames.includes(fullName) && params[fullName] === undefined && params[shortName] !== undefined) {
+            params[fullName] = params[shortName];
+        }
+    }
+}
+
+/**
  * 执行模块级 CRUD 或扩展操作。
  *
  * 路径解析、查询/请求体组装、update 自动补全（autoFill）与响应提取均交由
@@ -56,22 +125,48 @@ export async function executeModuleCommand(
     }
 
     const params = buildParams(options, actionName, args);
+    syncQueryParams(params, action);
+    syncContextParams(params, action);
+    // 列表操作将 --sort 转发为服务端 orderBy，使排序在服务端生效（而非仅客户端当页排序）
+    if (action.type === 'list' && options.sort) {
+        params.orderBy = options.sort;
+    }
     const requestName = `${module.name}/${normalizeActionName(actionName)}`;
+
+    const requestOptions = {
+        client,
+        autoFill: action.type === 'update',
+        throwOnFail: true,
+        recPerPage: options.recPerPage,
+        timeout: options.timeout,
+        insecure: options.insecure,
+    };
 
     let response;
     try {
-        // 注意：不向 request() 传递 filter/search/sort/limit/pick，
-        // 以保留 CLI 自身的数据处理语义（在下方本地后处理）。
-        response = await request(requestName, params, {
-            client,
-            autoFill: action.type === 'update',
-            throwOnFail: true,
-            recPerPage: options.recPerPage,
-            timeout: options.timeout,
-            insecure: options.insecure,
-        });
+        response = await request(requestName, params, requestOptions);
     } catch (error) {
         throw mapSdkError(error);
+    }
+
+    // --all：列表操作自动翻页拉取全部数据
+    if (action.type === 'list' && options.all && response.pager && response.pager.total > response.pager.recPerPage) {
+        const pageSize = response.pager.recPerPage;
+        const totalPages = Math.ceil(response.pager.total / pageSize);
+        let allData = (Array.isArray(response.data) ? response.data : []) as unknown[];
+        for (let page = 2; page <= totalPages; page++) {
+            try {
+                const pageResp = await request(requestName, { ...params, recPerPage: pageSize, pageID: page }, requestOptions);
+                allData = allData.concat(Array.isArray(pageResp.data) ? pageResp.data : []);
+            } catch {
+                break;
+            }
+        }
+        response = {
+            ...response,
+            data: allData,
+            pager: { total: response.pager.total, page: 1, recPerPage: response.pager.total },
+        };
     }
 
     const fields = parseFields(options.pick);
