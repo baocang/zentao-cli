@@ -79,6 +79,11 @@ export function formatOutput(
     if (options.isList && Array.isArray(data)) {
         const table = formatTable(data as Record<string, unknown>[], options.fields);
         const pagerInfo = formatPagerInfo(options.pager, data.length);
+        // When the list is empty and no pager summary is produced (e.g. endpoints
+        // that return no pager), still emit an explicit "no data" hint for UX.
+        if (data.length === 0 && !pagerInfo) {
+            return '没有数据';
+        }
         return table + pagerInfo;
     }
 
