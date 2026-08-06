@@ -6,6 +6,7 @@ import { handleModuleCommand, showModuleActionHelp, showModuleHelp } from './mod
 import { ZentaoError } from '../errors.js';
 import type { GlobalOptions, ModuleActionName, ModuleActionOptions, ModuleActionType } from '../types/index.js';
 import { renderError } from '../utils/render.js';
+import { applyOptionsJson } from '../utils/cli-options.js';
 
 /** 为命令挂载数据查询、分页、过滤及父子上下文等通用选项 */
 export function addDataOptions(cmd: Command): Command {
@@ -80,7 +81,7 @@ export function registerModuleCommands(program: Command): void {
 
         cmd.action(async (args: string[], opts: ModuleActionOptions) => {
             const globalOpts = program.opts() as GlobalOptions;
-            const options = {...globalOpts, ...opts};
+            const options = applyOptionsJson({...globalOpts, ...opts} as ModuleActionOptions);
             try {
                 // 处理 --help / -h：等同于 help 子命令
                 const helpFlagIndex = args.findIndex((a) => a === '--help' || a === '-h');
