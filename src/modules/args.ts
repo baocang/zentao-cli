@@ -45,10 +45,15 @@ export function buildParams(
     let positionalID: string | undefined;
     if (extraArgs.length > 0 && !extraArgs[0].startsWith('-')) {
         const candidate = extraArgs[0].trim();
-        const idParts = candidate.split(',').map((part) => part.trim()).filter(Boolean);
+        // 兼容 ZenTao 22.x 部分模块（如 testcase）返回的带前缀复合 ID（如 `case_48`）：
+        // 剥离纯字母前缀后再做数字判定，使 `zentao testcase case_48` 也能识别为位置 ID。
+        const idParts = candidate
+            .split(',')
+            .map((part) => part.trim().replace(/^[a-zA-Z]+_(\d+)$/, '$1'))
+            .filter(Boolean);
         const isNumericID = idParts.length > 0 && idParts.every((part) => /^\d+$/.test(part));
         if (isNumericID) {
-            positionalID = candidate;
+            positionalID = idParts.join(',');
             extraArgs.shift();
         } else if (params.data === undefined && candidate.startsWith('{') && candidate.endsWith('}')) {
             params.data = candidate;
@@ -82,6 +87,19 @@ export function buildParams(
 
     if (positionalID !== undefined) {
         params.id = positionalID;
+    }
+
+    // ZenTao 22.x 在部分模块（如 testcase）列表中返回带前缀的复合 ID
+    //（形如 `case_48`），但其详情/操作接口仅接受纯数字。无论 id 来自位置参数
+    // 还是 `get <module> <id>` 的 Commander 位置参数，统一剥离纯字母前缀，
+    // 使 `get testcase case_48` 与 `get testcase 48` 等价。
+    if (typeof params.id === 'string' && params.id.length > 0) {
+        const normalizedId = params.id
+            .split(',')
+            .map((part) => part.trim().replace(/^[a-zA-Z]+_(\d+)$/, '$1'))
+            .filter(Boolean)
+            .join(',');
+        if (normalizedId) params.id = normalizedId;
     }
 
     return params;
