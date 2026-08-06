@@ -92,13 +92,19 @@ function syncContextParams(
     action: ModuleAction,
 ): void {
     const pathParamNames = action.pathParams ? Object.keys(action.pathParams) : [];
+    const queryParamNames = (action.params ?? []).map((p) => p.name);
+    // Body schema properties (create/update/action may accept context IDs here)
+    const bodySchema = action.requestBody?.schema as { properties?: Record<string, unknown> } | undefined;
+    const bodyPropNames = bodySchema?.properties ? Object.keys(bodySchema.properties) : [];
+    const acceptedNames = new Set([...pathParamNames, ...queryParamNames, ...bodyPropNames]);
+
     const map: Array<[string, string]> = [
         ['product', 'productID'],
         ['project', 'projectID'],
         ['execution', 'executionID'],
     ];
     for (const [shortName, fullName] of map) {
-        if (pathParamNames.includes(fullName) && params[fullName] === undefined && params[shortName] !== undefined) {
+        if (acceptedNames.has(fullName) && params[fullName] === undefined && params[shortName] !== undefined) {
             params[fullName] = params[shortName];
         }
     }
