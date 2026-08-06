@@ -1,6 +1,6 @@
 import { formatError, ZentaoError } from "../errors";
 import { ListPagerInfo, OutputFormat } from "../types";
-import { bunMarkdownEnable } from "./env";
+import { bunMarkdownEnable, isPrettyLevel } from "./env";
 import { formatJson, formatList, formatTable } from "./format";
 
 /** 渲染字符串 */
@@ -13,7 +13,7 @@ export function renderString(content: string, format: OutputFormat = 'markdown')
 }
 
 export function renderMarkdown(markdown: string): string {
-    if (bunMarkdownEnable) {
+    if (bunMarkdownEnable && isPrettyLevel('basic')) {
         return Bun.markdown.ansi(markdown);
     }
     return markdown;
