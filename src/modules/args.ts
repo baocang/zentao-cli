@@ -120,5 +120,14 @@ export function buildParams(
         if (normalizedId) params.id = normalizedId;
     }
 
+    // 校验 --data / 位置参数 JSON 字符串的格式，避免无效 JSON 被静默透传到服务端
+    if (typeof params.data === 'string' && params.data.length > 0) {
+        try {
+            JSON.parse(params.data);
+        } catch {
+            throw new ZentaoError('E2007');
+        }
+    }
+
     return params;
 }
