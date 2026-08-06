@@ -8,12 +8,7 @@ export function renderString(content: string, format: OutputFormat = 'markdown')
     if (format === 'markdown') {
         return renderMarkdown(content);
     }
-    if (format === 'json') {
-        if (bunMarkdownEnable) {
-            return Bun.markdown.ansi(['```json', content, '```'].join('\n'));
-        }
-        return content;
-    }
+    // json / raw 格式始终输出纯文本，不套用 Markdown 渲染，确保程序化调用可解析。
     return content;
 }
 
