@@ -104,6 +104,70 @@ function syncContextParams(
     }
 }
 
+/** CLI / SDK 控制参数键，绝不作为请求体字段传递。 */
+const RESERVED_PARAM_KEYS = new Set([
+    'data', 'id', 'scope', 'scopeID', 'orderBy', 'recTotal', 'pageID', 'recPerPage',
+    'page', 'format', 'silent', 'insecure', 'timeout', 'config', 'machineReadable',
+    'version-flag', 'help', 'pick', 'filter', 'sort', 'search', 'searchFields',
+    'all', 'limit', 'yes', 'batchFailFast', 'params', 'options',
+]);
+
+/**
+ * 对声明了对象请求体的动作（create / update / action），将用户通过平铺 flags 传入、
+ * 但未出现在 OpenAPI schema 中的字段合并进 `params.data`。
+ *
+ * SDK 的 `buildRequestBody` 仅从 schema.properties 及 `params.data` 取值；OpenAPI 自动
+ * 生成的 schema 并不总是覆盖禅道实际需要的全部字段（如 bug 的 `deadline`、`module`）。
+ * 若仅用 `--deadline=2026-12-31` 这类 flag，这些值会被静默丢弃。此函数补齐该缺口：
+ * 将所有既非路径参数、非查询参数、也非 CLI 控制参数的平铺值写入 `params.data`，使它们
+ * 能随请求体一并发送。schema 中已有的字段优先由 SDK 处理，此处仅做兜底填充。
+ */
+function syncBodyParams(
+    params: Record<string, unknown>,
+    action: ModuleAction,
+): void {
+    const schema = action.requestBody?.schema as { type?: string } | undefined;
+    if (!schema || schema.type !== 'object') return;
+
+    const pathParamNames = new Set(Object.keys(action.pathParams ?? {}));
+    const queryParamNames = new Set((action.params ?? []).map((p) => p.name));
+    const contextNames = new Set(['product', 'project', 'execution', 'productID', 'projectID', 'executionID']);
+
+    let dataRecord: Record<string, unknown> | undefined;
+    if (params.data !== undefined) {
+        if (typeof params.data === 'string') {
+            try {
+                dataRecord = JSON.parse(params.data);
+            } catch {
+                dataRecord = undefined;
+            }
+        } else if (typeof params.data === 'object' && !Array.isArray(params.data)) {
+            dataRecord = params.data as Record<string, unknown>;
+        }
+    }
+
+    let changed = false;
+    for (const key of Object.keys(params)) {
+        if (pathParamNames.has(key) || queryParamNames.has(key)) continue;
+        if (RESERVED_PARAM_KEYS.has(key) || contextNames.has(key)) continue;
+        if (key.endsWith('ID') && key !== 'id') continue;
+
+        const value = params[key];
+        if (value === undefined) continue;
+        if (dataRecord && Object.prototype.hasOwnProperty.call(dataRecord, key)) continue;
+
+        if (!dataRecord) {
+            dataRecord = {};
+        }
+        dataRecord[key] = value;
+        changed = true;
+    }
+
+    if (changed) {
+        params.data = JSON.stringify(dataRecord);
+    }
+}
+
 /**
  * 执行模块级 CRUD 或扩展操作。
  *
@@ -127,6 +191,7 @@ export async function executeModuleCommand(
     const params = buildParams(options, actionName, args);
     syncQueryParams(params, action);
     syncContextParams(params, action);
+    syncBodyParams(params, action);
     // 列表操作将 --sort 转发为服务端 orderBy，使排序在服务端生效（而非仅客户端当页排序）
     if (action.type === 'list' && options.sort) {
         params.orderBy = options.sort;
