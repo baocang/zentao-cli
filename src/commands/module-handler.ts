@@ -7,7 +7,7 @@ import { getProfileConfig } from '../config/store.js';
 import { formatOutput } from '../utils/format.js';
 import type { ModuleActionOptions } from '../types/index.js';
 import { createInterface } from 'node:readline';
-import { renderError, renderObject } from '../utils/render.js';
+import { renderError } from '../utils/render.js';
 import { ZentaoError } from '../errors.js';
 
 
@@ -93,7 +93,12 @@ async function renderModuleExecution(
     }
 
     if (execution.action.type === 'get') {
-        const output = renderObject(execution.data as Record<string, unknown>, format, { fields: execution.fields });
+        const output = formatOutput(execution.data, {
+            format,
+            isList: false,
+            fields: execution.fields,
+            jsonPretty: config.jsonPretty,
+        });
         if (output) console.log(output);
         return;
     }
