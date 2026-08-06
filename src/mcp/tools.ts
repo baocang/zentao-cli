@@ -40,7 +40,7 @@ function buildActionEnum(mod: ModuleDefinition): [string, ...string[]] {
     return [names[0], ...names.slice(1)];
 }
 
-function buildInputSchema(mod: ModuleDefinition) {
+function buildInputSchema(mod: ModuleDefinition): Record<string, any> {
     const actionEnum = buildActionEnum(mod);
     return {
         action: z.enum(actionEnum).describe('要执行的操作。' + mod.actions.map(a =>
@@ -208,7 +208,7 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider): void
         '切换当前登录账号（等价于 switch-profile）',
         {
             profileKey: z.string().describe('目标用户配置标识，支持 account@server、account 或 account@hostname'),
-        },
+        } as Record<string, any>,
         { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
         async (input) => {
             try {
