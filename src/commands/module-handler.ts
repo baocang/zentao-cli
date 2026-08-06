@@ -104,7 +104,13 @@ async function renderModuleExecution(
         fields: execution.fields,
         jsonPretty: config.jsonPretty,
     });
-    if (output) console.log(output);
+    if (output) {
+        console.log(output);
+    } else if (format === 'markdown') {
+        // create/update/action 等操作在服务端返回空数据时（如部分 ZenTao 接口仅返回
+        // {"status":"success"}），仍给出明确成功提示，避免用户误以为命令未执行。
+        console.log('操作成功');
+    }
 }
 
 
