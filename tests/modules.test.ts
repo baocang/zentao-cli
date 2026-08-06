@@ -2,6 +2,7 @@ import { describe, test, expect } from 'bun:test';
 import { getModule, getModuleNames, isModuleName, getAllModules } from '../src/modules';
 import { findAction, getAvailableActions, getAction } from '../src/modules';
 import { buildParams } from '../src/modules/args';
+import { applyZentaoCompatibilityOverrides } from '../src/modules/overrides';
 
 describe('module registry (zentao-api)', () => {
     test('contains expected modules', () => {
@@ -126,5 +127,20 @@ describe('buildParams (argv parsing)', () => {
         expect(params.num).toBe(3);
         expect(params.flag).toBe(true);
         expect(params.name).toBe('foo');
+    });
+});
+
+describe('22.4 compatibility overrides', () => {
+    test('project create accepts desc in request schema', () => {
+        applyZentaoCompatibilityOverrides();
+
+        const project = getModule('project')!;
+        const createAction = findAction(project, 'create')!;
+        const schema = createAction.requestBody?.schema as
+            | { properties?: Record<string, unknown>; required?: string[] }
+            | undefined;
+
+        expect(schema?.properties?.desc).toBeDefined();
+        expect(schema?.required).toContain('desc');
     });
 });

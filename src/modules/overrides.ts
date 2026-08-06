@@ -116,6 +116,27 @@ function moveProductIDToQuery(): void {
     }
 }
 
+function addMissingCreateFields(): void {
+    extendModuleAction('project', 'create', (act) => {
+        const schema = act.requestBody?.schema as
+            | { properties?: Record<string, PropertyDef>; required?: string[] }
+            | undefined;
+
+        if (!schema) return act;
+
+        schema.properties = {
+            ...(schema.properties ?? {}),
+            desc: { type: 'string', description: '项目描述' },
+        };
+
+        if (!schema.required?.includes('desc')) {
+            schema.required = [...(schema.required ?? []), 'desc'];
+        }
+
+        return act;
+    });
+}
+
 // ──────────────────────────── 2. resultGetter 与 get 动作 ────────────────────────────
 
 function fixResultGettersAndAddGetActions(): void {
@@ -236,6 +257,7 @@ function addMissingWorkflowActions(): void {
 /** 应用禅道 22.4 兼容性覆盖，应在模块命令注册前调用 */
 export function applyZentaoCompatibilityOverrides(): void {
     moveProductIDToQuery();
+    addMissingCreateFields();
     fixResultGettersAndAddGetActions();
     addMissingWorkflowActions();
 }
