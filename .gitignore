@@ -143,3 +143,4 @@ vite.config.ts.timestamp-*
 *.code-workspace
 .cursor/hooks/state
 .claude/*.local.json
+VERIFICATION.md

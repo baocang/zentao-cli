@@ -5,12 +5,12 @@
 ## 主要特性
 
 * ✅ 基于最新的禅道 RESTful API 2.0 实现
-* ✅ 使用便捷，可通过 `npx zentao-cli` 立即运行
+* ✅ 使用便捷，可通过 `npx @baocang/zentao-cli` 立即运行
 * ✅ 安全的用户认证管理，支持多用户切换
 * ✅ 支持对数据进行摘取、过滤、排序等处理，并自动将 HTML 转换为 Markdown
 * ✅ 对 AI Agents 友好，帮助信息完善，支持输出 Markdown
 * ✅ 支持以 AI 技能的方式使用，支持通过 `zentao add-skill` 一键安装技能到 AI Agent
-* ✅ 支持 MCP 服务，使用 `npx zentao-cli mcp` 启动 MCP 服务
+* ✅ 支持 MCP 服务，使用 `npx @baocang/zentao-cli mcp` 启动 MCP 服务
 * ✅ 使用现代的 bun 与 TypeScript 开发，具备类型安全
 * ✅ 提供完善的测试覆盖，保障代码质量
 
@@ -29,12 +29,12 @@
 
 ```bash
 # 全局安装 zentao-cli 工具
-npm install -g zentao-cli
+npm install -g @baocang/zentao-cli
 
 # 其他安装与运行方式
-# bun install -g zentao-cli  # ← 使用 bun 安装
-# npx zentao-cli             # ← 通过 npx 免安装运行
-# pnpm dlx zentao-cli        # ← 通过 pnpm 免安装运行
+# bun install -g @baocang/zentao-cli  # ← 使用 bun 安装
+# npx @baocang/zentao-cli             # ← 通过 npx 免安装运行
+# pnpm dlx @baocang/zentao-cli        # ← 通过 pnpm 免安装运行
 
 # 首次使用需要进行登录
 zentao login -s https://zentao.example.com -u admin -p 123456
@@ -170,7 +170,7 @@ $ zentao add-skill claude-code
 
 ```bash
 # 一键安装、登录和配置 Skill
-$ pnpm install -g zentao-cli && zentao login && zentao add-skill all
+$ pnpm install -g @baocang/zentao-cli && zentao login && zentao add-skill all
 ```
 
 安装技能后即可在对应 Agent 工具中使用禅道 CLI 技能。
@@ -214,17 +214,17 @@ $ zentao add-mcp
 
 ```bash
 # 一键安装、登录和配置 MCP 服务
-$ pnpm install -g zentao-cli && zentao login && zentao add-mcp
+$ pnpm install -g @baocang/zentao-cli && zentao login && zentao add-mcp
 ```
 
-统一支持通过 `npx -y zentao-cli mcp` 手动启动 MCP 服务，然后通过 MCP 客户端访问和操作禅道数据。目前各大 Agents 工具无需提前安装 zentao-cli 本身，只需要在 MCP 服务配置中增加如下配置即可：
+统一支持通过 `npx -y @baocang/zentao-cli mcp` 手动启动 MCP 服务，然后通过 MCP 客户端访问和操作禅道数据。目前各大 Agents 工具无需提前安装 zentao-cli 本身，只需要在 MCP 服务配置中增加如下配置即可：
 
 ```json
 {
   "mcpServers": {
     "zentao-cli": {
       "command": "npx",
-      "args": ["-y", "zentao-cli", "mcp"],
+      "args": ["-y", "@baocang/zentao-cli", "mcp"],
       "env": {
         "ZENTAO_URL": "https://zentao.example.com",
         "ZENTAO_ACCOUNT": "admin",

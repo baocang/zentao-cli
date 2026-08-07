@@ -1,5 +1,37 @@
 # Changes
 
+## 0.3.0
+
+### ✨ 新特性 (Feat)
+
+- **ZenTao 22.4 全面兼容**: 新增 `src/modules/overrides.ts`，在 CLI 启动时自动修正 SDK 注册表与 ZenTao 22.4 的差异，覆盖产品维度创建（productID 查询参数化）、缺失的 get 动作（project/build/release/system/testtask）、缺失的工作流操作（bug confirm/assignto、task pause/cancel/restart/assignto、story/epic/requirement review/assignto、testcase review、testtask start/close/activate/block）。
+- **`--all` 全量拉取**: 列表操作支持 `--all` 自动翻页，直到获取全部数据。
+- **服务端排序**: `--sort` 现转发为 API `orderBy` 查询参数，在服务端排序后再分页，而非仅客户端当页排序。
+- **`--options` JSON 形式**: 支持 `--options '{"format":"json",...}'` 一次性传入 CLI 选项。
+- **MCP 工具增强**: 暴露 `all` 和 `limit` 选项到 MCP 工具，支持完整数据集访问。
+
+### 🐛 修复 (Fix)
+
+- **JSON 输出修复**: `--format=json` 的 get 操作不再产生 Markdown ANSI 框线乱码，始终输出纯 JSON。
+- **`--key value` 空格形式解析**: create/update/action 的 `--name "x"` 等空格分隔 flag 不再被静默丢弃；同时支持重复 flag 累积（如 `--reviewer`）和 dash 开头的值。
+- **ls/list 选项丢失修复**: `ls` 命令的 action 回调签名修正，`--page`/`--recPerPage`/`--sort`/`--filter`/`--project` 等选项不再被丢弃。
+- **上下文 ID 选项注册**: `--executionID`/`--productID`/`--projectID` 注册为 Commander 选项，空格和等号形式均可解析。
+- **短名上下文映射**: `--product`/`--project`/`--execution` 自动映射到路径和请求体所需的 productID/projectID/executionID。
+- **testcase 前缀 ID**: ZenTao 22.x 返回 `case_48` 形式的 ID，自动归一化为数字。
+- **空数据提示**: 列表为空且无 pager 时显示"没有数据"；create/update/action 返回空数据时显示"操作成功"。
+- **--filter 等号支持**: `--filter 'status=closed'` 中 `=` 作为等于运算符，不再被误认为静默匹配全部。
+- **machine-readable 模式**: 正确禁用 ANSI 颜色输出。
+- **MCP Zod 4 兼容**: 修复 Zod 4 类型与 MCP SDK 的不兼容问题。
+
+### 🚀 优化与重构 (Refactor)
+
+- **参数同步机制**: executor 新增 `syncQueryParams`（从 --data JSON 同步查询参数）和 `syncContextParams`（短名→全名映射），确保参数在所有接口形式下正确传递。
+- **非 schema flag 合并**: create 操作中未在 requestBody schema 中声明但通过 flag 传入的参数，合并到请求体发送给服务端。
+
+### ✅ 测试 (Test)
+
+- 新增回归测试覆盖重复 flag 累积、dash 开头值、裸 flag、`--data` JSON 校验等边界场景。
+
 ## 0.2.0
 
 ### 🐛 修复 (Fix)
