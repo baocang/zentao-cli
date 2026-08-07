@@ -8,6 +8,10 @@
   - `zentao bug history 123` — 查看 Bug 123 的操作历史（opened/resolved/closed/commented 等），支持 `--filter`/`--sort`/`--pick` 等列表处理。
   - `zentao bug comment 123 --comment="备注内容"` — 为 Bug 123 添加备注，无需改变状态。
   - 解决 AI agent 反馈的"CLI 不提供历史记录与备注，需用浏览器获取"的问题。
+- **任务工时记录**: `task` 模块新增 `recordestimate`（记录工时）和 `effort`（查看工时记录）扩展操作。
+  - `zentao task recordestimate 123 --consumed=2 --left=5 --work="完成了前端页面开发"` — 记录单条工时（逐条工作内容）。
+  - `zentao task effort 123` — 查看任务的逐条工时记录（日期、工作内容、耗时、剩余）。
+  - 解决 AI agent 反馈的"CLI 能提供任务状态和预计/已耗/剩余工时，但不直接返回逐条工作内容"的问题。
 - **反馈/工单指派**: `feedback` 和 `ticket` 模块新增 `assignto` 扩展操作，与 bug/task/story 保持一致。
 
 ### 🚀 优化与重构 (Refactor)
@@ -19,7 +23,7 @@
 ### ✅ 测试 (Test)
 
 - 新增 `action history & comments` 测试组：验证所有对象模块的 history/comment action 定义、路径、类型、body schema 和 getAction/getAvailableActions 解析。
-- 新增 `missing workflow actions` 测试组：验证 feedback/ticket 的 assignto 操作。
+- 新增 `missing workflow actions` 测试组：验证 feedback/ticket 的 assignto 操作、task 的 recordestimate/effort 操作。
 
 ## 0.3.0
 

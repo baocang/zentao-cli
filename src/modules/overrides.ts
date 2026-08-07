@@ -267,6 +267,47 @@ function addMissingWorkflowActions(): void {
             required: ['assignedTo'],
         }),
     ]);
+
+    // ── Task：记录工时（逐条工作内容） ──
+    // ZenTao 的 task->recordWorkhour 方法支持查看与批量新增任务工时条目，
+    // REST API v2 路由为 PUT /tasks/{taskID}/recordworkhour。
+    // 每条记录包含：日期、工作内容、耗时、剩余。
+    defineModuleActions('task', {
+        name: 'recordestimate',
+        display: '记录任务工时',
+        type: 'action',
+        method: 'put',
+        path: '/tasks/{taskID}/recordworkhour',
+        resultType: 'text',
+        pathParams: { taskID: '任务 ID' },
+        requestBody: {
+            required: true,
+            type: 'object',
+            schema: {
+                type: 'object',
+                properties: {
+                    date: { type: 'string', description: '日期，格式 YYYY-MM-DD，默认今天' },
+                    work: { type: 'string', description: '工作内容' },
+                    consumed: { type: 'number', description: '本次耗时（小时）', format: 'float' },
+                    left: { type: 'number', description: '剩余工时（小时）', format: 'float' },
+                },
+                required: ['consumed', 'left'],
+            },
+        },
+    });
+
+    // ── Task：查看工时记录（逐条工作内容） ──
+    // 获取任务的逐条工时记录，每条包含：日期、工作内容、耗时、剩余。
+    defineModuleActions('task', {
+        name: 'effort',
+        display: '获取任务工时记录',
+        type: 'list',
+        method: 'get',
+        path: '/tasks/{taskID}/efforts',
+        resultType: 'list',
+        resultGetter: 'efforts',
+        pathParams: { taskID: '任务 ID' },
+    });
 }
 
 // ──────────────────────────── 4. 历史记录与备注 ────────────────────────────

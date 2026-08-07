@@ -282,4 +282,39 @@ describe('missing workflow actions (overrides)', () => {
         expect(assignto!.type).toBe('action');
         expect(assignto!.path).toBe('/tickets/{ticketID}/assignto');
     });
+
+    test('task has recordestimate action for work logs', () => {
+        const task = getModule('task')!;
+        const recordestimate = task.actions.find(a => a.name === 'recordestimate');
+        expect(recordestimate).toBeDefined();
+        expect(recordestimate!.type).toBe('action');
+        expect(recordestimate!.method).toBe('put');
+        expect(recordestimate!.path).toBe('/tasks/{taskID}/recordworkhour');
+
+        const schema = recordestimate!.requestBody?.schema as
+            | { properties?: Record<string, unknown>; required?: string[] }
+            | undefined;
+        expect(schema?.properties?.consumed).toBeDefined();
+        expect(schema?.properties?.left).toBeDefined();
+        expect(schema?.properties?.work).toBeDefined();
+        expect(schema?.properties?.date).toBeDefined();
+        expect(schema?.required).toContain('consumed');
+        expect(schema?.required).toContain('left');
+    });
+
+    test('task has effort action for viewing work log entries', () => {
+        const task = getModule('task')!;
+        const effort = task.actions.find(a => a.name === 'effort');
+        expect(effort).toBeDefined();
+        expect(effort!.type).toBe('list');
+        expect(effort!.method).toBe('get');
+        expect(effort!.path).toBe('/tasks/{taskID}/efforts');
+        expect(effort!.resultGetter).toBe('efforts');
+    });
+
+    test('getAction resolves effort and recordestimate', () => {
+        const task = getModule('task')!;
+        expect(getAction(task, 'effort')?.name).toBe('effort');
+        expect(getAction(task, 'recordestimate')?.name).toBe('recordestimate');
+    });
 });
