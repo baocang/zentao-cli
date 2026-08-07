@@ -207,9 +207,9 @@ export function showModuleHelp(mod: ModuleDefinition): void {
     if (listAction) {
         cmds.push({ cmd: `zentao ${n} [选项]`, desc: listAction.display ?? '获取列表' });
     }
-    const getAction = findAction(mod, 'get');
-    if (getAction) {
-        cmds.push({ cmd: `zentao ${n} <id> [选项]`, desc: getAction.display ?? '获取详情' });
+    const getActionDef = findAction(mod, 'get');
+    if (getActionDef) {
+        cmds.push({ cmd: `zentao ${n} <id> [选项]`, desc: getActionDef.display ?? '获取详情' });
     }
     const createAction = findAction(mod, 'create');
     if (createAction) {
@@ -236,7 +236,7 @@ export function showModuleHelp(mod: ModuleDefinition): void {
     if (actions.length > 0) {
         const extCmds: CmdEntry[] = [];
         for (const actionName of actions) {
-            const action = findAction(mod, 'action', actionName);
+            const action = getAction(mod, actionName);
             const desc = action?.display ?? actionName;
             extCmds.push({ cmd: `zentao ${n} ${actionName} <id> [--key=value ...]`, desc });
         }
@@ -446,7 +446,7 @@ export function showModuleAllActionsHelp(mod: ModuleDefinition): void {
         showModuleActionHelp(mod, action);
     }
     for (const extName of getAvailableActions(mod)) {
-        const action = findAction(mod, 'action', extName);
+        const action = getAction(mod, extName);
         if (!action) continue;
         if (!first) console.log(`\n${'─'.repeat(56)}\n`);
         first = false;

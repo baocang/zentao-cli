@@ -44,7 +44,10 @@ export function getAction(mod: ModuleDefinition, actionName: string): ModuleActi
     if (CRUD_TYPES.has(normalized)) {
         return findAction(mod, normalized as ModuleActionType);
     }
-    return findAction(mod, 'action', normalized);
+    // For non-CRUD names, first try type='action', then match by name where
+    // the name differs from the type (covers e.g. type='list' name='history').
+    return findAction(mod, 'action', normalized)
+        ?? mod.actions.find((a) => a.name === normalized && a.name !== a.type);
 }
 
 /** 从模块中查找指定类型（和可选名称）的 action */
@@ -59,7 +62,8 @@ export function findAction(
     return mod.actions.find((a) => a.type === type);
 }
 
-/** 返回所有 type === 'action' 的扩展操作名称列表 */
+/** 返回所有扩展操作名称列表（非标准 CRUD 操作） */
 export function getAvailableActions(mod: ModuleDefinition): string[] {
-    return mod.actions.filter((a) => a.type === 'action').map((a) => a.name);
+    const crudNames = new Set(['list', 'get', 'create', 'update', 'delete']);
+    return mod.actions.filter((a) => !crudNames.has(a.name)).map((a) => a.name);
 }

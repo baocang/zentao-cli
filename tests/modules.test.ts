@@ -183,3 +183,103 @@ describe('22.4 compatibility overrides', () => {
         expect(schema?.required).toContain('desc');
     });
 });
+
+describe('action history & comments (overrides)', () => {
+    // Apply overrides once for all tests in this group.
+    applyZentaoCompatibilityOverrides();
+
+    const EXPECTED_HISTORY_MODULES = [
+        'bug', 'task', 'story', 'epic', 'requirement', 'testcase',
+        'feedback', 'ticket', 'product', 'project', 'execution',
+        'build', 'release', 'testtask', 'productplan', 'program',
+    ];
+
+    test('every object module has a history action', () => {
+        for (const name of EXPECTED_HISTORY_MODULES) {
+            const mod = getModule(name)!;
+            const historyAction = mod.actions.find(a => a.name === 'history');
+            expect(historyAction).toBeDefined();
+            expect(historyAction!.method).toBe('get');
+            expect(historyAction!.path).toMatch(/^\/actions\//);
+        }
+    });
+
+    test('every object module has a comment action', () => {
+        for (const name of EXPECTED_HISTORY_MODULES) {
+            const mod = getModule(name)!;
+            const commentAction = mod.actions.find(a => a.name === 'comment');
+            expect(commentAction).toBeDefined();
+            expect(commentAction!.method).toBe('post');
+            expect(commentAction!.path).toMatch(/^\/actions\//);
+        }
+    });
+
+    test('history action uses list type with actions resultGetter', () => {
+        const bug = getModule('bug')!;
+        const history = bug.actions.find(a => a.name === 'history')!;
+        expect(history.type).toBe('list');
+        expect(history.resultGetter).toBe('actions');
+    });
+
+    test('comment action has required comment body field', () => {
+        const task = getModule('task')!;
+        const comment = task.actions.find(a => a.name === 'comment')!;
+        const schema = comment.requestBody?.schema as
+            | { properties?: Record<string, unknown>; required?: string[] }
+            | undefined;
+        expect(schema?.properties?.comment).toBeDefined();
+        expect(schema?.required).toContain('comment');
+    });
+
+    test('history action path includes correct objectType', () => {
+        const bug = getModule('bug')!;
+        const history = bug.actions.find(a => a.name === 'history')!;
+        expect(history.path).toBe('/actions/bug/{bugID}');
+
+        const testcase = getModule('testcase')!;
+        const testcaseHistory = testcase.actions.find(a => a.name === 'history')!;
+        expect(testcaseHistory.path).toBe('/actions/testcase/{caseID}');
+    });
+
+    test('getAction resolves history (non-CRUD, type=list) by name', () => {
+        const bug = getModule('bug')!;
+        const resolved = getAction(bug, 'history');
+        expect(resolved).toBeDefined();
+        expect(resolved!.name).toBe('history');
+        expect(resolved!.type).toBe('list');
+    });
+
+    test('getAction resolves comment (non-CRUD, type=action) by name', () => {
+        const task = getModule('task')!;
+        const resolved = getAction(task, 'comment');
+        expect(resolved).toBeDefined();
+        expect(resolved!.name).toBe('comment');
+    });
+
+    test('getAvailableActions includes history and comment', () => {
+        const story = getModule('story')!;
+        const actions = getAvailableActions(story);
+        expect(actions).toContain('history');
+        expect(actions).toContain('comment');
+    });
+});
+
+describe('missing workflow actions (overrides)', () => {
+    applyZentaoCompatibilityOverrides();
+
+    test('feedback has assignto action', () => {
+        const feedback = getModule('feedback')!;
+        const assignto = feedback.actions.find(a => a.name === 'assignto');
+        expect(assignto).toBeDefined();
+        expect(assignto!.type).toBe('action');
+        expect(assignto!.path).toBe('/feedbacks/{feedbackID}/assignto');
+    });
+
+    test('ticket has assignto action', () => {
+        const ticket = getModule('ticket')!;
+        const assignto = ticket.actions.find(a => a.name === 'assignto');
+        expect(assignto).toBeDefined();
+        expect(assignto!.type).toBe('action');
+        expect(assignto!.path).toBe('/tickets/{ticketID}/assignto');
+    });
+});

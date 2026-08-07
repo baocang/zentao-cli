@@ -1,5 +1,26 @@
 # Changes
 
+## Unreleased
+
+### ✨ 新特性 (Feat)
+
+- **操作历史与备注**: 所有业务对象模块（bug/task/story/epic/requirement/testcase/feedback/ticket/product/project/execution/build/release/testtask/productplan/program）新增 `history` 和 `comment` 扩展操作。
+  - `zentao bug history 123` — 查看 Bug 123 的操作历史（opened/resolved/closed/commented 等），支持 `--filter`/`--sort`/`--pick` 等列表处理。
+  - `zentao bug comment 123 --comment="备注内容"` — 为 Bug 123 添加备注，无需改变状态。
+  - 解决 AI agent 反馈的"CLI 不提供历史记录与备注，需用浏览器获取"的问题。
+- **反馈/工单指派**: `feedback` 和 `ticket` 模块新增 `assignto` 扩展操作，与 bug/task/story 保持一致。
+
+### 🚀 优化与重构 (Refactor)
+
+- **getAction 查找增强**: 非标准 CRUD 名称的 action 查找不再仅限于 `type='action'`，也支持 `type='list'` 等非 CRUD 类型（如 `history`），使自定义列表型扩展操作可被正常解析和渲染。
+- **getAvailableActions 范围扩大**: 扩展操作列表按名称过滤（排除标准 CRUD 名称）而非仅按 `type='action'` 过滤，确保 `history` 等非 `type='action'` 的扩展操作在 help 中正确展示。
+- **help 展示修正**: 模块 help 和 action help 统一使用 `getAction()` 解析扩展操作，修复了 `history` 操作在 help 中显示为原始名称而非中文描述的问题。
+
+### ✅ 测试 (Test)
+
+- 新增 `action history & comments` 测试组：验证所有对象模块的 history/comment action 定义、路径、类型、body schema 和 getAction/getAvailableActions 解析。
+- 新增 `missing workflow actions` 测试组：验证 feedback/ticket 的 assignto 操作。
+
 ## 0.3.0
 
 ### ✨ 新特性 (Feat)

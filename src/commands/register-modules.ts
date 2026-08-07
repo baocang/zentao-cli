@@ -1,10 +1,10 @@
 import { Command } from 'commander';
 import { getModuleNames, getModule } from '../modules/index.js';
-import { findAction, getAvailableActions } from '../modules/helper.js';
+import { findAction, getAvailableActions, getAction } from '../modules/helper.js';
 import { ensureAuth } from '../auth/flow.js';
 import { handleModuleCommand, showModuleActionHelp, showModuleHelp } from './module-handler.js';
 import { ZentaoError } from '../errors.js';
-import type { GlobalOptions, ModuleActionName, ModuleActionOptions, ModuleActionType } from '../types/index.js';
+import type { GlobalOptions, ModuleActionName, ModuleActionOptions } from '../types/index.js';
 import { renderError } from '../utils/render.js';
 import { applyOptionsJson } from '../utils/cli-options.js';
 
@@ -95,12 +95,7 @@ export function registerModuleCommands(program: Command): void {
                     }
 
                     const action = positionalArgs[0];
-                    const crudAliases: Record<string, string> = { ls: 'list' };
-                    const normalizedAction = crudAliases[action] ?? action;
-                    const crudTypes = new Set(['list', 'get', 'create', 'update', 'delete']);
-                    const resolvedAction = crudTypes.has(normalizedAction)
-                        ? findAction(mod, normalizedAction as ModuleActionType)
-                        : findAction(mod, 'action', action as ModuleActionName);
+                    const resolvedAction = getAction(mod, action);
                     if (resolvedAction) {
                         showModuleActionHelp(mod, resolvedAction);
                         return;
@@ -133,12 +128,7 @@ export function registerModuleCommands(program: Command): void {
                 }
 
                 if (args[0] === 'help') {
-                    const crudAliases: Record<string, string> = { ls: 'list' };
-                    const normalizedAction = crudAliases[action as string] ?? (action as string);
-                    const crudTypes = new Set(['list', 'get', 'create', 'update', 'delete']);
-                    const resolvedAction = crudTypes.has(normalizedAction)
-                        ? findAction(mod, normalizedAction as ModuleActionType)
-                        : findAction(mod, 'action', action as ModuleActionName);
+                    const resolvedAction = getAction(mod, action as string);
                     if (resolvedAction) {
                         showModuleActionHelp(mod, resolvedAction);
                         return;

@@ -8,7 +8,8 @@
  * 修正类别：
  * 1. 产品维度创建接口的 `productID` 必须作为查询参数传递。
  * 2. 缺少 `resultGetter` 或缺少 `get` 动作的模块。
- * 3. 缺少的工作流操作（确认、指派、暂停、取消、继续、评审、测试单操作等）。
+ * 3. 缺少的工作流操作（确认、指派、暂停、取消、继续、评审、测试单操作、反馈/工单指派等）。
+ * 4. 操作历史与备注（history / comment），适用于所有业务对象模块。
  */
 import { defineModuleActions, extendModuleAction } from 'zentao-api';
 import type { ModuleAction, ModuleActionParam } from '../types/index.js';
@@ -250,6 +251,100 @@ function addMissingWorkflowActions(): void {
         }),
         action('testtask', 'block', '阻塞测试单', 'testtaskID', { properties: COMMENT_FIELD }),
     ]);
+
+    // ── Feedback：指派 ──
+    defineModuleActions('feedback', [
+        action('feedback', 'assignto', '指派反馈', 'feedbackID', {
+            properties: ASSIGN_FIELDS,
+            required: ['assignedTo'],
+        }),
+    ]);
+
+    // ── Ticket：指派 ──
+    defineModuleActions('ticket', [
+        action('ticket', 'assignto', '指派工单', 'ticketID', {
+            properties: ASSIGN_FIELDS,
+            required: ['assignedTo'],
+        }),
+    ]);
+}
+
+// ──────────────────────────── 4. 历史记录与备注 ────────────────────────────
+
+/**
+ * 支持历史记录与备注的对象模块及其路径参数映射。
+ *
+ * ZenTao 的 action 模块提供跨模块的操作历史（opened/resolved/closed/commented 等）
+ * 与备注（comment）能力。REST API v2 暴露为：
+ *   GET  /actions/{objectType}/{objectID}  → 操作历史
+ *   POST /actions/{objectType}/{objectID}  → 添加备注
+ */
+const HISTORY_MODULES: Array<{ module: string; objectType: string; idKey: string; display: string }> = [
+    { module: 'bug', objectType: 'bug', idKey: 'bugID', display: 'Bug' },
+    { module: 'task', objectType: 'task', idKey: 'taskID', display: '任务' },
+    { module: 'story', objectType: 'story', idKey: 'storyID', display: '需求' },
+    { module: 'epic', objectType: 'epic', idKey: 'epicID', display: '业务需求' },
+    { module: 'requirement', objectType: 'requirement', idKey: 'requirementID', display: '用户需求' },
+    { module: 'testcase', objectType: 'testcase', idKey: 'caseID', display: '用例' },
+    { module: 'feedback', objectType: 'feedback', idKey: 'feedbackID', display: '反馈' },
+    { module: 'ticket', objectType: 'ticket', idKey: 'ticketID', display: '工单' },
+    { module: 'product', objectType: 'product', idKey: 'productID', display: '产品' },
+    { module: 'project', objectType: 'project', idKey: 'projectID', display: '项目' },
+    { module: 'execution', objectType: 'execution', idKey: 'executionID', display: '执行' },
+    { module: 'build', objectType: 'build', idKey: 'buildID', display: '版本' },
+    { module: 'release', objectType: 'release', idKey: 'releaseID', display: '发布' },
+    { module: 'testtask', objectType: 'testtask', idKey: 'testtaskID', display: '测试单' },
+    { module: 'productplan', objectType: 'productplan', idKey: 'productplanID', display: '计划' },
+    { module: 'program', objectType: 'program', idKey: 'programID', display: '项目集' },
+];
+
+/**
+ * 为所有业务对象模块添加 `history`（操作历史）和 `comment`（添加备注）扩展操作。
+ *
+ * 使用方式：
+ *   zentao bug history 123            — 查看 Bug 123 的操作历史与备注
+ *   zentao bug comment 123 --comment="备注内容"  — 为 Bug 123 添加备注
+ *   zentao task history 456 --pick id,actor,action,date,comment  — 摘取指定字段
+ */
+function addActionHistoryAndComments(): void {
+    for (const { module, objectType, idKey, display } of HISTORY_MODULES) {
+        const pathParams: Record<string, string> = { [idKey]: `${display} ID` };
+
+        // 操作历史：GET /actions/{objectType}/{objectID}
+        // 使用 type: 'list' 使结果以表格输出并支持 --filter/--sort/--pick 等客户端处理。
+        defineModuleActions(module, {
+            name: 'history',
+            display: `获取${display}历史记录`,
+            type: 'list',
+            method: 'get',
+            path: `/actions/${objectType}/{${idKey}}`,
+            resultType: 'list',
+            resultGetter: 'actions',
+            pathParams,
+        });
+
+        // 添加备注：POST /actions/{objectType}/{objectID}
+        defineModuleActions(module, {
+            name: 'comment',
+            display: `添加${display}备注`,
+            type: 'action',
+            method: 'post',
+            path: `/actions/${objectType}/{${idKey}}`,
+            resultType: 'text',
+            pathParams,
+            requestBody: {
+                required: true,
+                type: 'object',
+                schema: {
+                    type: 'object',
+                    properties: {
+                        comment: { type: 'string', description: '备注内容' },
+                    },
+                    required: ['comment'],
+                },
+            },
+        });
+    }
 }
 
 // ──────────────────────────── 入口 ────────────────────────────
@@ -260,4 +355,5 @@ export function applyZentaoCompatibilityOverrides(): void {
     addMissingCreateFields();
     fixResultGettersAndAddGetActions();
     addMissingWorkflowActions();
+    addActionHistoryAndComments();
 }
