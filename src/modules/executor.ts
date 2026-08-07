@@ -36,6 +36,145 @@ function parseFields(fields?: string): string[] | undefined {
 }
 
 /**
+ * 将 `action.params` 声明的查询参数同步到顶层 `params`。
+ *
+ * 部分禅道接口要求上下文 ID 以查询参数形式传递，但用户可能通过以下方式传入：
+ * 1. `--data '{"productID":1,…}'`：整体 JSON 中包含查询字段
+ * 2. 位置 ID（`zentao testcase review 1`）：当查询参数名与路径参数名一致时
+ *    （如 caseID），把已解析的 `params.id` 提升为查询参数。
+ */
+function syncQueryParams(
+    params: Record<string, unknown>,
+    action: ModuleAction,
+): void {
+    const queryFields = action.params;
+    if (!queryFields?.length) return;
+
+    let dataRecord: Record<string, unknown> | undefined;
+    if (params.data !== undefined) {
+        let data: unknown = params.data;
+        if (typeof data === 'string') {
+            try {
+                data = JSON.parse(data);
+            } catch {
+                data = undefined;
+            }
+        }
+        if (data && typeof data === 'object' && !Array.isArray(data)) {
+            dataRecord = data as Record<string, unknown>;
+        }
+    }
+
+    const pathParamNames = new Set(Object.keys(action.pathParams ?? {}));
+
+    for (const field of queryFields) {
+        if (params[field.name] !== undefined) continue;
+        if (dataRecord && dataRecord[field.name] !== undefined) {
+            params[field.name] = dataRecord[field.name];
+            continue;
+        }
+        if (pathParamNames.has(field.name) && params.id !== undefined) {
+            params[field.name] = params.id;
+        }
+    }
+}
+
+/**
+ * 将短名上下文参数（product / project / execution）映射到路径占位符所需的全名形式
+ *（productID / projectID / executionID）。
+ *
+ * 作用域（scope）列表接口（如 story、bug）由 SDK 的 `pickScope` 自动处理短名；
+ * 但显式路径接口（如 `GET /products/{productID}/releases`）只认 `productID`，
+ * 此函数补齐短名 → 全名的映射，使 `--product=1` 在两种接口中都能使用。
+ */
+function syncContextParams(
+    params: Record<string, unknown>,
+    action: ModuleAction,
+): void {
+    const pathParamNames = action.pathParams ? Object.keys(action.pathParams) : [];
+    const queryParamNames = (action.params ?? []).map((p) => p.name);
+    // Body schema properties (create/update/action may accept context IDs here)
+    const bodySchema = action.requestBody?.schema as { properties?: Record<string, unknown> } | undefined;
+    const bodyPropNames = bodySchema?.properties ? Object.keys(bodySchema.properties) : [];
+    const acceptedNames = new Set([...pathParamNames, ...queryParamNames, ...bodyPropNames]);
+
+    const map: Array<[string, string]> = [
+        ['product', 'productID'],
+        ['project', 'projectID'],
+        ['execution', 'executionID'],
+    ];
+    for (const [shortName, fullName] of map) {
+        if (acceptedNames.has(fullName) && params[fullName] === undefined && params[shortName] !== undefined) {
+            params[fullName] = params[shortName];
+        }
+    }
+}
+
+/** CLI / SDK 控制参数键，绝不作为请求体字段传递。 */
+const RESERVED_PARAM_KEYS = new Set([
+    'data', 'id', 'scope', 'scopeID', 'orderBy', 'recTotal', 'pageID', 'recPerPage',
+    'page', 'format', 'silent', 'insecure', 'timeout', 'config', 'machineReadable',
+    'version-flag', 'help', 'pick', 'filter', 'sort', 'search', 'searchFields',
+    'all', 'limit', 'yes', 'batchFailFast', 'params', 'options',
+]);
+
+/**
+ * 对声明了对象请求体的动作（create / update / action），将用户通过平铺 flags 传入、
+ * 但未出现在 OpenAPI schema 中的字段合并进 `params.data`。
+ *
+ * SDK 的 `buildRequestBody` 仅从 schema.properties 及 `params.data` 取值；OpenAPI 自动
+ * 生成的 schema 并不总是覆盖禅道实际需要的全部字段（如 bug 的 `deadline`、`module`）。
+ * 若仅用 `--deadline=2026-12-31` 这类 flag，这些值会被静默丢弃。此函数补齐该缺口：
+ * 将所有既非路径参数、非查询参数、也非 CLI 控制参数的平铺值写入 `params.data`，使它们
+ * 能随请求体一并发送。schema 中已有的字段优先由 SDK 处理，此处仅做兜底填充。
+ */
+function syncBodyParams(
+    params: Record<string, unknown>,
+    action: ModuleAction,
+): void {
+    const schema = action.requestBody?.schema as { type?: string } | undefined;
+    if (!schema || schema.type !== 'object') return;
+
+    const pathParamNames = new Set(Object.keys(action.pathParams ?? {}));
+    const queryParamNames = new Set((action.params ?? []).map((p) => p.name));
+    const contextNames = new Set(['product', 'project', 'execution', 'productID', 'projectID', 'executionID']);
+
+    let dataRecord: Record<string, unknown> | undefined;
+    if (params.data !== undefined) {
+        if (typeof params.data === 'string') {
+            try {
+                dataRecord = JSON.parse(params.data);
+            } catch {
+                dataRecord = undefined;
+            }
+        } else if (typeof params.data === 'object' && !Array.isArray(params.data)) {
+            dataRecord = params.data as Record<string, unknown>;
+        }
+    }
+
+    let changed = false;
+    for (const key of Object.keys(params)) {
+        if (pathParamNames.has(key) || queryParamNames.has(key)) continue;
+        if (RESERVED_PARAM_KEYS.has(key) || contextNames.has(key)) continue;
+        if (key.endsWith('ID') && key !== 'id') continue;
+
+        const value = params[key];
+        if (value === undefined) continue;
+        if (dataRecord && Object.prototype.hasOwnProperty.call(dataRecord, key)) continue;
+
+        if (!dataRecord) {
+            dataRecord = {};
+        }
+        dataRecord[key] = value;
+        changed = true;
+    }
+
+    if (changed) {
+        params.data = JSON.stringify(dataRecord);
+    }
+}
+
+/**
  * 执行模块级 CRUD 或扩展操作。
  *
  * 路径解析、查询/请求体组装、update 自动补全（autoFill）与响应提取均交由
@@ -56,22 +195,49 @@ export async function executeModuleCommand(
     }
 
     const params = buildParams(options, actionName, args);
+    syncQueryParams(params, action);
+    syncContextParams(params, action);
+    syncBodyParams(params, action);
+    // 列表操作将 --sort 转发为服务端 orderBy，使排序在服务端生效（而非仅客户端当页排序）
+    if (action.type === 'list' && options.sort) {
+        params.orderBy = options.sort;
+    }
     const requestName = `${module.name}/${normalizeActionName(actionName)}`;
+
+    const requestOptions = {
+        client,
+        autoFill: action.type === 'update',
+        throwOnFail: true,
+        recPerPage: options.recPerPage,
+        timeout: options.timeout,
+        insecure: options.insecure,
+    };
 
     let response;
     try {
-        // 注意：不向 request() 传递 filter/search/sort/limit/pick，
-        // 以保留 CLI 自身的数据处理语义（在下方本地后处理）。
-        response = await request(requestName, params, {
-            client,
-            autoFill: action.type === 'update',
-            throwOnFail: true,
-            recPerPage: options.recPerPage,
-            timeout: options.timeout,
-            insecure: options.insecure,
-        });
+        response = await request(requestName, params, requestOptions);
     } catch (error) {
         throw mapSdkError(error);
+    }
+
+    // --all：列表操作自动翻页拉取全部数据
+    if (action.type === 'list' && options.all && response.pager && response.pager.total > response.pager.recPerPage) {
+        const pageSize = response.pager.recPerPage;
+        const totalPages = Math.ceil(response.pager.total / pageSize);
+        let allData = (Array.isArray(response.data) ? response.data : []) as unknown[];
+        for (let page = 2; page <= totalPages; page++) {
+            try {
+                const pageResp = await request(requestName, { ...params, recPerPage: pageSize, pageID: page }, requestOptions);
+                allData = allData.concat(Array.isArray(pageResp.data) ? pageResp.data : []);
+            } catch {
+                break;
+            }
+        }
+        response = {
+            ...response,
+            data: allData,
+            pager: { total: response.pager.total, page: 1, recPerPage: response.pager.total },
+        };
     }
 
     const fields = parseFields(options.pick);

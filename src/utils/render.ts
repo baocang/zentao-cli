@@ -1,6 +1,6 @@
 import { formatError, ZentaoError } from "../errors";
 import { ListPagerInfo, OutputFormat } from "../types";
-import { bunMarkdownEnable } from "./env";
+import { bunMarkdownEnable, isPrettyLevel } from "./env";
 import { formatJson, formatList, formatTable } from "./format";
 
 /** 渲染字符串 */
@@ -8,17 +8,12 @@ export function renderString(content: string, format: OutputFormat = 'markdown')
     if (format === 'markdown') {
         return renderMarkdown(content);
     }
-    if (format === 'json') {
-        if (bunMarkdownEnable) {
-            return Bun.markdown.ansi(['```json', content, '```'].join('\n'));
-        }
-        return content;
-    }
+    // json / raw 格式始终输出纯文本，不套用 Markdown 渲染，确保程序化调用可解析。
     return content;
 }
 
 export function renderMarkdown(markdown: string): string {
-    if (bunMarkdownEnable) {
+    if (bunMarkdownEnable && isPrettyLevel('basic')) {
         return Bun.markdown.ansi(markdown);
     }
     return markdown;

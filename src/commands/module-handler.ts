@@ -7,7 +7,7 @@ import { getProfileConfig } from '../config/store.js';
 import { formatOutput } from '../utils/format.js';
 import type { ModuleActionOptions } from '../types/index.js';
 import { createInterface } from 'node:readline';
-import { renderError, renderObject } from '../utils/render.js';
+import { renderError } from '../utils/render.js';
 import { ZentaoError } from '../errors.js';
 
 
@@ -93,7 +93,12 @@ async function renderModuleExecution(
     }
 
     if (execution.action.type === 'get') {
-        const output = renderObject(execution.data as Record<string, unknown>, format, { fields: execution.fields });
+        const output = formatOutput(execution.data, {
+            format,
+            isList: false,
+            fields: execution.fields,
+            jsonPretty: config.jsonPretty,
+        });
         if (output) console.log(output);
         return;
     }
@@ -104,7 +109,13 @@ async function renderModuleExecution(
         fields: execution.fields,
         jsonPretty: config.jsonPretty,
     });
-    if (output) console.log(output);
+    if (output) {
+        console.log(output);
+    } else if (format === 'markdown') {
+        // create/update/action 等操作在服务端返回空数据时（如部分 ZenTao 接口仅返回
+        // {"status":"success"}），仍给出明确成功提示，避免用户误以为命令未执行。
+        console.log('操作成功');
+    }
 }
 
 
@@ -164,14 +175,14 @@ export async function handleModuleCommand(
     const params = buildParams(options, actionName, args);
     const hasId = params.id !== undefined && params.id !== '';
 
+    if (!hasId && (action.type === 'delete' || action.type === 'update' || action.type === 'action')) {
+        throw new ZentaoError('E2009', { option: 'id', reason: '必须提供要操作的对象 ID' });
+    }
+
     if (action.type === 'delete' && !options.yes) {
         if (!await confirmDelete(format, hasId ? 1 : 0)) {
             return;
         }
-    }
-
-    if (!hasId && (action.type === 'delete' || action.type === 'update' || action.type === 'action')) {
-        throw new ZentaoError('E2009', { option: 'id', reason: '必须提供要操作的对象 ID' });
     }
 
     await renderModuleExecution(client, module, actionName, args, options, config);

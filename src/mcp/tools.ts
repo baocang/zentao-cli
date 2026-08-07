@@ -40,7 +40,7 @@ function buildActionEnum(mod: ModuleDefinition): [string, ...string[]] {
     return [names[0], ...names.slice(1)];
 }
 
-function buildInputSchema(mod: ModuleDefinition) {
+function buildInputSchema(mod: ModuleDefinition): Record<string, any> {
     const actionEnum = buildActionEnum(mod);
     return {
         action: z.enum(actionEnum).describe('要执行的操作。' + mod.actions.map(a =>
@@ -58,6 +58,8 @@ function buildInputSchema(mod: ModuleDefinition) {
         searchFields: z.string().optional().describe('搜索字段（逗号分隔），配合 search 使用'),
         page: z.number().optional().describe('页码'),
         recPerPage: z.number().optional().describe('每页条数'),
+        all: z.boolean().optional().describe('获取全部数据（自动翻页）'),
+        limit: z.number().optional().describe('限制返回数量'),
     };
 }
 
@@ -75,6 +77,8 @@ interface ToolInput {
     searchFields?: string;
     page?: number;
     recPerPage?: number;
+    all?: boolean;
+    limit?: number;
 }
 
 async function handleProfileTool(auth: AuthProvider): Promise<CallToolResult> {
@@ -149,6 +153,8 @@ async function handleModuleTool(
         searchFields: input.searchFields,
         page: input.page != null ? String(input.page) : undefined,
         recPerPage: input.recPerPage != null ? String(input.recPerPage) : undefined,
+        all: input.all,
+        limit: input.limit != null ? String(input.limit) : undefined,
         format: 'json',
         yes: true,
     };
@@ -208,7 +214,7 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider): void
         '切换当前登录账号（等价于 switch-profile）',
         {
             profileKey: z.string().describe('目标用户配置标识，支持 account@server、account 或 account@hostname'),
-        },
+        } as Record<string, any>,
         { readOnlyHint: false, destructiveHint: false, openWorldHint: true },
         async (input) => {
             try {

@@ -2,6 +2,7 @@ import { describe, test, expect } from 'bun:test';
 import { getModule, getModuleNames, isModuleName, getAllModules } from '../src/modules';
 import { findAction, getAvailableActions, getAction } from '../src/modules';
 import { buildParams } from '../src/modules/args';
+import { applyZentaoCompatibilityOverrides } from '../src/modules/overrides';
 
 describe('module registry (zentao-api)', () => {
     test('contains expected modules', () => {
@@ -126,5 +127,59 @@ describe('buildParams (argv parsing)', () => {
         expect(params.num).toBe(3);
         expect(params.flag).toBe(true);
         expect(params.name).toBe('foo');
+    });
+
+    test('repeated --key value accumulates as comma-separated (issue #5)', () => {
+        const params = buildParams({}, 'create', ['--reviewer', 'user1', '--reviewer', 'user2']);
+        expect(params.reviewer).toBe('user1,user2');
+    });
+
+    test('repeated --key=value accumulates as comma-separated (issue #5)', () => {
+        const params = buildParams({}, 'create', ['--reviewer=user1', '--reviewer=user2']);
+        expect(params.reviewer).toBe('user1,user2');
+    });
+
+    test('negative number value via space form is accepted (issue #6)', () => {
+        const params = buildParams({}, 'create', ['--estimate', '-1']);
+        expect(params.estimate).toBe(-1);
+    });
+
+    test('dash-leading string value via space form is accepted (issue #6)', () => {
+        const params = buildParams({}, 'create', ['--name', '-test']);
+        expect(params.name).toBe('-test');
+    });
+
+    test('bare flag without value becomes true (issue #6)', () => {
+        const params = buildParams({}, 'create', ['--deleted', '--pri', '3']);
+        expect(params.deleted).toBe(true);
+        expect(params.pri).toBe(3);
+    });
+
+    test('invalid --data JSON throws E2007 (issue #9)', () => {
+        expect(() => buildParams({ data: 'not-json' }, 'create', [])).toThrow(/E2007|--data/);
+    });
+
+    test('invalid positional JSON throws E2007 (issue #9)', () => {
+        expect(() => buildParams({}, 'create', ['{"invalid": }'])).toThrow(/E2007|--data/);
+    });
+
+    test('valid --data JSON passes validation (issue #9)', () => {
+        const params = buildParams({ data: '{"name":"ok"}' }, 'create', []);
+        expect(params.data).toBe('{"name":"ok"}');
+    });
+});
+
+describe('22.4 compatibility overrides', () => {
+    test('project create accepts desc in request schema', () => {
+        applyZentaoCompatibilityOverrides();
+
+        const project = getModule('project')!;
+        const createAction = findAction(project, 'create')!;
+        const schema = createAction.requestBody?.schema as
+            | { properties?: Record<string, unknown>; required?: string[] }
+            | undefined;
+
+        expect(schema?.properties?.desc).toBeDefined();
+        expect(schema?.required).toContain('desc');
     });
 });

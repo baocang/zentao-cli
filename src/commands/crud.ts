@@ -6,6 +6,7 @@ import { handleModuleCommand } from './module-handler.js';
 import { addDataOptions } from './register-modules.js';
 import type { GlobalOptions, ModuleActionOptions, ModuleName, ModuleActionName } from '../types/index.js';
 import { renderError } from '../utils/render.js';
+import { applyOptionsJson } from '../utils/cli-options.js';
 
 /** 注册 `ls` / `get` / `create` / `update` / `delete` / `do` 等通用 CRUD 入口 */
 export function registerCrudCommands(program: Command): void {
@@ -18,9 +19,8 @@ export function registerCrudCommands(program: Command): void {
         .argument('[args...]', '参数');
     addDataOptions(lsCmd);
     lsCmd.allowUnknownOption(true);
-    lsCmd.action(async (moduleName: string, opts: ModuleActionOptions) => {
-        const extraArgs = lsCmd.args.slice(1);
-        await runCrudCommand(program, moduleName, 'list', opts, extraArgs);
+    lsCmd.action(async (moduleName: string, args: string[], opts: ModuleActionOptions) => {
+        await runCrudCommand(program, moduleName, 'list', opts, args);
     });
 
     // zentao get <module> <id>
@@ -99,7 +99,7 @@ async function runCrudCommand(
     }
 
     const globalOpts = program.opts() as GlobalOptions;
-    const options = {...globalOpts, ...opts};
+    const options = applyOptionsJson({...globalOpts, ...opts} as ModuleActionOptions);
     try {
         const { client, profile } = await ensureAuth({
             insecure: globalOpts.insecure,
