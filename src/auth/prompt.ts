@@ -37,7 +37,9 @@ export async function promptLogin(): Promise<PromptResult> {
             throw new Error(`Invalid URL: ${normalizedUrl}`);
         }
 
-        const isToken = password.length === 40;
+        // Token detection: ZenTao tokens are 32-64 char hex strings (MD5 or random).
+        // Passwords are typically shorter and contain mixed characters.
+        const isToken = /^[a-f0-9]{32,64}$/i.test(password);
         return {
             url: normalizedUrl,
             account,

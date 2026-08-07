@@ -13,6 +13,20 @@
   - `zentao task effort 123` — 查看任务的逐条工时记录（日期、工作内容、耗时、剩余）。
   - 解决 AI agent 反馈的"CLI 能提供任务状态和预计/已耗/剩余工时，但不直接返回逐条工作内容"的问题。
 - **反馈/工单指派**: `feedback` 和 `ticket` 模块新增 `assignto` 扩展操作，与 bug/task/story 保持一致。
+- **MCP 批量操作**: MCP 工具新增 `ids` 数组参数，支持 AI agent 批量 get/update/delete。
+
+### 🐛 修复 (Fix)
+
+- **ID 解析安全加固**: `register-modules.ts` 和 `crud.ts` 中改用 `/^\d+$/` 严格整数校验，修复 `1e2`、`0x10`、空字符串等被误判为有效 ID 的问题。
+- **错误输出到 stderr**: `register-modules.ts` 和 `crud.ts` 的 `ZentaoError` 输出从 `console.log`（stdout）改为 `console.error`（stderr），修复管道输出被错误信息污染的问题。
+- **--all 分页失败告警**: 自动翻页拉取全部数据时，单页失败不再静默中断，改为向 stderr 输出进度告警。
+- **create 不再吞掉位置参数**: `crud.ts` 的位置参数 ID 解析跳过 `create` 操作，避免 `zentao create bug 1 --title=x` 中 `1` 被误吞为 ID。
+- **Token 检测改进**: 登录时的 Token 判定从固定 40 字符长度改为 `/^[a-f0-9]{32,64}$/i` 正则匹配，兼容不同长度和格式的 ZenTao Token。
+- **bug confirm 补全字段**: `confirm` 操作的 schema 补充 `assignedTo` 字段，使 help 输出和参数校验与实际 API 一致。
+- **避免重复排序**: 当 `--sort` 已转发为服务端 `orderBy` 时，跳过客户端重复排序。
+- **applyOptionsJson 清理**: 合并后删除残留的 `options` JSON 字符串字段，避免参数污染。
+- **getCmd allowUnknownOption**: `zentao get` 命令补充 `allowUnknownOption(true)`，与其他 CRUD 命令保持一致。
+- **批量操作输出分隔**: markdown 格式下批量操作结果之间增加 `---` 分隔线，避免混淆。
 
 ### 🚀 优化与重构 (Refactor)
 
@@ -24,6 +38,7 @@
 
 - 新增 `action history & comments` 测试组：验证所有对象模块的 history/comment action 定义、路径、类型、body schema 和 getAction/getAvailableActions 解析。
 - 新增 `missing workflow actions` 测试组：验证 feedback/ticket 的 assignto 操作、task 的 recordestimate/effort 操作。
+- 新增 `bugfixes` 测试组：验证严格 ID 解析（拒绝 `1e2`/`0x10`）、applyOptionsJson 清理残留字段、bug confirm 包含 assignedTo。
 
 ## 0.3.0
 

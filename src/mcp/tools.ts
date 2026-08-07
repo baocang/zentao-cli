@@ -47,6 +47,7 @@ function buildInputSchema(mod: ModuleDefinition): Record<string, any> {
             `${a.name}: ${a.display ?? a.name}`
         ).join('; ')),
         id: z.number().optional().describe('对象 ID（get/update/delete 及扩展操作必填）'),
+        ids: z.array(z.number()).optional().describe('批量操作的对象 ID 列表（用于批量 get/update/delete 等）'),
         product: z.number().optional().describe('产品 ID（范围参数）'),
         project: z.number().optional().describe('项目 ID（范围参数）'),
         execution: z.number().optional().describe('执行 ID（范围参数）'),
@@ -66,6 +67,7 @@ function buildInputSchema(mod: ModuleDefinition): Record<string, any> {
 interface ToolInput {
     action: string;
     id?: number;
+    ids?: number[];
     product?: number;
     project?: number;
     execution?: number;
@@ -140,7 +142,7 @@ async function handleModuleTool(
     const config = profile ? getProfileConfig(profile) : DEFAULT_CONFIG;
     const actionName = input.action;
 
-    const opts: ModuleActionOptions = {
+    const baseOpts: ModuleActionOptions = {
         id: input.id != null ? String(input.id) : undefined,
         product: input.product != null ? String(input.product) : undefined,
         project: input.project != null ? String(input.project) : undefined,
@@ -159,7 +161,24 @@ async function handleModuleTool(
         yes: true,
     };
 
-    const execution = await executeModuleCommand(client, mod, actionName, [], opts, config);
+    // Batch mode: iterate over ids array
+    if (input.ids && input.ids.length > 0) {
+        const results: Array<Record<string, unknown>> = [];
+        const errors: Array<Record<string, unknown>> = [];
+        for (const id of input.ids) {
+            try {
+                const exec = await executeModuleCommand(client, mod, actionName, [], { ...baseOpts, id: String(id) }, config);
+                results.push({ id, data: exec.data });
+            } catch (error) {
+                errors.push({ id, error: error instanceof Error ? error.message : String(error) });
+            }
+        }
+        const response: Record<string, unknown> = { results };
+        if (errors.length > 0) response.errors = errors;
+        return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
+    }
+
+    const execution = await executeModuleCommand(client, mod, actionName, [], baseOpts, config);
 
     if (execution.action.type === 'list') {
         const response: Record<string, unknown> = { data: execution.data };

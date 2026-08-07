@@ -142,7 +142,11 @@ export async function handleModuleCommand(
             }
         }
 
-        for (const id of batch.ids) {
+        for (let i = 0; i < batch.ids.length; i++) {
+            const id = batch.ids[i];
+            if (i > 0 && format !== 'json' && format !== 'raw') {
+                console.log('\n---');
+            }
             let caughtError: Error | undefined;
             try {
                 await handleModuleCommand(

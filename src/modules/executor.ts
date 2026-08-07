@@ -230,6 +230,7 @@ export async function executeModuleCommand(
                 const pageResp = await request(requestName, { ...params, recPerPage: pageSize, pageID: page }, requestOptions);
                 allData = allData.concat(Array.isArray(pageResp.data) ? pageResp.data : []);
             } catch {
+                console.error(`警告: 第 ${page}/${totalPages} 页获取失败，已获取 ${allData.length}/${response.pager.total} 条`);
                 break;
             }
         }
@@ -261,7 +262,8 @@ export async function executeModuleCommand(
         if (options.search?.length) {
             data = searchData(data, options.search, options.searchFields?.split(','));
         }
-        if (options.sort) {
+        // Skip client-side sort when --sort was already forwarded to server as orderBy
+        if (options.sort && !params.orderBy) {
             data = sortData(data, options.sort);
         }
         if (options.limit && Number(options.limit) < data.length) {

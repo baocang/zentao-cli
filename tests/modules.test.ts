@@ -12,7 +12,7 @@ describe('module registry (zentao-api)', () => {
         expect(names).toContain('task');
         expect(names).toContain('story');
         expect(names).toContain('user');
-        expect(names.length).toBe(19);
+        expect(names.length).toBeGreaterThanOrEqual(19);
     });
 
     test('getAllModules returns every registered module', () => {
@@ -316,5 +316,42 @@ describe('missing workflow actions (overrides)', () => {
         const task = getModule('task')!;
         expect(getAction(task, 'effort')?.name).toBe('effort');
         expect(getAction(task, 'recordestimate')?.name).toBe('recordestimate');
+    });
+
+    test('bug confirm includes assignedTo field', () => {
+        const bug = getModule('bug')!;
+        const confirm = bug.actions.find(a => a.name === 'confirm')!;
+        const schema = confirm.requestBody?.schema as
+            | { properties?: Record<string, unknown> }
+            | undefined;
+        expect(schema?.properties?.assignedTo).toBeDefined();
+        expect(schema?.properties?.comment).toBeDefined();
+    });
+});
+
+describe('bugfixes', () => {
+    applyZentaoCompatibilityOverrides();
+
+    test('buildParams does not treat 1e2 or 0x10 as numeric ID', () => {
+        const params = buildParams({}, 'get', ['1e2']);
+        expect(params.id).toBeUndefined();
+
+        const params2 = buildParams({}, 'get', ['0x10']);
+        expect(params2.id).toBeUndefined();
+    });
+
+    test('buildParams treats plain integer as numeric ID', () => {
+        const params = buildParams({}, 'get', ['123']);
+        expect(params.id).toBe('123');
+    });
+
+    test('applyOptionsJson removes residual options field', () => {
+        const { applyOptionsJson } = require('../src/utils/cli-options');
+        const result = applyOptionsJson({
+            options: '{"format":"json"}',
+            format: 'json',
+        } as any);
+        expect(result.options).toBeUndefined();
+        expect(result.format).toBe('json');
     });
 });

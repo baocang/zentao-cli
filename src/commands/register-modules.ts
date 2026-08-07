@@ -116,9 +116,9 @@ export function registerModuleCommands(program: Command): void {
                 }
 
                 let action = firstArg;
-                const ids = firstArg?.split(',').map((s) => +s.trim());
-                if (ids?.length && ids.every((id) => !isNaN(id))) {
-                    options.id = ids.join(',');
+                const idParts = firstArg?.split(',').map((s) => s.trim()).filter(Boolean);
+                if (idParts?.length && idParts.every((s) => /^\d+$/.test(s))) {
+                    options.id = idParts.join(',');
                     action = 'get';
                 } else if (action === undefined) {
                     action = 'list';
@@ -140,7 +140,7 @@ export function registerModuleCommands(program: Command): void {
                 await handleModuleCommand(client, mod, action as ModuleActionName, args, profile, options);
             } catch (error) {
                 if (error instanceof ZentaoError) {
-                    console.log(renderError(error, options.format ?? 'markdown'));
+                    console.error(renderError(error, options.format ?? 'markdown'));
                     process.exit(1);
                 }
                 throw error;

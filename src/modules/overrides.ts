@@ -172,7 +172,12 @@ function fixResultGettersAndAddGetActions(): void {
 function addMissingWorkflowActions(): void {
     // ── Bug：确认、指派 ──
     defineModuleActions('bug', [
-        action('bug', 'confirm', '确认Bug', 'bugID', { properties: COMMENT_FIELD }),
+        action('bug', 'confirm', '确认Bug', 'bugID', {
+            properties: {
+                assignedTo: { type: 'string', description: '指派给' },
+                ...COMMENT_FIELD,
+            },
+        }),
         action('bug', 'assignto', '指派Bug', 'bugID', {
             properties: ASSIGN_FIELDS,
             required: ['assignedTo'],
@@ -288,8 +293,8 @@ function addMissingWorkflowActions(): void {
                 properties: {
                     date: { type: 'string', description: '日期，格式 YYYY-MM-DD，默认今天' },
                     work: { type: 'string', description: '工作内容' },
-                    consumed: { type: 'number', description: '本次耗时（小时）', format: 'float' },
-                    left: { type: 'number', description: '剩余工时（小时）', format: 'float' },
+                    consumed: { type: 'number', description: '本次耗时（小时，会累加到总计消耗）', format: 'float' },
+                    left: { type: 'number', description: '更新后的剩余工时（小时，覆盖之前的剩余值）', format: 'float' },
                 },
                 required: ['consumed', 'left'],
             },

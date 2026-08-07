@@ -30,6 +30,7 @@ export function registerCrudCommands(program: Command): void {
         .argument('<module>', '模块名称，例如 bug')
         .argument('<id>', '对象 ID');
     addDataOptions(getCmd);
+    getCmd.allowUnknownOption(true);
     getCmd.action(async (moduleName: string, id: string, opts: ModuleActionOptions) => {
         opts.id = id;
         await runCrudCommand(program, moduleName, 'get', {id, ...opts});
@@ -107,7 +108,7 @@ async function runCrudCommand(
         });
 
         const firstArg = args[0];
-        if (firstArg && !isNaN(Number(firstArg))) {
+        if (firstArg && actionName !== 'create' && /^\d+$/.test(firstArg)) {
             options.id = firstArg;
             args.shift();
         }
@@ -115,7 +116,7 @@ async function runCrudCommand(
         await handleModuleCommand(client, mod, actionName, args, profile, options);
     } catch (error) {
         if (error instanceof ZentaoError) {
-            console.log(renderError(error, options.format ?? 'markdown'));
+            console.error(renderError(error, options.format ?? 'markdown'));
             process.exit(1);
         }
         throw error;

@@ -16,6 +16,7 @@ export function applyOptionsJson(options: ModuleActionOptions): ModuleActionOpti
         for (const [key, value] of Object.entries(options)) {
             if (value !== undefined) merged[key] = value;
         }
+        delete merged.options;
         return merged as ModuleActionOptions;
     } catch {
         return options;
