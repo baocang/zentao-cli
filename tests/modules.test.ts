@@ -308,8 +308,7 @@ describe('missing workflow actions (overrides)', () => {
         expect(effort).toBeDefined();
         expect(effort!.type).toBe('list');
         expect(effort!.method).toBe('get');
-        expect(effort!.path).toBe('/tasks/{taskID}/efforts');
-        expect(effort!.resultGetter).toBe('efforts');
+        expect(effort!.path).toBe('/tasks/{taskID}/recordworkhour');
     });
 
     test('getAction resolves effort and recordestimate', () => {
@@ -326,6 +325,15 @@ describe('missing workflow actions (overrides)', () => {
             | undefined;
         expect(schema?.properties?.assignedTo).toBeDefined();
         expect(schema?.properties?.comment).toBeDefined();
+    });
+
+    test('file has update action for renaming', () => {
+        const file = getModule('file')!;
+        const update = file.actions.find(a => a.name === 'update');
+        expect(update).toBeDefined();
+        expect(update!.type).toBe('update');
+        expect(update!.method).toBe('put');
+        expect(update!.path).toBe('/files/{fileID}');
     });
 });
 

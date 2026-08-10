@@ -273,6 +273,28 @@ function addMissingWorkflowActions(): void {
         }),
     ]);
 
+    // ── File：修改附件名称（API v2 3.7.2 编辑附件） ──
+    defineModuleActions('file', {
+        name: 'update',
+        display: '修改附件名称',
+        type: 'update',
+        method: 'put',
+        path: '/files/{fileID}',
+        resultType: 'text',
+        pathParams: { fileID: '附件 ID' },
+        requestBody: {
+            required: true,
+            type: 'object',
+            schema: {
+                type: 'object',
+                properties: {
+                    title: { type: 'string', description: '新的附件名称' },
+                },
+                required: ['title'],
+            },
+        },
+    });
+
     // ── Task：记录工时（逐条工作内容） ──
     // ZenTao 的 task->recordWorkhour 方法支持查看与批量新增任务工时条目，
     // REST API v2 路由为 PUT /tasks/{taskID}/recordworkhour。
@@ -302,15 +324,16 @@ function addMissingWorkflowActions(): void {
     });
 
     // ── Task：查看工时记录（逐条工作内容） ──
-    // 获取任务的逐条工时记录，每条包含：日期、工作内容、耗时、剩余。
+    // ZenTao 的 task->recordWorkhour 控制器方法在 GET 请求时返回现有工时表单。
+    // REST API v2 的 routeV2 将 /tasks/{taskID}/recordworkhour 路由到该方法。
+    // 响应格式可能包含表单元数据，resultGetter 留空以返回完整响应供用户判断。
     defineModuleActions('task', {
         name: 'effort',
         display: '获取任务工时记录',
         type: 'list',
         method: 'get',
-        path: '/tasks/{taskID}/efforts',
+        path: '/tasks/{taskID}/recordworkhour',
         resultType: 'list',
-        resultGetter: 'efforts',
         pathParams: { taskID: '任务 ID' },
     });
 }

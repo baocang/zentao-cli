@@ -59,28 +59,45 @@ describe('formatError', () => {
 });
 
 describe('mapSdkError', () => {
-    test('maps HTTP 401 to E1004', () => {
+    test('maps HTTP 401 to E1004 (generic auth failure)', () => {
         const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 401, statusText: 'Unauthorized' }, { status: 401, url: 'x' });
         const mapped = mapSdkError(sdk);
         expect(mapped).toBeInstanceOf(ZentaoError);
         expect((mapped as ZentaoError).code).toBe('1004');
     });
 
-    test('maps HTTP 404 to E2002', () => {
-        const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 404, statusText: 'Not Found' }, { status: 404, url: '/x' });
-        expect((mapSdkError(sdk) as ZentaoError).code).toBe('2002');
+    test('maps HTTP 401 + "Not allowed" to E1004 (real-world ZenTao 22.4 session conflict)', () => {
+        // Exact observed response: 401, statusText="Authorization Required",
+        // body={"status":"fail","message":"Not allowed"}
+        const sdk = new SdkZentaoError('E_HTTP_ERROR',
+            { status: 401, statusText: 'Authorization Required' },
+            { status: 401, statusText: 'Authorization Required', body: '{"status":"fail","message":"Not allowed"}' });
+        const mapped = mapSdkError(sdk) as ZentaoError;
+        expect(mapped.code).toBe('1004');
     });
 
-    test('maps HTTP 403 with "Not allowed" to E1004 (token invalidation)', () => {
+    test('maps HTTP 403 + "Not allowed" to E1004 (deny() path in common/model.php)', () => {
         const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 403, statusText: 'Forbidden' },
             { status: 403, body: '{"status":"error","message":"Not allowed"}' });
         expect((mapSdkError(sdk) as ZentaoError).code).toBe('1004');
     });
 
-    test('maps HTTP 403 without "Not allowed" to E2006 (permission denied)', () => {
+    test('maps HTTP 403 without "Not allowed" to E2006 (genuine permission denied)', () => {
         const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 403, statusText: 'Forbidden' },
             { status: 403, body: 'Forbidden' });
         expect((mapSdkError(sdk) as ZentaoError).code).toBe('2006');
+    });
+
+    test('maps HTTP 401 with empty body to E1004', () => {
+        const sdk = new SdkZentaoError('E_HTTP_ERROR',
+            { status: 401, statusText: 'Authorization Required' },
+            { status: 401, body: '' });
+        expect((mapSdkError(sdk) as ZentaoError).code).toBe('1004');
+    });
+
+    test('maps HTTP 404 to E2002', () => {
+        const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 404, statusText: 'Not Found' }, { status: 404, url: '/x' });
+        expect((mapSdkError(sdk) as ZentaoError).code).toBe('2002');
     });
 
     test('maps other HTTP errors to E2008', () => {

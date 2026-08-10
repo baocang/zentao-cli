@@ -9,6 +9,7 @@
   - `zentao bug history 123` — 查看 Bug 123 的操作历史（opened/resolved/closed/commented 等），支持 `--filter`/`--sort`/`--pick` 等列表处理。
   - `zentao bug comment 123 --comment="备注内容"` — 为 Bug 123 添加备注，无需改变状态。
   - 解决 AI agent 反馈的"CLI 不提供历史记录与备注，需用浏览器获取"的问题。
+- **附件重命名**: `file` 模块新增 `update` 操作（API v2 3.7.2 编辑附件），支持修改附件名称。
 - **任务工时记录**: `task` 模块新增 `recordestimate`（记录工时）和 `effort`（查看工时记录）扩展操作。
   - `zentao task recordestimate 123 --consumed=2 --left=5 --work="完成了前端页面开发"` — 记录单条工时（逐条工作内容）。
   - `zentao task effort 123` — 查看任务的逐条工时记录（日期、工作内容、耗时、剩余）。
