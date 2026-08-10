@@ -71,8 +71,15 @@ describe('mapSdkError', () => {
         expect((mapSdkError(sdk) as ZentaoError).code).toBe('2002');
     });
 
-    test('maps HTTP 403 to E2006', () => {
-        const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 403, statusText: 'Forbidden' }, { status: 403 });
+    test('maps HTTP 403 with "Not allowed" to E1004 (token invalidation)', () => {
+        const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 403, statusText: 'Forbidden' },
+            { status: 403, body: '{"status":"error","message":"Not allowed"}' });
+        expect((mapSdkError(sdk) as ZentaoError).code).toBe('1004');
+    });
+
+    test('maps HTTP 403 without "Not allowed" to E2006 (permission denied)', () => {
+        const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 403, statusText: 'Forbidden' },
+            { status: 403, body: 'Forbidden' });
         expect((mapSdkError(sdk) as ZentaoError).code).toBe('2006');
     });
 

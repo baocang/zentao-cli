@@ -7,7 +7,7 @@ export const ERROR_CODES = {
     E1001: '必须提供有效的禅道服务地址、用户名和密码或 TOKEN',
     E1002: '所提供的禅道服务地址 {url} 无法访问',
     E1003: '当前用户名和密码不正确',
-    E1004: '所提供的 Token 已失效，请提供密码重新登录，或提供新的 TOKEN',
+    E1004: 'Token 已失效（可能是同账号网页端登录导致会话被覆盖），请重新登录或设置 ZENTAO_PASSWORD 环境变量以启用自动重连',
     E1005: '配置文件损坏或无法读取，请检查 {path}',
     E1006: '未找到指定的用户配置，请先使用 `zentao login -s <zentao_url> -u <account> -p <password> -t <token>` 登录',
     E1007: '指定的用户配置不存在，请通过 `zentao profile` 查看可用配置',
@@ -110,13 +110,18 @@ export function mapSdkError(error: unknown): unknown {
         case 'E_HTTP_ERROR': {
             const status = Number(d.status);
             const url = typeof d.url === 'string' ? d.url : '';
+            const body = typeof d.body === 'string' ? d.body : String(d.body ?? '');
+            // ZenTao's deny() returns 401/403 with {"status":"error","message":"Not allowed"}
+            // when the session/token is invalidated (e.g. by a web login on the same account).
+            // Treat both 401 and 403+Not-allowed as token failures (E1004), not permission issues.
             if (status === 401) return new ZentaoError('E1004', undefined, details);
+            if (status === 403 && body.includes('Not allowed')) return new ZentaoError('E1004', undefined, details);
             if (status === 403) return new ZentaoError('E2006', undefined, details);
             if (status === 404) return new ZentaoError('E2002', { object: url }, details);
             return new ZentaoError('E2008', {
                 url,
                 status: String(d.status ?? ''),
-                serverResponse: typeof d.body === 'string' ? d.body : String(d.body ?? ''),
+                serverResponse: body,
             }, details);
         }
         case 'E_TIMEOUT':

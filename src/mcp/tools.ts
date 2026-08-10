@@ -8,6 +8,7 @@ import { ZentaoError } from '../errors.js';
 import type { AuthProvider } from './server.js';
 import { getCurrentProfile, getProfileConfig, setCurrentProfile, profileKey } from '../config/store.js';
 import { DEFAULT_CONFIG } from '../config/defaults.js';
+import { tryReauth } from '../auth/flow.js';
 
 function buildToolDescription(mod: ModuleDefinition): string {
     const actions = mod.actions.map(a => a.name);
@@ -165,11 +166,26 @@ async function handleModuleTool(
     if (input.ids && input.ids.length > 0) {
         const results: Array<Record<string, unknown>> = [];
         const errors: Array<Record<string, unknown>> = [];
+        let reauthAttempted = false;
         for (const id of input.ids) {
             try {
                 const exec = await executeModuleCommand(client, mod, actionName, [], { ...baseOpts, id: String(id) }, config);
                 results.push({ id, data: exec.data });
             } catch (error) {
+                if (error instanceof ZentaoError && error.code === '1004' && !reauthAttempted && profile) {
+                    reauthAttempted = true;
+                    const reauthed = await tryReauth(client, profile);
+                    if (reauthed) {
+                        try {
+                            const exec = await executeModuleCommand(client, mod, actionName, [], { ...baseOpts, id: String(id) }, config);
+                            results.push({ id, data: exec.data });
+                            continue;
+                        } catch (retryError) {
+                            errors.push({ id, error: retryError instanceof Error ? retryError.message : String(retryError) });
+                            continue;
+                        }
+                    }
+                }
                 errors.push({ id, error: error instanceof Error ? error.message : String(error) });
             }
         }
@@ -178,7 +194,21 @@ async function handleModuleTool(
         return { content: [{ type: 'text', text: JSON.stringify(response, null, 2) }] };
     }
 
-    const execution = await executeModuleCommand(client, mod, actionName, [], baseOpts, config);
+    let execution;
+    try {
+        execution = await executeModuleCommand(client, mod, actionName, [], baseOpts, config);
+    } catch (error) {
+        if (error instanceof ZentaoError && error.code === '1004' && profile) {
+            const reauthed = await tryReauth(client, profile);
+            if (reauthed) {
+                execution = await executeModuleCommand(client, mod, actionName, [], baseOpts, config);
+            } else {
+                throw error;
+            }
+        } else {
+            throw error;
+        }
+    }
 
     if (execution.action.type === 'list') {
         const response: Record<string, unknown> = { data: execution.data };

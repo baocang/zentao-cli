@@ -4,6 +4,7 @@
 
 ### ✨ 新特性 (Feat)
 
+- **Token 自动重连**: 当 API 调用因 Token 失效返回 401/403 时，CLI 自动使用环境变量 `ZENTAO_PASSWORD` 重新登录并重试，无需手动干预。解决同账号网页端登录导致 CLI Token 失效的问题（禅道 Token 本质为 PHP session ID，网页端登录会覆盖旧会话）。
 - **操作历史与备注**: 所有业务对象模块（bug/task/story/epic/requirement/testcase/feedback/ticket/product/project/execution/build/release/testtask/productplan/program）新增 `history` 和 `comment` 扩展操作。
   - `zentao bug history 123` — 查看 Bug 123 的操作历史（opened/resolved/closed/commented 等），支持 `--filter`/`--sort`/`--pick` 等列表处理。
   - `zentao bug comment 123 --comment="备注内容"` — 为 Bug 123 添加备注，无需改变状态。
@@ -27,6 +28,9 @@
 - **applyOptionsJson 清理**: 合并后删除残留的 `options` JSON 字符串字段，避免参数污染。
 - **getCmd allowUnknownOption**: `zentao get` 命令补充 `allowUnknownOption(true)`，与其他 CRUD 命令保持一致。
 - **批量操作输出分隔**: markdown 格式下批量操作结果之间增加 `---` 分隔线，避免混淆。
+- **Token 失效精准识别**: `mapSdkError` 现检测 403 + `{"message":"Not allowed"}` 响应体并映射为 E1004（Token 失效），而非 E2006（权限不足）。禅道的 `deny()` 方法在会话失效时返回此组合，而非标准的 401。
+- **E1004 错误消息改进**: 明确提示"可能是同账号网页端登录导致会话被覆盖"，并引导用户设置 `ZENTAO_PASSWORD` 环境变量以启用自动重连。
+- **MCP 工具自动重连**: MCP 工具（含批量模式）同样支持 Token 失效后自动重连，第一次 auth 错误触发重连尝试。
 
 ### 🚀 优化与重构 (Refactor)
 

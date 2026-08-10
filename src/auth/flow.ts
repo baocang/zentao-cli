@@ -62,3 +62,36 @@ export async function ensureAuth(options?: { insecure?: boolean; timeout?: numbe
 
     throw new ZentaoError('E1006');
 }
+
+/**
+ * 尝试使用环境变量中的账号密码重新登录，以恢复因 Token 失效（如同账号网页端登录导致会话覆盖）
+ * 而中断的 API 调用。
+ *
+ * 仅当 ZENTAO_URL / ZENTAO_ACCOUNT / ZENTAO_PASSWORD 环境变量齐全且与当前 profile 匹配时才会触发。
+ * 不存储或记录密码，密码仅用于本次登录调用。
+ *
+ * @returns true 表示重连成功（client.token 和 profile.token 已更新），false 表示无法重连
+ */
+export async function tryReauth(client: ZentaoClient, profile: Profile): Promise<boolean> {
+    const env = getEnvCredentials();
+    if (!env.url || !env.account || !env.password) return false;
+
+    const normalizedServer = env.url.replace(/\/+$/, '');
+    if (normalizedServer !== profile.server || env.account !== profile.account) return false;
+
+    try {
+        const config = getProfileConfig(profile);
+        const result = await login(profile.server, profile.account, env.password, {
+            insecure: config.insecure,
+            timeout: config.timeout,
+        });
+        client.token = result.token;
+        profile.token = result.token;
+        if (result.user) profile.user = result.user;
+        profile.lastUsedTime = new Date().toISOString();
+        saveProfile(profile);
+        return true;
+    } catch {
+        return false;
+    }
+}

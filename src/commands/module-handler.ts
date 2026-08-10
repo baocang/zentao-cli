@@ -9,6 +9,7 @@ import type { ModuleActionOptions } from '../types/index.js';
 import { createInterface } from 'node:readline';
 import { renderError } from '../utils/render.js';
 import { ZentaoError } from '../errors.js';
+import { tryReauth } from '../auth/flow.js';
 
 
 /** JSON/raw 模式下跳过交互确认，便于脚本化调用 */
@@ -189,7 +190,18 @@ export async function handleModuleCommand(
         }
     }
 
-    await renderModuleExecution(client, module, actionName, args, options, config);
+    try {
+        await renderModuleExecution(client, module, actionName, args, options, config);
+    } catch (error) {
+        if (error instanceof ZentaoError && error.code === '1004') {
+            const reauthed = await tryReauth(client, profile);
+            if (reauthed) {
+                await renderModuleExecution(client, module, actionName, args, options, config);
+                return;
+            }
+        }
+        throw error;
+    }
 }
 
 /**
