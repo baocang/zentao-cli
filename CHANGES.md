@@ -1,6 +1,6 @@
 # Changes
 
-## Unreleased
+## 0.4.0
 
 ### ✨ 新特性 (Feat)
 
