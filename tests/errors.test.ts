@@ -76,10 +76,12 @@ describe('mapSdkError', () => {
         expect(mapped.code).toBe('1004');
     });
 
-    test('maps HTTP 403 + "Not allowed" to E1004 (deny() path in common/model.php)', () => {
+    test('maps HTTP 403 + "Not allowed" to E2006 (permission denied, NOT token issue)', () => {
+        // ZenTao deny() returns 403 for privilege checks. This is NOT a session
+        // conflict — it means the user lacks the module/method privilege.
         const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 403, statusText: 'Forbidden' },
             { status: 403, body: '{"status":"error","message":"Not allowed"}' });
-        expect((mapSdkError(sdk) as ZentaoError).code).toBe('1004');
+        expect((mapSdkError(sdk) as ZentaoError).code).toBe('2006');
     });
 
     test('maps HTTP 403 without "Not allowed" to E2006 (genuine permission denied)', () => {

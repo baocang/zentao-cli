@@ -296,9 +296,9 @@ function addMissingWorkflowActions(): void {
     });
 
     // ── Task：记录工时（逐条工作内容） ──
-    // ZenTao 的 task->recordWorkhour 方法支持查看与批量新增任务工时条目，
+    // ZenTao 的 task->recordWorkhour 方法通过 form::batchData 处理工时数据，
     // REST API v2 路由为 PUT /tasks/{taskID}/recordworkhour。
-    // 每条记录包含：日期、工作内容、耗时、剩余。
+    // ZenTao 要求 body 字段为数组格式（batchData），SDK 会自动将标量转数组。
     defineModuleActions('task', {
         name: 'recordestimate',
         display: '记录任务工时',
@@ -313,10 +313,10 @@ function addMissingWorkflowActions(): void {
             schema: {
                 type: 'object',
                 properties: {
-                    date: { type: 'string', description: '日期，格式 YYYY-MM-DD，默认今天' },
-                    work: { type: 'string', description: '工作内容' },
-                    consumed: { type: 'number', description: '本次耗时（小时，会累加到总计消耗）', format: 'float' },
-                    left: { type: 'number', description: '更新后的剩余工时（小时，覆盖之前的剩余值）', format: 'float' },
+                    date: { type: 'array', items: { type: 'string' }, description: '日期，格式 YYYY-MM-DD，默认今天' },
+                    work: { type: 'array', items: { type: 'string' }, description: '工作内容' },
+                    consumed: { type: 'array', items: { type: 'number' }, description: '本次耗时（小时，累加到总计）' },
+                    left: { type: 'array', items: { type: 'number' }, description: '更新后的剩余工时（小时，覆盖之前值）' },
                 },
                 required: ['consumed', 'left'],
             },
@@ -324,9 +324,9 @@ function addMissingWorkflowActions(): void {
     });
 
     // ── Task：查看工时记录（逐条工作内容） ──
-    // ZenTao 的 task->recordWorkhour 控制器方法在 GET 请求时返回现有工时表单。
-    // REST API v2 的 routeV2 将 /tasks/{taskID}/recordworkhour 路由到该方法。
-    // 响应格式可能包含表单元数据，resultGetter 留空以返回完整响应供用户判断。
+    // ZenTao routeV2 对 GET + 3 段路径有 bug：path[1] 的数字 ID 未注入 $_GET，
+    // 因此额外通过 query param 传递 taskID 确保服务端能收到。
+    // ZenTao 返回的 efforts 是以 ID 为键的对象映射，resultGetter 函数将其转为数组。
     defineModuleActions('task', {
         name: 'effort',
         display: '获取任务工时记录',
@@ -334,13 +334,20 @@ function addMissingWorkflowActions(): void {
         method: 'get',
         path: '/tasks/{taskID}/recordworkhour',
         resultType: 'list',
+        resultGetter: (response: unknown) => {
+            const r = response as Record<string, unknown>;
+            const efforts = r?.efforts as Record<string, unknown> | undefined;
+            return efforts ? Object.values(efforts) : [];
+        },
         pathParams: { taskID: '任务 ID' },
+        params: [
+            { name: 'taskID', required: true, type: 'number', description: '任务 ID' },
+        ],
     });
 
     // ── Task：编辑工时记录 ──
     // ZenTao task->editEffort(effortID) 方法编辑单条工时。
-    // routeV2 中 PUT /tasks/{effortID}/editeffort 通过 setParams() 的位置参数
-    // 映射，将 path[1] 的 effortID 正确注入为方法的第一个参数。
+    // 通过 query param 传递 effortID 确保 ZenTao setParams() 能可靠接收。
     defineModuleActions('task', {
         name: 'editeffort',
         display: '编辑工时记录',
@@ -349,6 +356,9 @@ function addMissingWorkflowActions(): void {
         path: '/tasks/{effortID}/editeffort',
         resultType: 'text',
         pathParams: { effortID: '工时记录 ID' },
+        params: [
+            { name: 'effortID', required: true, type: 'number', description: '工时记录 ID' },
+        ],
         requestBody: {
             required: true,
             type: 'object',
@@ -357,8 +367,8 @@ function addMissingWorkflowActions(): void {
                 properties: {
                     date: { type: 'string', description: '日期，格式 YYYY-MM-DD' },
                     work: { type: 'string', description: '工作内容' },
-                    consumed: { type: 'number', description: '本次耗时（小时，会累加到总计消耗）', format: 'float' },
-                    left: { type: 'number', description: '更新后的剩余工时（小时，覆盖之前的剩余值）', format: 'float' },
+                    consumed: { type: 'number', description: '本次耗时（小时，累加到总计）', format: 'float' },
+                    left: { type: 'number', description: '更新后的剩余工时（小时，覆盖之前值）', format: 'float' },
                 },
                 required: ['consumed', 'left'],
             },
@@ -367,7 +377,6 @@ function addMissingWorkflowActions(): void {
 
     // ── Task：删除工时记录 ──
     // ZenTao task->deleteWorkhour(effortID) 方法删除单条工时。
-    // routeV2 对 DELETE 请求自动设置 confirm=yes，跳过二次确认。
     defineModuleActions('task', {
         name: 'deleteeffort',
         display: '删除工时记录',
@@ -376,6 +385,9 @@ function addMissingWorkflowActions(): void {
         path: '/tasks/{effortID}/deleteworkhour',
         resultType: 'text',
         pathParams: { effortID: '工时记录 ID' },
+        params: [
+            { name: 'effortID', required: true, type: 'number', description: '工时记录 ID' },
+        ],
     });
 }
 

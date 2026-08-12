@@ -111,11 +111,13 @@ export function mapSdkError(error: unknown): unknown {
             const status = Number(d.status);
             const url = typeof d.url === 'string' ? d.url : '';
             const body = typeof d.body === 'string' ? d.body : String(d.body ?? '');
-            // ZenTao's deny() returns 401/403 with {"status":"error","message":"Not allowed"}
-            // when the session/token is invalidated (e.g. by a web login on the same account).
-            // Treat both 401 and 403+Not-allowed as token failures (E1004), not permission issues.
+            // 401 = authentication failure (invalid/expired token). Always map to E1004
+            // so auto-reauth can kick in. ZenTao uses 401 for session conflicts.
             if (status === 401) return new ZentaoError('E1004', undefined, details);
-            if (status === 403 && body.includes('Not allowed')) return new ZentaoError('E1004', undefined, details);
+            // 403 = authorization failure (authenticated but lacks privilege).
+            // ZenTao's deny() returns 403 + {"message":"Not allowed"} for BOTH
+            // permission denied AND when the action module isn't exposed. This is
+            // NOT a token issue — do not trigger auto-reauth.
             if (status === 403) return new ZentaoError('E2006', undefined, details);
             if (status === 404) return new ZentaoError('E2002', { object: url }, details);
             return new ZentaoError('E2008', {
