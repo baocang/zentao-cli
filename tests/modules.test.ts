@@ -317,6 +317,31 @@ describe('missing workflow actions (overrides)', () => {
         expect(getAction(task, 'recordestimate')?.name).toBe('recordestimate');
     });
 
+    test('task has editeffort action', () => {
+        const task = getModule('task')!;
+        const edit = task.actions.find(a => a.name === 'editeffort');
+        expect(edit).toBeDefined();
+        expect(edit!.type).toBe('action');
+        expect(edit!.method).toBe('put');
+        expect(edit!.path).toBe('/tasks/{effortID}/editeffort');
+
+        const schema = edit!.requestBody?.schema as
+            | { properties?: Record<string, unknown>; required?: string[] }
+            | undefined;
+        expect(schema?.properties?.consumed).toBeDefined();
+        expect(schema?.properties?.left).toBeDefined();
+        expect(schema?.required).toContain('consumed');
+    });
+
+    test('task has deleteeffort action', () => {
+        const task = getModule('task')!;
+        const del = task.actions.find(a => a.name === 'deleteeffort');
+        expect(del).toBeDefined();
+        expect(del!.type).toBe('delete');
+        expect(del!.method).toBe('delete');
+        expect(del!.path).toBe('/tasks/{effortID}/deleteworkhour');
+    });
+
     test('bug confirm includes assignedTo field', () => {
         const bug = getModule('bug')!;
         const confirm = bug.actions.find(a => a.name === 'confirm')!;

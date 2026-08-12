@@ -336,6 +336,47 @@ function addMissingWorkflowActions(): void {
         resultType: 'list',
         pathParams: { taskID: '任务 ID' },
     });
+
+    // ── Task：编辑工时记录 ──
+    // ZenTao task->editEffort(effortID) 方法编辑单条工时。
+    // routeV2 中 PUT /tasks/{effortID}/editeffort 通过 setParams() 的位置参数
+    // 映射，将 path[1] 的 effortID 正确注入为方法的第一个参数。
+    defineModuleActions('task', {
+        name: 'editeffort',
+        display: '编辑工时记录',
+        type: 'action',
+        method: 'put',
+        path: '/tasks/{effortID}/editeffort',
+        resultType: 'text',
+        pathParams: { effortID: '工时记录 ID' },
+        requestBody: {
+            required: true,
+            type: 'object',
+            schema: {
+                type: 'object',
+                properties: {
+                    date: { type: 'string', description: '日期，格式 YYYY-MM-DD' },
+                    work: { type: 'string', description: '工作内容' },
+                    consumed: { type: 'number', description: '本次耗时（小时，会累加到总计消耗）', format: 'float' },
+                    left: { type: 'number', description: '更新后的剩余工时（小时，覆盖之前的剩余值）', format: 'float' },
+                },
+                required: ['consumed', 'left'],
+            },
+        },
+    });
+
+    // ── Task：删除工时记录 ──
+    // ZenTao task->deleteWorkhour(effortID) 方法删除单条工时。
+    // routeV2 对 DELETE 请求自动设置 confirm=yes，跳过二次确认。
+    defineModuleActions('task', {
+        name: 'deleteeffort',
+        display: '删除工时记录',
+        type: 'delete',
+        method: 'delete',
+        path: '/tasks/{effortID}/deleteworkhour',
+        resultType: 'text',
+        pathParams: { effortID: '工时记录 ID' },
+    });
 }
 
 // ──────────────────────────── 4. 历史记录与备注 ────────────────────────────
