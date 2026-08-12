@@ -295,6 +295,22 @@ function addMissingWorkflowActions(): void {
         },
     });
 
+    // ── File：下载附件 ──
+    // ZenTao file->download() 输出二进制流。routeV2 GET 路由同样丢失 path[1] ID，
+    // 通过 query param 传递 fileID。实际下载逻辑在 module-handler 中特殊处理。
+    defineModuleActions('file', {
+        name: 'download',
+        display: '下载附件',
+        type: 'action',
+        method: 'get',
+        path: '/files/{fileID}/download',
+        resultType: 'text',
+        pathParams: { fileID: '附件 ID' },
+        params: [
+            { name: 'fileID', required: true, type: 'number', description: '附件 ID' },
+        ],
+    });
+
     // ── Task：记录工时（逐条工作内容） ──
     // ZenTao 的 task->recordWorkhour 方法通过 form::batchData 处理工时数据，
     // REST API v2 路由为 PUT /tasks/{taskID}/recordworkhour。
@@ -318,7 +334,7 @@ function addMissingWorkflowActions(): void {
                     consumed: { type: 'array', items: { type: 'number' }, description: '本次耗时（小时，累加到总计）' },
                     left: { type: 'array', items: { type: 'number' }, description: '更新后的剩余工时（小时，覆盖之前值）' },
                 },
-                required: ['consumed', 'left'],
+                required: ['date', 'consumed', 'left'],
             },
         },
     });

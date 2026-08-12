@@ -32,7 +32,8 @@ export function addDataOptions(cmd: Command): Command {
         .option('--execution <id>', '执行 ID')
         .option('--productID <id>', '产品 ID')
         .option('--projectID <id>', '项目 ID')
-        .option('--executionID <id>', '执行 ID');
+        .option('--executionID <id>', '执行 ID')
+        .option('--output <path>', '下载保存路径（仅 file download）');
 }
 
 /** Commander 的 `collect` 回调：将多次出现的选项累积为数组 */

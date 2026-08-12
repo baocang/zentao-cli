@@ -8,8 +8,10 @@ import { formatOutput } from '../utils/format.js';
 import type { ModuleActionOptions } from '../types/index.js';
 import { createInterface } from 'node:readline';
 import { renderError } from '../utils/render.js';
-import { ZentaoError } from '../errors.js';
+import { ZentaoError, mapSdkError } from '../errors.js';
 import { tryReauth } from '../auth/flow.js';
+import { writeFileSync } from 'node:fs';
+import { join, basename } from 'node:path';
 
 
 /** JSON/raw 模式下跳过交互确认，便于脚本化调用 */
@@ -50,6 +52,60 @@ function pickBatchIds(args: string[], options: ModuleActionOptions): { ids: stri
     }
 
     return undefined;
+}
+
+/**
+ * 下载附件到本地文件。ZenTao 的 file->download 输出二进制流，
+ * 需绕过 SDK 的 JSON 解析，直接读取 fetch Response 的 ArrayBuffer。
+ */
+async function handleFileDownload(
+    client: ZentaoClient,
+    fileID: string,
+    options: ModuleActionOptions,
+    profile: Profile,
+    format: string,
+): Promise<void> {
+    const url = `/files/${fileID}/download?fileID=${fileID}`;
+    let response: Response;
+    try {
+        response = await client.request(url, {
+            method: 'GET',
+            responseType: 'response',
+        }) as Response;
+    } catch (error) {
+        const mapped = mapSdkError(error);
+        if (mapped instanceof ZentaoError && mapped.code === '1004') {
+            const reauthed = await tryReauth(client, profile);
+            if (reauthed) {
+                response = await client.request(url, {
+                    method: 'GET',
+                    responseType: 'response',
+                }) as Response;
+            } else {
+                throw mapped;
+            }
+        } else {
+            throw mapped;
+        }
+    }
+
+    // Extract filename from Content-Disposition header
+    const cd = response.headers.get('Content-Disposition') ?? '';
+    const filenameMatch = cd.match(/filename[*]?=["']?([^"';\n]+)/i);
+    const filename = filenameMatch ? decodeURIComponent(filenameMatch[1]) : `file_${fileID}`;
+
+    // Determine output path
+    const outputDir = typeof options.output === 'string' ? options.output : '.';
+    const outputPath = join(outputDir, basename(filename));
+
+    const buffer = await response.arrayBuffer();
+    writeFileSync(outputPath, Buffer.from(buffer));
+
+    if (format === 'json' || format === 'raw') {
+        console.log(JSON.stringify({ status: 'success', data: { file: outputPath, size: buffer.byteLength } }));
+    } else {
+        console.log(`已下载: ${outputPath} (${buffer.byteLength} bytes)`);
+    }
 }
 
 async function renderModuleExecution(
@@ -182,6 +238,11 @@ export async function handleModuleCommand(
 
     if (!hasId && (action.type === 'delete' || action.type === 'update' || action.type === 'action')) {
         throw new ZentaoError('E2009', { option: 'id', reason: '必须提供要操作的对象 ID' });
+    }
+
+    // File download requires binary response handling — bypass normal JSON execution
+    if (module.name === 'file' && actionName === 'download') {
+        return handleFileDownload(client, String(params.id), options, profile, format);
     }
 
     if (action.type === 'delete' && !options.yes) {
