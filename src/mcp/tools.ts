@@ -9,6 +9,7 @@ import type { AuthProvider } from './server.js';
 import { getCurrentProfile, getProfileConfig, setCurrentProfile, profileKey } from '../config/store.js';
 import { DEFAULT_CONFIG } from '../config/defaults.js';
 import { tryReauth } from '../auth/flow.js';
+import { uploadFileAttachment } from '../commands/module-handler.js';
 
 function buildToolDescription(mod: ModuleDefinition): string {
     const actions = mod.actions.map(a => a.name);
@@ -161,6 +162,21 @@ async function handleModuleTool(
         format: 'json',
         yes: true,
     };
+
+    // File upload requires multipart FormData — bypass normal JSON execution.
+    // Agent passes params: { file: '/local/path', objectType?: 'bug', objectID?: 972 }.
+    if (mod.name === 'file' && actionName === 'upload') {
+        const p = input.params ?? {};
+        const filePath = typeof p.file === 'string' ? p.file : undefined;
+        if (!filePath) {
+            throw new ZentaoError('E2009', { option: 'file', reason: '上传附件必须在 params 中提供本地文件路径（file 字段）' });
+        }
+        const objectType = p.objectType != null ? String(p.objectType) : undefined;
+        const objectID = p.objectID != null ? String(p.objectID) : undefined;
+        if (!profile) throw new ZentaoError('E1006');
+        const result = await uploadFileAttachment(client, profile, filePath, objectType, objectID);
+        return { content: [{ type: 'text', text: JSON.stringify({ status: 'success', data: result.response }, null, 2) }] };
+    }
 
     // Batch mode: iterate over ids array
     if (input.ids && input.ids.length > 0) {

@@ -311,6 +311,23 @@ function addMissingWorkflowActions(): void {
         ],
     });
 
+    // ── File：上传附件 ──
+    // ZenTao routeV2 将 POST /files 特殊路由到 file->ajaxUpload，要求
+    // multipart/form-data：file 字段为文件二进制，objectType/objectID 为附加目标。
+    // 实际上传逻辑在 module-handler 中特殊处理（需要 FormData，无法走 JSON 请求体）。
+    defineModuleActions('file', {
+        name: 'upload',
+        display: '上传附件',
+        type: 'action',
+        method: 'post',
+        path: '/files',
+        resultType: 'object',
+        params: [
+            { name: 'objectType', required: false, type: 'string', description: '附加对象类型（如 bug/task/story，需配合 objectID）' },
+            { name: 'objectID', required: false, type: 'number', description: '附加对象 ID（需配合 objectType）' },
+        ],
+    });
+
     // ── Task：记录工时（逐条工作内容） ──
     // ZenTao 的 task->recordWorkhour 方法通过 form::batchData 处理工时数据，
     // REST API v2 路由为 PUT /tasks/{taskID}/recordworkhour。
@@ -405,6 +422,11 @@ function addMissingWorkflowActions(): void {
             { name: 'effortID', required: true, type: 'number', description: '工时记录 ID' },
         ],
     });
+
+    // 修正 SDK 生成的 file create 动作误导性描述：
+    // 该接口（POST /files）在 ZenTao 中实际被特殊路由到 ajaxUpload（上传），
+    // 且只接受 multipart 表单，JSON 形式的 create 无法成功，统一引导使用 file upload。
+    extendModuleAction('file', 'create', { display: '上传附件（旧接口，请使用 file upload）' });
 }
 
 // ──────────────────────────── 4. 历史记录与备注 ────────────────────────────

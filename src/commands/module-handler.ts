@@ -10,7 +10,7 @@ import { createInterface } from 'node:readline';
 import { renderError } from '../utils/render.js';
 import { ZentaoError, mapSdkError } from '../errors.js';
 import { tryReauth } from '../auth/flow.js';
-import { writeFileSync } from 'node:fs';
+import { writeFileSync, readFileSync } from 'node:fs';
 import { join, basename } from 'node:path';
 
 
@@ -106,6 +106,95 @@ async function handleFileDownload(
     } else {
         console.log(`已下载: ${outputPath} (${buffer.byteLength} bytes)`);
     }
+}
+
+/** 附件上传结果（供 CLI 与 MCP 复用） */
+export interface FileUploadResult {
+    fileName: string;
+    response: Record<string, unknown>;
+}
+
+/**
+ * 通过 multipart/form-data 上传附件到 ZenTao。
+ *
+ * ZenTao routeV2 将 POST /files 特殊路由到 file->ajaxUpload：
+ *   - `file` 字段为文件二进制（field 名由服务端固定为 file）
+ *   - `objectType` / `objectID` 表单字段指定附加到的对象（如 bug/972）
+ * 成功响应：{"result":"success","status":"success","id":fileID,"url":...}
+ */
+export async function uploadFileAttachment(
+    client: ZentaoClient,
+    profile: Profile,
+    filePath: string,
+    objectType?: string,
+    objectID?: string,
+): Promise<FileUploadResult> {
+    let content: Buffer;
+    try {
+        content = readFileSync(filePath);
+    } catch {
+        throw new ZentaoError('E2009', { option: 'file', reason: `文件不存在或不可读: ${filePath}` });
+    }
+
+    const form = new FormData();
+    form.append('file', new Blob([content]), basename(filePath));
+    if (objectType) form.append('objectType', objectType);
+    if (objectID) form.append('objectID', objectID);
+
+    const send = () => client.request('/files', { method: 'POST', body: form });
+    let response: unknown;
+    try {
+        response = await send();
+    } catch (error) {
+        const mapped = mapSdkError(error);
+        if (mapped instanceof ZentaoError && mapped.code === '1004') {
+            const reauthed = await tryReauth(client, profile);
+            if (reauthed) {
+                response = await send();
+            } else {
+                throw mapped;
+            }
+        } else {
+            throw mapped;
+        }
+    }
+
+    return {
+        fileName: basename(filePath),
+        response: (response && typeof response === 'object' ? response : {}) as Record<string, unknown>,
+    };
+}
+
+/**
+ * 处理 `zentao file upload <path> [--objectType=bug --objectID=972]`。
+ * 位置参数为本地文件路径（非对象 ID），因此绕过常规的模块执行路径。
+ */
+async function handleFileUpload(
+    client: ZentaoClient,
+    args: string[],
+    options: ModuleActionOptions,
+    profile: Profile,
+    format: string,
+): Promise<void> {
+    const params = buildParams(options, 'upload', [...args]);
+    const positionalPath = args.find((a) => !a.startsWith('-'));
+    const filePath = typeof params.file === 'string' && params.file ? params.file : positionalPath;
+    if (!filePath) {
+        throw new ZentaoError('E2009', { option: 'file', reason: '必须提供要上传的文件路径' });
+    }
+
+    const objectType = params.objectType != null && params.objectType !== '' ? String(params.objectType) : undefined;
+    const objectID = params.objectID != null && params.objectID !== '' ? String(params.objectID) : undefined;
+
+    const result = await uploadFileAttachment(client, profile, filePath, objectType, objectID);
+
+    if (format === 'json' || format === 'raw') {
+        console.log(JSON.stringify({ status: 'success', data: result.response }, null, format === 'raw' ? 4 : undefined));
+        return;
+    }
+    const data = result.response.data as Record<string, unknown> | undefined;
+    const id = result.response.id ?? data?.id;
+    console.log(`上传成功: ${result.fileName}${id ? ` (fileID=${id})` : ''}`);
 }
 
 async function renderModuleExecution(
@@ -231,6 +320,12 @@ export async function handleModuleCommand(
     const action = getAction(module, actionName);
     if (!action) {
         throw new ZentaoError('E2005', { module: module.name });
+    }
+
+    // File upload requires multipart FormData — bypass normal JSON execution.
+    // Must run before the ID check since the positional arg is a local file path.
+    if (module.name === 'file' && actionName === 'upload') {
+        return handleFileUpload(client, args, options, profile, format);
     }
 
     const params = buildParams(options, actionName, args);

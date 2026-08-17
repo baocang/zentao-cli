@@ -1,5 +1,16 @@
 # Changes
 
+## Unreleased
+
+### ✨ 新特性 (Feat)
+
+- **附件上传**: `file` 模块新增 `upload` 操作，通过 multipart/form-data 上传附件并可直接挂载到业务对象。
+  - `zentao file upload ./报告.png --objectType=bug --objectID=972` — 上传并附加到 Bug 972。
+  - `zentao file upload ./日志.txt` — 仅上传不入库对象（objectType/objectID 可选）。
+  - CLI 与 MCP 一致（MCP 通过 `params.file` 传本地路径）；支持 Token 失效自动重连。
+  - 修正 SDK 生成的 `file create` 误导描述，统一引导使用 `file upload`（ZenTao 将 POST /files 特殊路由到 ajaxUpload，仅接受 multipart 表单，JSON 形式无法成功）。
+  - 已在 ZenTao 22.4 真实环境验证：上传→挂载→下载往返内容一致，删除清理成功。
+
 ## 0.4.0
 
 ### ✨ 新特性 (Feat)

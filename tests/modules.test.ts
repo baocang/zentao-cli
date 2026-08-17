@@ -360,6 +360,24 @@ describe('missing workflow actions (overrides)', () => {
         expect(update!.method).toBe('put');
         expect(update!.path).toBe('/files/{fileID}');
     });
+
+    test('file has upload action with multipart semantics', () => {
+        const file = getModule('file')!;
+        const upload = file.actions.find(a => a.name === 'upload');
+        expect(upload).toBeDefined();
+        expect(upload!.type).toBe('action');
+        expect(upload!.method).toBe('post');
+        expect(upload!.path).toBe('/files');
+        const paramNames = (upload!.params ?? []).map(p => p.name);
+        expect(paramNames).toContain('objectType');
+        expect(paramNames).toContain('objectID');
+    });
+
+    test('file create display is redirected to upload', () => {
+        const file = getModule('file')!;
+        const create = file.actions.find(a => a.name === 'create')!;
+        expect(create.display).toContain('file upload');
+    });
 });
 
 describe('bugfixes', () => {
