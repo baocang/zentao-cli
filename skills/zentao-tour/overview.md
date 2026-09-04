@@ -36,7 +36,7 @@ flowchart LR
 
 ## 什么是 zentao-cli
 
-[zentao-cli](https://github.com/easysoft/zentao-cli) 是官方命令行工具，封装了禅道 RESTful API v2.0，特点：
+[zentao-cli](https://github.com/baocang/zentao-cli) 是禅道命令行工具，封装了禅道 RESTful API v2.0，特点：
 
 - 覆盖 20+ 模块（产品、项目、执行、需求、Bug、任务、测试用例、计划、版本、发布、反馈、工单等）的 CRUD 与状态流转
 - 对 AI 友好：默认输出 Markdown 表格便于阅读，加 `--format=json` 可获取结构化数据
@@ -51,10 +51,10 @@ flowchart LR
 优先使用系统中已有的包管理器全局安装：
 
 ```bash
-npm install -g zentao-cli
-# 或 bun install -g zentao-cli
-# 或 pnpm install -g zentao-cli
-# 也可免安装：npx zentao-cli
+npm install -g @baocang/zentao-cli
+# 或 bun install -g @baocang/zentao-cli
+# 或 pnpm install -g @baocang/zentao-cli
+# 也可免安装：npx @baocang/zentao-cli
 ```
 
 首次使用登录禅道：
@@ -76,18 +76,21 @@ zentao login -s https://zentao.example.com -u <账号> -p <密码>
   "mcpServers": {
     "zentao": {
       "command": "npx",
-      "args": ["-y", "zentao-cli", "mcp"],
+      "args": ["-y", "@baocang/zentao-cli", "mcp"],
       "env": {
         "ZENTAO_URL": "https://zentao.example.com",
         "ZENTAO_ACCOUNT": "<账号>",
-        "ZENTAO_TOKEN": "<token>"
+        "ZENTAO_TOKEN": "<token>",
+        "ZENTAO_MCP_UPLOAD_ROOT": "/path/to/allowed/files"
       }
     }
   }
 }
 ```
 
-具体 MCP 启动方式与参数以 [zentao-cli 仓库](https://github.com/easysoft/zentao-cli) 的最新说明为准；不同智能工具的配置文件位置不同（Cursor 的 `~/.cursor/mcp.json`、Claude Desktop 的 `claude_desktop_config.json` 等）。
+`ZENTAO_MCP_UPLOAD_ROOT` 仅在需要通过 MCP 上传本地附件时设置；未设置时 MCP 文件上传保持禁用。
+
+具体 MCP 启动方式与参数以 [zentao-cli 仓库](https://github.com/baocang/zentao-cli) 的最新说明为准；不同智能工具的配置文件位置不同（Cursor 的 `~/.cursor/mcp.json`、Claude Desktop 的 `claude_desktop_config.json` 等）。
 
 ## 就绪自检
 
@@ -111,4 +114,4 @@ zentao product --pick=id,name               # 能正常拉取产品列表
 - [禅道官网](https://www.zentao.net/)
 - [禅道使用手册](https://www.zentao.net/book/zentaopms/38.html)
 - [禅道不同版本功能对比](https://www.zentao.net/compare-features.html)
-- [zentao-cli 仓库](https://github.com/easysoft/zentao-cli)
+- [zentao-cli 仓库](https://github.com/baocang/zentao-cli)

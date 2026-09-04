@@ -10,8 +10,9 @@ import { createInterface } from 'node:readline';
 import { renderError } from '../utils/render.js';
 import { ZentaoError, mapSdkError } from '../errors.js';
 import { tryReauth } from '../auth/flow.js';
-import { writeFileSync, readFileSync } from 'node:fs';
-import { join, basename } from 'node:path';
+import { writeFileSync } from 'node:fs';
+import { readFile, realpath, stat } from 'node:fs/promises';
+import { join, basename, isAbsolute, relative } from 'node:path';
 
 
 /** JSON/raw 模式下跳过交互确认，便于脚本化调用 */
@@ -75,8 +76,9 @@ async function handleFileDownload(
     } catch (error) {
         const mapped = mapSdkError(error);
         if (mapped instanceof ZentaoError && mapped.code === '1004') {
-            const reauthed = await tryReauth(client, profile);
-            if (reauthed) {
+            const reauthedClient = await tryReauth(profile);
+            if (reauthedClient) {
+                client = reauthedClient;
                 response = await client.request(url, {
                     method: 'GET',
                     responseType: 'response',
@@ -91,15 +93,31 @@ async function handleFileDownload(
 
     // Extract filename from Content-Disposition header
     const cd = response.headers.get('Content-Disposition') ?? '';
-    const filenameMatch = cd.match(/filename[*]?=["']?([^"';\n]+)/i);
-    const filename = filenameMatch ? decodeURIComponent(filenameMatch[1]) : `file_${fileID}`;
+    const encodedMatch = cd.match(/filename\*\s*=\s*(?:UTF-8'')?["']?([^"';\n]+)["']?/i);
+    const plainMatch = cd.match(/filename\s*=\s*(?:"([^"]+)"|'([^']+)'|([^;\n]+))/i);
+    const rawFilename = encodedMatch?.[1] ?? plainMatch?.[1] ?? plainMatch?.[2] ?? plainMatch?.[3];
+    let filename = rawFilename?.trim() || `file_${fileID}`;
+    if (encodedMatch) {
+        try {
+            filename = decodeURIComponent(filename);
+        } catch {
+            // Keep the undecoded server filename when percent encoding is malformed.
+        }
+    }
 
     // Determine output path
     const outputDir = typeof options.output === 'string' ? options.output : '.';
     const outputPath = join(outputDir, basename(filename));
 
     const buffer = await response.arrayBuffer();
-    writeFileSync(outputPath, Buffer.from(buffer));
+    try {
+        writeFileSync(outputPath, Buffer.from(buffer), { flag: 'wx' });
+    } catch (error) {
+        const reason = (error as NodeJS.ErrnoException).code === 'EEXIST'
+            ? `目标文件已存在: ${outputPath}`
+            : `无法写入目标文件: ${outputPath}`;
+        throw new ZentaoError('E2009', { option: 'output', reason }, error);
+    }
 
     if (format === 'json' || format === 'raw') {
         console.log(JSON.stringify({ status: 'success', data: { file: outputPath, size: buffer.byteLength } }));
@@ -114,12 +132,14 @@ export interface FileUploadResult {
     response: Record<string, unknown>;
 }
 
+const MAX_UPLOAD_BYTES = 50 * 1024 * 1024;
+
 /**
  * 通过 multipart/form-data 上传附件到 ZenTao。
  *
  * ZenTao routeV2 将 POST /files 特殊路由到 file->ajaxUpload：
  *   - `file` 字段为文件二进制（field 名由服务端固定为 file）
- *   - `objectType` / `objectID` 表单字段指定附加到的对象（如 bug/972）
+ *   - `objectType` / `objectID` 表单字段指定附加到的对象（如 bug/123）
  * 成功响应：{"result":"success","status":"success","id":fileID,"url":...}
  */
 export async function uploadFileAttachment(
@@ -128,16 +148,44 @@ export async function uploadFileAttachment(
     filePath: string,
     objectType?: string,
     objectID?: string,
+    allowedRoot?: string,
 ): Promise<FileUploadResult> {
+    if ((objectType && !objectID) || (!objectType && objectID)) {
+        throw new ZentaoError('E2009', { option: 'objectType/objectID', reason: '必须同时提供或同时省略' });
+    }
+
+    let resolvedFilePath: string;
+    try {
+        resolvedFilePath = await realpath(filePath);
+        if (allowedRoot) {
+            const resolvedRoot = await realpath(allowedRoot);
+            const relativePath = relative(resolvedRoot, resolvedFilePath);
+            if (relativePath === '..' || relativePath.startsWith(`..${process.platform === 'win32' ? '\\' : '/'}`) || isAbsolute(relativePath)) {
+                throw new ZentaoError('E2009', { option: 'file', reason: 'MCP 仅允许上传当前工作目录内的文件' });
+            }
+        }
+        const fileStat = await stat(resolvedFilePath);
+        if (!fileStat.isFile()) throw new Error('not a regular file');
+        if (fileStat.size > MAX_UPLOAD_BYTES) {
+            throw new ZentaoError('E2009', { option: 'file', reason: '附件不能超过 50 MiB' });
+        }
+    } catch (error) {
+        if (error instanceof ZentaoError) throw error;
+        throw new ZentaoError('E2009', { option: 'file', reason: `文件不存在或不可读: ${filePath}` }, error);
+    }
+
     let content: Buffer;
     try {
-        content = readFileSync(filePath);
-    } catch {
-        throw new ZentaoError('E2009', { option: 'file', reason: `文件不存在或不可读: ${filePath}` });
+        content = await readFile(resolvedFilePath);
+    } catch (error) {
+        throw new ZentaoError('E2009', { option: 'file', reason: `文件不存在或不可读: ${filePath}` }, error);
+    }
+    if (content.byteLength > MAX_UPLOAD_BYTES) {
+        throw new ZentaoError('E2009', { option: 'file', reason: '附件不能超过 50 MiB' });
     }
 
     const form = new FormData();
-    form.append('file', new Blob([content]), basename(filePath));
+    form.append('file', new Blob([Uint8Array.from(content)]), basename(resolvedFilePath));
     if (objectType) form.append('objectType', objectType);
     if (objectID) form.append('objectID', objectID);
 
@@ -148,8 +196,9 @@ export async function uploadFileAttachment(
     } catch (error) {
         const mapped = mapSdkError(error);
         if (mapped instanceof ZentaoError && mapped.code === '1004') {
-            const reauthed = await tryReauth(client, profile);
-            if (reauthed) {
+            const reauthedClient = await tryReauth(profile);
+            if (reauthedClient) {
+                client = reauthedClient;
                 response = await send();
             } else {
                 throw mapped;
@@ -159,14 +208,24 @@ export async function uploadFileAttachment(
         }
     }
 
-    return {
-        fileName: basename(filePath),
-        response: (response && typeof response === 'object' ? response : {}) as Record<string, unknown>,
-    };
+    const responseData = response && typeof response === 'object'
+        ? response as Record<string, unknown>
+        : undefined;
+    if (!responseData || [responseData.status, responseData.result].some(
+        (value) => typeof value === 'string' && /^(?:fail|error)$/i.test(value),
+    )) {
+        throw new ZentaoError('E2008', {
+            url: '/files',
+            status: '200',
+            serverResponse: JSON.stringify(response ?? null),
+        }, response);
+    }
+
+    return { fileName: basename(resolvedFilePath), response: responseData };
 }
 
 /**
- * 处理 `zentao file upload <path> [--objectType=bug --objectID=972]`。
+ * 处理 `zentao file upload <path> [--objectType=bug --objectID=123]`。
  * 位置参数为本地文件路径（非对象 ID），因此绕过常规的模块执行路径。
  */
 async function handleFileUpload(
@@ -350,8 +409,9 @@ export async function handleModuleCommand(
         await renderModuleExecution(client, module, actionName, args, options, config);
     } catch (error) {
         if (error instanceof ZentaoError && error.code === '1004') {
-            const reauthed = await tryReauth(client, profile);
-            if (reauthed) {
+            const reauthedClient = await tryReauth(profile);
+            if (reauthedClient) {
+                client = reauthedClient;
                 await renderModuleExecution(client, module, actionName, args, options, config);
                 return;
             }

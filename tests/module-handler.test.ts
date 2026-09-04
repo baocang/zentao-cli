@@ -1,10 +1,11 @@
 import { describe, expect, test } from 'bun:test';
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, truncateSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { ZentaoClient } from '../src/api/index';
-import { handleModuleCommand } from '../src/commands/module-handler';
+import { createClient, type ZentaoClient } from '../src/api/index';
+import { handleModuleCommand, uploadFileAttachment } from '../src/commands/module-handler';
 import { getModule } from '../src/modules';
+import { applyZentaoCompatibilityOverrides } from '../src/modules/overrides';
 import type { ModuleActionName, ModuleActionOptions } from '../src/types';
 import { mockProfile } from './helpers';
 
@@ -60,6 +61,154 @@ describe('handleModuleCommand batch ids', () => {
             { method: 'delete', path: '/products/1' },
             { method: 'delete', path: '/products/2' },
         ]);
+    });
+});
+
+describe('file attachment upload', () => {
+    test('sends exact file bytes and object binding as multipart form data', async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-upload-'));
+        const filePath = join(dir, 'sample.bin');
+        const content = Uint8Array.from([0, 1, 127, 128, 255]);
+        writeFileSync(filePath, content);
+        let sentBody: FormData | undefined;
+        const client = {
+            request: async (_path: string, options: { body?: FormData }) => {
+                sentBody = options.body;
+                return { status: 'success', id: 123 };
+            },
+        } as unknown as ZentaoClient;
+
+        try {
+            const result = await uploadFileAttachment(client, mockProfile, filePath, 'bug', '123');
+            expect(result.fileName).toBe('sample.bin');
+            expect(sentBody?.get('objectType')).toBe('bug');
+            expect(sentBody?.get('objectID')).toBe('123');
+            const file = sentBody?.get('file');
+            expect(file).toBeInstanceOf(File);
+            expect(new Uint8Array(await (file as File).arrayBuffer())).toEqual(content);
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    test('requires objectType and objectID together', async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-upload-'));
+        const filePath = join(dir, 'sample.txt');
+        writeFileSync(filePath, 'test');
+        const client = { request: async () => ({ status: 'success' }) } as unknown as ZentaoClient;
+
+        try {
+            await expect(uploadFileAttachment(client, mockProfile, filePath, 'bug'))
+                .rejects.toMatchObject({ code: '2009' });
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    test('rejects an HTTP 200 business failure response', async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-upload-'));
+        const filePath = join(dir, 'sample.txt');
+        writeFileSync(filePath, 'test');
+        const client = {
+            request: async () => ({ status: 'fail', message: 'not allowed' }),
+        } as unknown as ZentaoClient;
+
+        try {
+            await expect(uploadFileAttachment(client, mockProfile, filePath))
+                .rejects.toMatchObject({ code: '2008' });
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    test('restricts MCP uploads to the allowed root', async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-upload-'));
+        const allowedRoot = join(dir, 'workspace');
+        mkdirSync(allowedRoot);
+        const outsideFile = join(dir, 'outside.txt');
+        writeFileSync(outsideFile, 'private');
+        const client = { request: async () => ({ status: 'success' }) } as unknown as ZentaoClient;
+
+        try {
+            await expect(uploadFileAttachment(client, mockProfile, outsideFile, undefined, undefined, allowedRoot))
+                .rejects.toMatchObject({ code: '2009' });
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    test('rejects files larger than 50 MiB before reading them', async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-upload-'));
+        const filePath = join(dir, 'large.bin');
+        writeFileSync(filePath, '');
+        truncateSync(filePath, 50 * 1024 * 1024 + 1);
+        const client = { request: async () => ({ status: 'success' }) } as unknown as ZentaoClient;
+
+        try {
+            await expect(uploadFileAttachment(client, mockProfile, filePath))
+                .rejects.toMatchObject({ code: '2009' });
+        } finally {
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+});
+
+describe('file attachment download', () => {
+    test('does not write an HTTP 200 login page as an attachment', async () => {
+        applyZentaoCompatibilityOverrides();
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-download-'));
+        const server = Bun.serve({
+            port: 0,
+            fetch: () => new Response(
+                '<!DOCTYPE html><html><body><form id="loginForm"><input name="account"></form></body></html>',
+                { headers: { 'Content-Type': 'text/html' } },
+            ),
+        });
+        const profile = { ...mockProfile, server: server.url.toString().replace(/\/$/, '') };
+
+        try {
+            await expect(handleModuleCommand(
+                createClient(server.url.toString(), 'expired-token'),
+                getModule('file')!,
+                'download' as ModuleActionName,
+                ['123'],
+                profile,
+                { output: dir },
+            )).rejects.toMatchObject({ code: '1004' });
+            expect(readdirSync(dir)).toEqual([]);
+        } finally {
+            server.stop(true);
+            rmSync(dir, { recursive: true, force: true });
+        }
+    });
+
+    test('does not overwrite an existing file with the server filename', async () => {
+        applyZentaoCompatibilityOverrides();
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-download-'));
+        const outputPath = join(dir, 'existing.txt');
+        writeFileSync(outputPath, 'keep');
+        const server = Bun.serve({
+            port: 0,
+            fetch: () => new Response('replacement', {
+                headers: { 'Content-Disposition': 'attachment; filename="existing.txt"' },
+            }),
+        });
+        const profile = { ...mockProfile, server: server.url.toString().replace(/\/$/, '') };
+
+        try {
+            await expect(handleModuleCommand(
+                createClient(server.url.toString(), 'valid-token'),
+                getModule('file')!,
+                'download' as ModuleActionName,
+                ['123'],
+                profile,
+                { output: dir },
+            )).rejects.toMatchObject({ code: '2009' });
+            expect(readFileSync(outputPath, 'utf8')).toBe('keep');
+        } finally {
+            server.stop(true);
+            rmSync(dir, { recursive: true, force: true });
+        }
     });
 });
 

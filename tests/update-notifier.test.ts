@@ -10,6 +10,10 @@ import {
 
 const originalFetch = globalThis.fetch;
 
+test('uses the published scoped package name', () => {
+    expect(PACKAGE_NAME).toBe('@baocang/zentao-cli');
+});
+
 function mockRegistryResponse(body: unknown, status = 200): void {
     globalThis.fetch = (async () => new Response(JSON.stringify(body), {
         status,

@@ -4,9 +4,9 @@ description: 通过 zentao 命令行工具查询和操作禅道（ZenTao）数�
 license: MIT
 metadata:
   author: Sun Hao <sunhao@chandao.com>
-  repository: https://github.com/easysoft/zentao-cli.git
+  repository: https://github.com/baocang/zentao-cli.git
   keywords: [zentao, 禅道, cli, project-management]
-  version: 0.1.7
+  version: 0.5.0
 ---
 
 # 禅道 CLI
@@ -18,10 +18,10 @@ metadata:
 ### 安装
 
 ```bash
-npm install -g zentao-cli
-# 或 bun install -g zentao-cli
-# 或 pnpm install -g zentao-cli
-# 或免安装运行：npx zentao-cli
+npm install -g @baocang/zentao-cli
+# 或 bun install -g @baocang/zentao-cli
+# 或 pnpm install -g @baocang/zentao-cli
+# 或免安装运行：npx @baocang/zentao-cli
 ```
 
 如果用户没有安装，引导用户进行全局安装使用，如果系统存在 bun 或 pnpm 则优先使用 bun 或 pnpm 进行全局安装。
@@ -31,7 +31,7 @@ npm install -g zentao-cli
 首次执行任意 `zentao` 命令会自动提示登录。也可显式登录：
 
 ```bash
-zentao login -s https://zentao.example.com -u admin -p 123456
+zentao login -s https://zentao.example.com -u admin -p '<password>'
 ```
 
 环境变量（优先级低于命令行参数）：
@@ -78,7 +78,7 @@ zentao login -s https://zentao.example.com -u admin -p 123456
 | epic | 业务需求 | CRUD + activate / change / close |
 | requirement | 用户需求 | CRUD + activate / change / close |
 | bug | Bug | CRUD + activate / close / resolve |
-| task | 任务 | CRUD + activate / close / finish / start |
+| task | 任务 | CRUD + activate / close / finish / start + 工时 CRUD |
 | testcase | 测试用例 | CRUD |
 | testtask | 测试单 | CUD（按产品/项目/执行查列表） |
 | productplan | 产品计划 | CUD（按产品查列表） |
@@ -88,7 +88,7 @@ zentao login -s https://zentao.example.com -u admin -p 123456
 | ticket | 工单 | CRUD + activate / close |
 | system | 应用 | CU（按产品查列表） |
 | user | 用户 | CRUD |
-| file | 附件 | 编辑名称 + 删除 |
+| file | 附件 | 上传 + 下载 + 编辑名称 + 删除 |
 
 > CRUD = 列表 + 详情 + 创建 + 更新 + 删除；CUD = 无独立列表接口，需指定所属范围
 
@@ -213,6 +213,15 @@ zentao task start 100
 zentao task finish 100 --consumed=4
 ```
 
+### 上传和下载附件
+
+```bash
+zentao file upload ./report.pdf --objectType=bug --objectID=123
+zentao file download 456 --output=./downloads
+```
+
+`objectType` 与 `objectID` 必须同时提供或同时省略。MCP 文件上传默认禁用；启用时先在 MCP 服务环境中设置 `ZENTAO_MCP_UPLOAD_ROOT`，再在 `zentao_file` 的 `params` 中传入该目录内的 `file` 路径，以及可选的一组 `objectType`、`objectID`。
+
 ### 查看帮助
 
 ```bash
@@ -253,7 +262,7 @@ zentao help              # 查看所有命令
 | 错误码 | 含义 | 处理方式 |
 |--------|------|---------|
 | E1001 | 未登录/凭证缺失 | 执行 `zentao login` |
-| E1004 | Token 失效 | 执行 `zentao login` 重新登录 |
+| E1004 | Token 失效或服务端返回登录页 | 设置 `ZENTAO_PASSWORD` 自动重连，或执行 `zentao login` |
 | E2001 | 模块不存在 | 执行 `zentao help` 查看可用模块 |
 | E2002 | 对象不存在 | 检查 ID 是否正确 |
 | E2003 | 缺少必要参数 | 执行 `zentao <module> help` 或 `zentao <module> <action> help` 查看操作参数 |

@@ -79,4 +79,7 @@ export interface ModuleActionOptions extends GlobalOptions {
 
     /** 执行 ID，当 scope 为 executions 时，等同于 scopeID 参数 */
     execution?: string;
+
+    /** 下载附件的保存目录，仅适用于 file download */
+    output?: string;
 }

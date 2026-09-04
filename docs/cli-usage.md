@@ -14,7 +14,7 @@
 
 ```bash
 # 登录禅道
-zentao login -s https://zentao.example.com -u admin -p 123456
+zentao login -s https://zentao.example.com -u admin -p '<password>'
 ```
 
 ### 环境变量

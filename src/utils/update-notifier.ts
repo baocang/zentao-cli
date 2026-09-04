@@ -2,7 +2,7 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { getCliVersion } from './version.js';
 
-export const PACKAGE_NAME = 'zentao-cli';
+export const PACKAGE_NAME = '@baocang/zentao-cli';
 const REGISTRY_URL = `https://registry.npmjs.org/${PACKAGE_NAME}`;
 
 export interface SemVer {

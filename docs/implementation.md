@@ -160,7 +160,7 @@
 ```json
 {
     "account": "admin",
-    "password": "123456"
+    "password": "<password>"
 }
 ```
 

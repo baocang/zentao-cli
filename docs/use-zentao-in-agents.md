@@ -1,6 +1,6 @@
 # 在 Agents 中使用禅道
 
-你是否希望在 AI Agents 中使用禅道？没问题，可以通过安装禅道 CLI 技能来实现。CLI 技能会利用 [zentao-cli](https://github.com/easysoft/zentao-cli) 工具来访问和操作禅道数据。
+你是否希望在 AI Agents 中使用禅道？没问题，可以通过安装禅道 CLI 技能来实现。CLI 技能会利用 [zentao-cli](https://github.com/baocang/zentao-cli) 工具来访问和操作禅道数据。
 
 关于 zentao-cli 的主要特性，请参考 [README](../README.md#主要特性)。
 
@@ -25,19 +25,19 @@
 现代的 Agents 工具都支持自动发现安装技能，可以将如下内容发送给 Agent 来进行安装：
 
 ```sh
-参考 https://github.com/easysoft/zentao-cli 来安装 zentao-cli，并安装仓库内的所有技能。
+参考 https://github.com/baocang/zentao-cli 来安装 zentao-cli，并安装仓库内的所有技能。
 ```
 
 如果你是开发者，可以直接在终端中执行命令来安装：
 
 ```sh
 # 全局安装 zentao-cli 工具
-$ npm install -g zentao-cli
+$ npm install -g @baocang/zentao-cli
 
 # 其他安装与运行方式
-# bun install -g zentao-cli  # ← 使用 bun 安装
-# npx zentao-cli             # ← 通过 npx 免安装运行
-# pnpm dlx zentao-cli        # ← 通过 pnpm 免安装运行
+# bun install -g @baocang/zentao-cli  # ← 使用 bun 安装
+# npx @baocang/zentao-cli             # ← 通过 npx 免安装运行
+# pnpm dlx @baocang/zentao-cli        # ← 通过 pnpm 免安装运行
 
 # 安装完成之后可以一键安装技能到 Agents
 $ zentao add-skill
@@ -64,13 +64,13 @@ $ zentao add-skill
     ```sh
     export ZENTAO_URL=https://zentao.example.com
     export ZENTAO_ACCOUNT=admin
-    export ZENTAO_PASSWORD=123456
+    export ZENTAO_PASSWORD='<password>'
     ```
 
 2. 通过 `zentao login` 命令手动登录，例如：
 
     ```sh
-    zentao login -s https://zentao.example.com -u admin -p 123456
+    zentao login -s https://zentao.example.com -u admin -p '<password>'
     ```
 
 推荐使用环境变量的方式进行登录，这样即便 Token 失效也会自动从环境变量获取相关信息重新进行登录。虽然 Agents 工具也能代替用户进行登录，但强烈建议不要将账号密码发送给 AI Agents 工具，以保证账号安全。

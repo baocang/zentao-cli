@@ -3,13 +3,13 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "zentao",
+      "name": "@baocang/zentao-cli",
       "dependencies": {
         "@modelcontextprotocol/sdk": "^1.29.0",
         "commander": "^13.0.0",
         "configstore": "^7.0.0",
         "turndown": "^7.2.0",
-        "zentao-api": "^0.4.1",
+        "zentao-api": "^0.6.6",
         "zod": "^4.3.6",
       },
       "devDependencies": {
@@ -234,7 +234,7 @@
 
     "xdg-basedir": ["xdg-basedir@5.1.0", "", {}, "sha512-GCPAHLvrIH13+c0SuacwvRYj2SxJXQ4kaVTT5xgL3kPrz56XxkF21IGhjSE1+W0aw7gpBWRGXLCPnPby6lSpmQ=="],
 
-    "zentao-api": ["zentao-api@0.4.1", "", {}, "sha512-KjSs5rOzaQD9CcPGkXOHqCJPQGGJ4F8fWfp5MfCzyGk3I/GKatW3XfRo8QPFqSvXPGxBMKFKHpnPbaCFZTnHKA=="],
+    "zentao-api": ["zentao-api@0.6.6", "", {}, "sha512-ifhFkS9s7hYNv+lDyZR7MrdS1xKOvxiqwf7n9fqi9pUSovJvGgsxpN1WdReOQ4y4vDHHyYuIFymdrwTnUb3GwA=="],
 
     "zod": ["zod@4.3.6", "", {}, "sha512-rftlrkhHZOcjDwkGlnUtZZkvaPHCsDATp4pGpuOOMDaTdDDXF91wuVDJoWoPsKX/3YPQ5fHuF3STjcYyKr+Qhg=="],
 

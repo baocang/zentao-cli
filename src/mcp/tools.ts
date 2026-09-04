@@ -4,7 +4,7 @@ import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { getAllModules } from '../modules/helper.js';
 import type { ModuleDefinition, ModuleAction, ModuleActionOptions } from '../types/index.js';
 import { executeModuleCommand } from '../modules/executor.js';
-import { ZentaoError } from '../errors.js';
+import { ZentaoError, mapSdkError } from '../errors.js';
 import type { AuthProvider } from './server.js';
 import { getCurrentProfile, getProfileConfig, setCurrentProfile, profileKey } from '../config/store.js';
 import { DEFAULT_CONFIG } from '../config/defaults.js';
@@ -86,15 +86,34 @@ interface ToolInput {
 }
 
 async function handleProfileTool(auth: AuthProvider): Promise<CallToolResult> {
-    const client = await auth.getClient();
+    let client = await auth.getClient();
     const profile = getCurrentProfile();
     const account = profile?.account;
 
-    const usersResp = await client.get<Record<string, unknown>>('/users', {
+    const fetchUsers = () => client.get<Record<string, unknown>>('/users', {
         query: { browseType: 'inside', recPerPage: 100 },
     });
 
-    const usersRaw = (usersResp as Record<string, unknown>).users;
+    let usersResp: Record<string, unknown>;
+    try {
+        usersResp = await fetchUsers();
+    } catch (error) {
+        const mapped = mapSdkError(error);
+        if (mapped instanceof ZentaoError && mapped.code === '1004' && profile) {
+            const reauthedClient = await tryReauth(profile);
+            if (reauthedClient) {
+                client = reauthedClient;
+                auth.resetClient();
+                usersResp = await fetchUsers();
+            } else {
+                throw mapped;
+            }
+        } else {
+            throw mapped;
+        }
+    }
+
+    const usersRaw = usersResp.users;
     const users = Array.isArray(usersRaw) ? usersRaw as Array<Record<string, unknown>> : [];
     const user = account
         ? users.find((item) => String(item.account ?? '') === account)
@@ -139,7 +158,7 @@ async function handleModuleTool(
     input: ToolInput,
     auth: AuthProvider,
 ): Promise<CallToolResult> {
-    const client = await auth.getClient();
+    let client = await auth.getClient();
     const profile = getCurrentProfile();
     const config = profile ? getProfileConfig(profile) : DEFAULT_CONFIG;
     const actionName = input.action;
@@ -164,7 +183,7 @@ async function handleModuleTool(
     };
 
     // File upload requires multipart FormData — bypass normal JSON execution.
-    // Agent passes params: { file: '/local/path', objectType?: 'bug', objectID?: 972 }.
+    // Agent passes params: { file: '/local/path', objectType?: 'bug', objectID?: 123 }.
     if (mod.name === 'file' && actionName === 'upload') {
         const p = input.params ?? {};
         const filePath = typeof p.file === 'string' ? p.file : undefined;
@@ -174,7 +193,15 @@ async function handleModuleTool(
         const objectType = p.objectType != null ? String(p.objectType) : undefined;
         const objectID = p.objectID != null ? String(p.objectID) : undefined;
         if (!profile) throw new ZentaoError('E1006');
-        const result = await uploadFileAttachment(client, profile, filePath, objectType, objectID);
+        const uploadRoot = process.env.ZENTAO_MCP_UPLOAD_ROOT;
+        if (!uploadRoot) {
+            throw new ZentaoError('E2009', {
+                option: 'file',
+                reason: 'MCP 文件上传默认禁用，请设置 ZENTAO_MCP_UPLOAD_ROOT 指定允许读取的目录',
+            });
+        }
+        const result = await uploadFileAttachment(client, profile, filePath, objectType, objectID, uploadRoot);
+        auth.resetClient();
         return { content: [{ type: 'text', text: JSON.stringify({ status: 'success', data: result.response }, null, 2) }] };
     }
 
@@ -190,8 +217,10 @@ async function handleModuleTool(
             } catch (error) {
                 if (error instanceof ZentaoError && error.code === '1004' && !reauthAttempted && profile) {
                     reauthAttempted = true;
-                    const reauthed = await tryReauth(client, profile);
-                    if (reauthed) {
+                    const reauthedClient = await tryReauth(profile);
+                    if (reauthedClient) {
+                        client = reauthedClient;
+                        auth.resetClient();
                         try {
                             const exec = await executeModuleCommand(client, mod, actionName, [], { ...baseOpts, id: String(id) }, config);
                             results.push({ id, data: exec.data });
@@ -215,8 +244,10 @@ async function handleModuleTool(
         execution = await executeModuleCommand(client, mod, actionName, [], baseOpts, config);
     } catch (error) {
         if (error instanceof ZentaoError && error.code === '1004' && profile) {
-            const reauthed = await tryReauth(client, profile);
-            if (reauthed) {
+            const reauthedClient = await tryReauth(profile);
+            if (reauthedClient) {
+                client = reauthedClient;
+                auth.resetClient();
                 execution = await executeModuleCommand(client, mod, actionName, [], baseOpts, config);
             } else {
                 throw error;

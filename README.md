@@ -11,12 +11,14 @@
 * ✅ 对 AI Agents 友好，帮助信息完善，支持输出 Markdown
 * ✅ 支持以 AI 技能的方式使用，支持通过 `zentao add-skill` 一键安装技能到 AI Agent
 * ✅ 支持 MCP 服务，使用 `npx @baocang/zentao-cli mcp` 启动 MCP 服务
+* ✅ 支持附件上传、下载、重命名和删除，可直接挂载到 Bug、任务、需求等业务对象
+* ✅ Token 失效时可通过密码自动重连，并识别 HTTP 200 登录页响应
+* ✅ 支持工作区管理，记住常用的产品、项目和执行上下文
 * ✅ 使用现代的 bun 与 TypeScript 开发，具备类型安全
 * ✅ 提供完善的测试覆盖，保障代码质量
 
 待实现特性：
 
-* [ ] 支持工作区管理，支持记住用户上次访问的产品、项目和执行信息
 * [ ] 支持批量创建和更新操作
 * [ ] 对象预设 pick 列表
 * [ ] Markdown 输出渲染，提供适合人阅读的终端渲染模式，为 Markdown 内容应用多彩格式，代码块支持高亮
@@ -37,7 +39,7 @@ npm install -g @baocang/zentao-cli
 # pnpm dlx @baocang/zentao-cli        # ← 通过 pnpm 免安装运行
 
 # 首次使用需要进行登录
-zentao login -s https://zentao.example.com -u admin -p 123456
+zentao login -s https://zentao.example.com -u admin -p '<password>'
 
 # 直接执行获取可用命令帮助
 zentao
@@ -193,7 +195,7 @@ $ zentao add-mcp
 
 请输入禅道 URL: https://zentao.example.com
 请输入用户名: admin
-请输入密码: 123456
+请输入密码: <password>
 
 请选择要配置的 AI Agent:
    1) Cursor
@@ -228,12 +230,15 @@ $ pnpm install -g @baocang/zentao-cli && zentao login && zentao add-mcp
       "env": {
         "ZENTAO_URL": "https://zentao.example.com",
         "ZENTAO_ACCOUNT": "admin",
-        "ZENTAO_PASSWORD": "123456"
+        "ZENTAO_PASSWORD": "<password>",
+        "ZENTAO_MCP_UPLOAD_ROOT": "/path/to/allowed/files"
       }
     }
   }
 }
 ```
+
+`ZENTAO_MCP_UPLOAD_ROOT` 可选。MCP 本地文件上传默认禁用；设置后仅允许上传该目录内不超过 50 MiB 的普通文件。
 
 ## 文档
 

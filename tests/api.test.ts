@@ -29,6 +29,85 @@ describe('createClient', () => {
 });
 
 describe('ZentaoClient HTTP behavior (SDK)', () => {
+    test('maps an HTTP 200 ZenTao login page to E1004', async () => {
+        const server = Bun.serve({
+            port: 0,
+            fetch: () => new Response(
+                '<!DOCTYPE html><html><body><form id="loginForm"><input name="account"></form></body></html>',
+                { headers: { 'Content-Type': 'text/html; charset=UTF-8' } },
+            ),
+        });
+
+        try {
+            const client = createClient(server.url.toString(), 'expired-token');
+            await expect(client.get('/products')).rejects.toMatchObject({ code: '1004' });
+        } finally {
+            server.stop();
+        }
+    });
+
+    test('rejects a login page requested as a raw Response', async () => {
+        const server = Bun.serve({
+            port: 0,
+            fetch: () => new Response(
+                '<!DOCTYPE html><html><body><form id="loginForm"><input name="account"></form></body></html>',
+                { headers: { 'Content-Type': 'text/html' } },
+            ),
+        });
+
+        try {
+            const client = createClient(server.url.toString(), 'expired-token');
+            await expect(client.request('/files/1', { responseType: 'response' }))
+                .rejects.toMatchObject({ code: '1004' });
+        } finally {
+            server.stop();
+        }
+    });
+
+    test('allows an HTML attachment requested as a raw Response', async () => {
+        const server = Bun.serve({
+            port: 0,
+            fetch: () => new Response(
+                '<!DOCTYPE html><html><body><form id="loginForm"><input name="account"></form></body></html>',
+                {
+                headers: {
+                    'Content-Type': 'text/html',
+                    'Content-Disposition': 'attachment; filename="report.html"',
+                },
+                },
+            ),
+        });
+
+        try {
+            const client = createClient(server.url.toString(), 'valid-token');
+            const response = await client.request('/files/1', { responseType: 'response' });
+            expect(await response.text()).toContain('loginForm');
+        } finally {
+            server.stop();
+        }
+    });
+
+    test('keeps timeout enforcement while inspecting a streaming HTML response', async () => {
+        const server = Bun.serve({
+            port: 0,
+            fetch: () => new Response(new ReadableStream({
+                start(controller) {
+                    controller.enqueue(new TextEncoder().encode('<!DOCTYPE html><html><body>'));
+                },
+            }), { headers: { 'Content-Type': 'text/html' } }),
+        });
+
+        try {
+            const client = createClient(server.url.toString(), 'valid-token', { timeout: 100 });
+            const startedAt = Date.now();
+            await expect(client.request('/stream', { responseType: 'response' }))
+                .rejects.toMatchObject({ code: '5001' });
+            expect(Date.now() - startedAt).toBeLessThan(1000);
+        } finally {
+            server.stop(true);
+        }
+    });
+
     function createMockServer(handler: (req: Request) => Response | Promise<Response>) {
         return Bun.serve({ port: 0, fetch: handler });
     }

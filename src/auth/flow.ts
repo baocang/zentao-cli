@@ -2,7 +2,7 @@ import type { Profile } from '../types/index.js';
 import { ZentaoClient, createClient } from '../api/index.js';
 import { ZentaoError } from '../errors.js';
 import { getCurrentProfile, getProfile, saveProfile, getProfileConfig, buildProfile } from '../config/store.js';
-import { login, getEnvCredentials } from './login.js';
+import { login, verifyToken, getEnvCredentials } from './login.js';
 
 /** 已通过鉴权后的运行时上下文，供命令层发起 API 调用 */
 export interface AuthContext {
@@ -64,34 +64,41 @@ export async function ensureAuth(options?: { insecure?: boolean; timeout?: numbe
 }
 
 /**
- * 尝试使用环境变量中的账号密码重新登录，以恢复因 Token 失效（如同账号网页端登录导致会话覆盖）
+ * 尝试使用环境变量中的账号密码重新登录，以恢复因 Token 过期或服务端要求重新认证
  * 而中断的 API 调用。
  *
  * 仅当 ZENTAO_URL / ZENTAO_ACCOUNT / ZENTAO_PASSWORD 环境变量齐全且与当前 profile 匹配时才会触发。
  * 不存储或记录密码，密码仅用于本次登录调用。
  *
- * @returns true 表示重连成功（client.token 和 profile.token 已更新），false 表示无法重连
+ * @returns 新客户端表示重连成功（profile.token 已更新），undefined 表示无法重连
  */
-export async function tryReauth(client: ZentaoClient, profile: Profile): Promise<boolean> {
+export async function tryReauth(profile: Profile): Promise<ZentaoClient | undefined> {
     const env = getEnvCredentials();
-    if (!env.url || !env.account || !env.password) return false;
+    if (!env.url || !env.account || !env.password) return undefined;
 
     const normalizedServer = env.url.replace(/\/+$/, '');
-    if (normalizedServer !== profile.server || env.account !== profile.account) return false;
+    if (normalizedServer !== profile.server || env.account !== profile.account) return undefined;
 
     try {
         const config = getProfileConfig(profile);
-        const result = await login(profile.server, profile.account, env.password, {
+        const client = createClient(profile.server, undefined, {
             insecure: config.insecure,
             timeout: config.timeout,
         });
-        client.token = result.token;
-        profile.token = result.token;
-        if (result.user) profile.user = result.user;
+        const token = await client.login(profile.account, env.password);
+        let user: Record<string, unknown> | undefined;
+        try {
+            ({ user } = await verifyToken(client, profile.account));
+        } catch (error) {
+            if (error instanceof ZentaoError && error.code === '1004') return undefined;
+        }
+
+        profile.token = token;
+        if (user) profile.user = user;
         profile.lastUsedTime = new Date().toISOString();
         saveProfile(profile);
-        return true;
+        return client;
     } catch {
-        return false;
+        return undefined;
     }
 }

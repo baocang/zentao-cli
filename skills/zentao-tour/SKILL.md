@@ -6,7 +6,7 @@ metadata:
   author: Sun Hao <sunhao@chandao.com>
   repository: https://github.com/easysoft/zentao-skills.git
   keywords: [zentao, 禅道, tour, onboarding, tutorial, 体验, 上手]
-  version: 0.1.2
+  version: 0.5.0
 ---
 
 # 禅道 Tour
@@ -116,4 +116,4 @@ metadata:
 
 - [overview.md](overview.md)：禅道与 zentao-cli 速览、安装、MCP 配置、就绪自检
 - [禅道官网](https://www.zentao.net/) / [使用手册](https://www.zentao.net/book/zentaopms/38.html) / [版本对比](https://www.zentao.net/compare-features.html)
-- [zentao-cli 仓库](https://github.com/easysoft/zentao-cli)
+- [zentao-cli 仓库](https://github.com/baocang/zentao-cli)

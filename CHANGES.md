@@ -1,21 +1,37 @@
 # Changes
 
-## Unreleased
+## 0.5.0
 
 ### ✨ 新特性 (Feat)
 
 - **附件上传**: `file` 模块新增 `upload` 操作，通过 multipart/form-data 上传附件并可直接挂载到业务对象。
-  - `zentao file upload ./报告.png --objectType=bug --objectID=972` — 上传并附加到 Bug 972。
+  - `zentao file upload ./报告.png --objectType=bug --objectID=123` — 上传并附加到 Bug 123。
   - `zentao file upload ./日志.txt` — 仅上传不入库对象（objectType/objectID 可选）。
   - CLI 与 MCP 一致（MCP 通过 `params.file` 传本地路径）；支持 Token 失效自动重连。
+  - MCP 上传默认禁用，设置 `ZENTAO_MCP_UPLOAD_ROOT` 后仅允许读取指定目录；附件最大 50 MiB，业务失败不再误报成功。
   - 修正 SDK 生成的 `file create` 误导描述，统一引导使用 `file upload`（ZenTao 将 POST /files 特殊路由到 ajaxUpload，仅接受 multipart 表单，JSON 形式无法成功）。
-  - 已在 ZenTao 22.4 真实环境验证：上传→挂载→下载往返内容一致，删除清理成功。
+  - 已验证上传、挂载、下载与删除的完整附件流程。
+
+### 🐛 修复 (Fix)
+
+- **登录页响应识别**: 兼容禅道在 Token 失效时返回 HTTP 200 登录页的行为，统一映射为 E1004 并进入现有自动重连流程，避免查询静默返回空数据、上传误报成功或下载保存登录页。
+- **原始响应超时**: 升级 `zentao-api` 至 0.6.6，下载等原始响应在读取 body 期间继续受请求超时和取消信号约束。
+- **升级与 MCP 配置**: 自动更新及 `add-mcp` 生成的启动命令统一使用 `@baocang/zentao-cli`，避免访问同名未 scoped 包。
+
+### ✅ 测试 (Test)
+
+- 补充登录页严格指纹、HTML 附件放行、流式响应超时和 multipart 二进制上传回归测试。
+
+### 🤸 技能更新（Skill）
+
+- **zentao-cli**: 更新 scoped 包安装方式、附件上传/下载能力和自动重连说明。
+- **zentao-tour**: 更新 scoped 包安装与 MCP 启动方式。
 
 ## 0.4.0
 
 ### ✨ 新特性 (Feat)
 
-- **Token 自动重连**: 当 API 调用因 Token 失效返回 401/403 时，CLI 自动使用环境变量 `ZENTAO_PASSWORD` 重新登录并重试，无需手动干预。解决同账号网页端登录导致 CLI Token 失效的问题（禅道 Token 本质为 PHP session ID，网页端登录会覆盖旧会话）。
+- **Token 自动重连**: 当 API 调用因 Token 失效返回 401 时，CLI 自动使用环境变量 `ZENTAO_PASSWORD` 重新登录并重试，无需手动干预。
 - **操作历史与备注**: 所有业务对象模块（bug/task/story/epic/requirement/testcase/feedback/ticket/product/project/execution/build/release/testtask/productplan/program）新增 `history` 和 `comment` 扩展操作。
   - `zentao bug history 123` — 查看 Bug 123 的操作历史（opened/resolved/closed/commented 等），支持 `--filter`/`--sort`/`--pick` 等列表处理。
   - `zentao bug comment 123 --comment="备注内容"` — 为 Bug 123 添加备注，无需改变状态。
@@ -40,7 +56,7 @@
 - **applyOptionsJson 清理**: 合并后删除残留的 `options` JSON 字符串字段，避免参数污染。
 - **getCmd allowUnknownOption**: `zentao get` 命令补充 `allowUnknownOption(true)`，与其他 CRUD 命令保持一致。
 - **批量操作输出分隔**: markdown 格式下批量操作结果之间增加 `---` 分隔线，避免混淆。
-- **Token 失效精准识别**: `mapSdkError` 现检测 403 + `{"message":"Not allowed"}` 响应体并映射为 E1004（Token 失效），而非 E2006（权限不足）。禅道的 `deny()` 方法在会话失效时返回此组合，而非标准的 401。
+- **鉴权错误精准识别**: 401 映射为 E1004（Token 失效），403 映射为 E2006（权限不足），避免因权限不足触发无效重连。
 - **E1004 错误消息改进**: 明确提示"可能是同账号网页端登录导致会话被覆盖"，并引导用户设置 `ZENTAO_PASSWORD` 环境变量以启用自动重连。
 - **MCP 工具自动重连**: MCP 工具（含批量模式）同样支持 Token 失效后自动重连，第一次 auth 错误触发重连尝试。
 

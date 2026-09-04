@@ -1,4 +1,5 @@
 import { request } from 'zentao-api';
+import type { ResponseData } from 'zentao-api';
 import type { ZentaoClient } from '../api/index.js';
 import { mapSdkError } from '../errors.js';
 import type {
@@ -241,17 +242,18 @@ export async function executeModuleCommand(
         };
     }
 
+    const normalized = response as ResponseData<unknown>;
     const fields = parseFields(options.pick);
-    const pager: ListPagerInfo | undefined = response.pager
+    const pager: ListPagerInfo | undefined = normalized.pager
         ? {
-            pageID: response.pager.page,
-            recPerPage: response.pager.recPerPage,
-            recTotal: response.pager.total,
+            pageID: normalized.pager.page,
+            recPerPage: normalized.pager.recPerPage,
+            recTotal: normalized.pager.total,
         }
         : undefined;
 
     if (action.type === 'list') {
-        let data = (Array.isArray(response.data) ? response.data : []) as Record<string, unknown>[];
+        let data = (Array.isArray(normalized.data) ? normalized.data : []) as Record<string, unknown>[];
 
         if (config.htmlToMarkdown !== false) {
             data = convertHtmlFieldsInArray(data);
@@ -277,7 +279,7 @@ export async function executeModuleCommand(
     }
 
     if (action.type === 'get') {
-        let data = (response.data ?? {}) as Record<string, unknown>;
+        let data = (normalized.data ?? {}) as Record<string, unknown>;
         if (config.htmlToMarkdown !== false) {
             data = convertHtmlFields(data);
         }
@@ -288,5 +290,5 @@ export async function executeModuleCommand(
         return { action, data, rawResponse: response, fields, isList: false };
     }
 
-    return { action, data: response.data, rawResponse: response, fields, isList: false };
+    return { action, data: normalized.data, rawResponse: response, fields, isList: false };
 }

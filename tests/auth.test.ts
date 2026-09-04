@@ -1,6 +1,11 @@
 import { describe, test, expect, afterEach, beforeEach } from 'bun:test';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createClient } from '../src/api/index';
-import { verifyToken, getEnvCredentials } from '../src/auth/login';
+import { login, verifyToken, getEnvCredentials } from '../src/auth/login';
+import { tryReauth } from '../src/auth/flow';
+import { __resetConfigStoreForTests, setConfigPath } from '../src/config/store';
 import { ZentaoError } from '../src/errors';
 
 type RouteHandler = (req: Request, url: URL) => Response | Promise<Response>;
@@ -32,6 +37,25 @@ function makeClient(server: { url: URL }, token = 'test-token') {
 }
 
 describe('verifyToken', () => {
+    test('密码登录后的 token 校验若返回登录页，不保存为成功登录', async () => {
+        const server = createMockServer({
+            users: () => new Response(
+                '<!DOCTYPE html><html><body><form id="loginForm"><input name="account"></form></body></html>',
+                { headers: { 'Content-Type': 'text/html' } },
+            ),
+            fallback: (_req, url) => url.pathname === '/api.php/v2/users/login'
+                ? Response.json({ status: 'success', token: 'immediately-invalid-token' })
+                : new Response('not found', { status: 404 }),
+        });
+
+        try {
+            await expect(login(server.url.toString(), 'admin', 'password'))
+                .rejects.toMatchObject({ code: '1004' });
+        } finally {
+            server.stop();
+        }
+    });
+
     test('返回 serverConfig 和匹配账号的 user', async () => {
         const server = createMockServer({
             serverConfig: () => Response.json({ version: '22.0', edition: 'open' }),
@@ -166,6 +190,65 @@ describe('verifyToken', () => {
             expect(receivedQuery?.get('recPerPage')).toBe('100');
         } finally {
             server.stop();
+        }
+    });
+});
+
+describe('tryReauth', () => {
+    test('logs in without the expired Token header and returns a replacement client', async () => {
+        const dir = mkdtempSync(join(tmpdir(), 'zentao-cli-reauth-'));
+        __resetConfigStoreForTests();
+        setConfigPath(join(dir, 'zentao.json'));
+        const previousEnv = {
+            url: process.env.ZENTAO_URL,
+            account: process.env.ZENTAO_ACCOUNT,
+            password: process.env.ZENTAO_PASSWORD,
+        };
+        let loginTokenHeader: string | null = null;
+        let usersTokenHeader: string | null = null;
+        const server = createMockServer({
+            users: (req) => {
+                usersTokenHeader = req.headers.get('Token');
+                return Response.json({ status: 'success', users: [{ account: 'admin' }] });
+            },
+            fallback: (req, url) => {
+                if (url.pathname === '/api.php/v2/users/login') {
+                    loginTokenHeader = req.headers.get('Token');
+                    return Response.json({ status: 'success', token: 'new-token' });
+                }
+                return new Response('not found', { status: 404 });
+            },
+        });
+        const serverUrl = server.url.toString().replace(/\/$/, '');
+        const profile = {
+            server: serverUrl,
+            account: 'admin',
+            token: 'expired-token',
+            loginTime: new Date().toISOString(),
+            lastUsedTime: new Date().toISOString(),
+        };
+
+        process.env.ZENTAO_URL = serverUrl;
+        process.env.ZENTAO_ACCOUNT = 'admin';
+        process.env.ZENTAO_PASSWORD = 'test-password';
+        try {
+            const reauthedClient = await tryReauth(profile);
+            expect(reauthedClient).toBeDefined();
+            expect(loginTokenHeader).toBeNull();
+            expect(usersTokenHeader).toBe('new-token');
+            expect(profile.token).toBe('new-token');
+        } finally {
+            server.stop(true);
+            rmSync(dir, { recursive: true, force: true });
+            __resetConfigStoreForTests();
+            for (const [key, value] of Object.entries({
+                ZENTAO_URL: previousEnv.url,
+                ZENTAO_ACCOUNT: previousEnv.account,
+                ZENTAO_PASSWORD: previousEnv.password,
+            })) {
+                if (value === undefined) delete process.env[key];
+                else process.env[key] = value;
+            }
         }
     });
 });

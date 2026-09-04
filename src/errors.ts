@@ -7,7 +7,7 @@ export const ERROR_CODES = {
     E1001: '必须提供有效的禅道服务地址、用户名和密码或 TOKEN',
     E1002: '所提供的禅道服务地址 {url} 无法访问',
     E1003: '当前用户名和密码不正确',
-    E1004: 'Token 已失效（可能是同账号网页端登录导致会话被覆盖），请重新登录或设置 ZENTAO_PASSWORD 环境变量以启用自动重连',
+    E1004: 'Token 已失效或服务端要求重新认证，请重新登录或设置 ZENTAO_PASSWORD 环境变量以启用自动重连',
     E1005: '配置文件损坏或无法读取，请检查 {path}',
     E1006: '未找到指定的用户配置，请先使用 `zentao login -s <zentao_url> -u <account> -p <password> -t <token>` 登录',
     E1007: '指定的用户配置不存在，请通过 `zentao profile` 查看可用配置',
@@ -112,7 +112,7 @@ export function mapSdkError(error: unknown): unknown {
             const url = typeof d.url === 'string' ? d.url : '';
             const body = typeof d.body === 'string' ? d.body : String(d.body ?? '');
             // 401 = authentication failure (invalid/expired token). Always map to E1004
-            // so auto-reauth can kick in. ZenTao uses 401 for session conflicts.
+            // so auto-reauth can kick in.
             if (status === 401) return new ZentaoError('E1004', undefined, details);
             // 403 = authorization failure (authenticated but lacks privilege).
             // ZenTao's deny() returns 403 + {"message":"Not allowed"} for BOTH
