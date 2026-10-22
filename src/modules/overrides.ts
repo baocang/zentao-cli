@@ -1,4 +1,5 @@
 import { extendModuleAction } from 'zentao-api';
+import { registerInternalActions } from './internal-actions.js';
 
 // zentao-api 0.8.0 declares a mixed-case default outside this action's enum.
 extendModuleAction('my', 'auditPlans', (action) => {
@@ -23,3 +24,6 @@ extendModuleAction('bug', 'create', (action) => {
     };
     return action;
 });
+
+// Internal additions never replace SDK-provided operations.
+registerInternalActions();

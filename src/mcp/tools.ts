@@ -1,3 +1,4 @@
+import { downloadAttachment } from '../modules/internal-download.js';
 import { z } from 'zod';
 import { getModuleActionParams, request } from 'zentao-api';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -19,6 +20,8 @@ export interface McpToolOptions {
     allowLocalFiles?: boolean;
 }
 
+const LOCAL_FILE_DOWNLOAD_UNAVAILABLE = 'HTTP MCP 不支持下载附件到服务端本地目录，请使用本地 CLI 或 stdio MCP';
+
 const LOCAL_FILE_UPLOAD_UNAVAILABLE = 'HTTP MCP 不支持通过本地路径上传服务端文件，请使用本地 CLI 或 stdio MCP';
 
 function isReadAction(action: ModuleAction): boolean {
@@ -27,7 +30,7 @@ function isReadAction(action: ModuleAction): boolean {
 
 function isActionAvailable(action: ModuleAction, options: McpToolOptions): boolean {
     return (!options.readOnly || isReadAction(action))
-        && (options.allowLocalFiles !== false || action.requestBody?.mediaType !== 'multipart/form-data');
+        && (options.allowLocalFiles !== false || (action.requestBody?.mediaType !== 'multipart/form-data' && action.request !== downloadAttachment));
 }
 
 function buildToolDescription(mod: ModuleDefinition): string {
@@ -163,7 +166,7 @@ async function handleModuleTool(
     const action = getAction(mod, input.action);
     if (!action) throw new ZentaoError('E2005', { module: mod.name });
     if (!isActionAvailable(action, options)) {
-        throw new ZentaoError('E2009', { option: `${mod.name}/${action.name}`, reason: LOCAL_FILE_UPLOAD_UNAVAILABLE });
+        throw new ZentaoError('E2009', { option: `${mod.name}/${action.name}`, reason: action.request === downloadAttachment ? LOCAL_FILE_DOWNLOAD_UNAVAILABLE : LOCAL_FILE_UPLOAD_UNAVAILABLE });
     }
     for (const option of ['filter', 'sort', 'search', 'searchFields', 'pick'] as const) {
         if (input[option] !== undefined && action.type !== 'list' && !(option === 'pick' && action.type === 'get')) {
@@ -247,7 +250,9 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider, optio
                     parameters: getModuleActionParams(mod.name, definition.name),
                     available: selectedModules.some(selected => selected.name === mod.name) && isActionAvailable(definition, options),
                     ...(options.allowLocalFiles === false && definition.requestBody?.mediaType === 'multipart/form-data'
-                        ? { unavailableReason: LOCAL_FILE_UPLOAD_UNAVAILABLE } : {}),
+                        ? { unavailableReason: LOCAL_FILE_UPLOAD_UNAVAILABLE }
+                        : options.allowLocalFiles === false && definition.request === downloadAttachment
+                            ? { unavailableReason: LOCAL_FILE_DOWNLOAD_UNAVAILABLE } : {}),
                     example: actionExample(mod, definition, options.splitTools),
                 });
             } catch (error) {
