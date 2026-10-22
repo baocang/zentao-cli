@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/easysoft/zentao-cli.git"
+    "url": "git+https://github.com/easysoft/zentao-cli.git"
   },
   "keywords": [
     "zentao",
@@ -16,7 +16,7 @@
     "project-management"
   ],
   "bin": {
-    "zentao": "./bin/zentao.js"
+    "zentao": "bin/zentao.js"
   },
   "files": [
     "bin",
