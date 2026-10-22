@@ -32,7 +32,8 @@ function sseResult(text: string): any {
 
 function rawRequest(url: URL, rawHeaders: string[], body: string | string[] = '{}'): Promise<{ status: number; body: string }> {
     return new Promise((resolve, reject) => {
-        const req = request(url, { method: 'POST', headers: rawHeaders }, res => {
+        // Malformed/chunked protocol probes must not enter Bun's shared fetch pool.
+        const req = request(url, { method: 'POST', headers: rawHeaders, agent: false }, res => {
             let text = '';
             res.setEncoding('utf8');
             res.on('data', chunk => { text += chunk; });
@@ -128,6 +129,23 @@ test('limits actual chunked body bytes and rejects invalid JSON', async () => {
         const response = await rawRequest(f.url, ['token', 'valid', 'Transfer-Encoding', 'chunked', 'Content-Type', 'application/json'], ['"', 'x'.repeat(1024 * 1024), '"']);
         expect(response.status).toBe(413);
         expect((await fetch(new URL('/healthz', f.url))).status).toBe(200);
+    } finally { await f.close(); }
+});
+
+test('concurrent oversized protocol probes do not poison healthy requests', async () => {
+    const f = await fixture();
+    try {
+        for (let batch = 0; batch < 3; batch++) {
+            await Promise.all(Array.from({ length: 12 }, async () => {
+                const response = await rawRequest(f.url,
+                    ['token', 'valid', 'Transfer-Encoding', 'chunked', 'Content-Type', 'application/json'],
+                    ['"', 'x'.repeat(1024 * 1024), '"']);
+                expect(response.status).toBe(413);
+                const health = await fetch(new URL('/healthz', f.url));
+                expect(health.status).toBe(200);
+                expect(await health.json()).toEqual({ status: 'ok' });
+            }));
+        }
     } finally { await f.close(); }
 });
 
