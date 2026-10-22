@@ -36,7 +36,8 @@ try {
     run([process.execPath, 'scripts/build.ts', '--compile', '--minify', '--outfile', executable], projectDir);
 
     const sourceDir = join(projectDir, 'skills');
-    const expectedFiles = listFiles(sourceDir);
+    // Only files inside a skill directory are exported; ignore root-level metadata.
+    const expectedFiles = listFiles(sourceDir).filter(file => file.includes('/'));
     assert.ok(expectedFiles.length > 0);
 
     for (const [name, command] of [

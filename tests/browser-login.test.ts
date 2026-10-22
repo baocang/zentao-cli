@@ -271,7 +271,8 @@ describe('CLI login mode selection', () => {
         const child = Bun.spawn({
             cmd: [process.execPath, '--no-env-file', '--eval', script],
             cwd: directory, stdin: 'ignore', stdout: 'pipe', stderr: 'pipe',
-            env: { ...process.env, PATH: '', ZENTAO_CONFIG_FILE: configFile },
+            // An explicit missing directory avoids Bun's fallback to the system PATH.
+            env: { ...process.env, PATH: join(directory, 'no-browser-opener'), ZENTAO_CONFIG_FILE: configFile },
         });
         const timeout = setTimeout(() => child.kill(), 5_000);
         try {
