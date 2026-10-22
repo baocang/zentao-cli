@@ -341,7 +341,7 @@ bun run scripts/generate-command-reference.ts --check
 
 ## 覆盖范围
 
-对应当前工作区：CLI **0.3.1**，API 定义 **0.8.1**；覆盖 **17 个内置一级命令**（另含 config get/set）、**42 个业务模块、361 个业务操作**。已安装版本不同时，请以本机命令的 --help 为准。
+对应当前工作区：CLI **0.3.1**，API 定义 **0.8.1**；覆盖 **17 个内置一级命令**（另含 config get/set）、**42 个业务模块、421 个业务操作**。已安装版本不同时，请以本机命令的 --help 为准。
 
 <a id="global-options"></a>
 
@@ -1009,27 +1009,27 @@ zentao upgrade --yes
 | 模块 | 名称 | 别名 | 操作数 |
 | --- | --- | --- | --- |
 | [user](#module-user) | 用户 | — | 5 |
-| [program](#module-program) | 项目集 | — | 5 |
-| [product](#module-product) | 产品 | — | 11 |
-| [project](#module-project) | 项目 | — | 14 |
-| [execution](#module-execution) | 执行 | — | 12 |
-| [productplan](#module-productplan) | 产品计划 | plan | 5 |
-| [story](#module-story) | 需求 | — | 12 |
-| [epic](#module-epic) | 业务需求 | — | 8 |
-| [requirement](#module-requirement) | 用户需求 | — | 8 |
-| [bug](#module-bug) | Bug | — | 12 |
-| [testcase](#module-testcase) | 测试用例 | — | 8 |
-| [task](#module-task) | 任务 | — | 12 |
+| [program](#module-program) | 项目集 | — | 7 |
+| [product](#module-product) | 产品 | — | 13 |
+| [project](#module-project) | 项目 | — | 17 |
+| [execution](#module-execution) | 执行 | — | 14 |
+| [productplan](#module-productplan) | 产品计划 | plan | 7 |
+| [story](#module-story) | 需求 | — | 16 |
+| [epic](#module-epic) | 业务需求 | — | 12 |
+| [requirement](#module-requirement) | 用户需求 | — | 12 |
+| [bug](#module-bug) | Bug | — | 15 |
+| [testcase](#module-testcase) | 测试用例 | — | 11 |
+| [task](#module-task) | 任务 | — | 22 |
 | [issue](#module-issue) | 问题 | — | 5 |
 | [risk](#module-risk) | 风险 | — | 6 |
 | [meeting](#module-meeting) | 会议 | — | 8 |
-| [feedback](#module-feedback) | 反馈 | — | 12 |
-| [ticket](#module-ticket) | 工单 | — | 9 |
-| [system](#module-system) | 应用 | — | 3 |
-| [build](#module-build) | 版本 | — | 4 |
-| [testtask](#module-testtask) | 测试单 | — | 4 |
-| [release](#module-release) | 发布 | — | 4 |
-| [file](#module-file) | 附件 | — | 3 |
+| [feedback](#module-feedback) | 反馈 | — | 15 |
+| [ticket](#module-ticket) | 工单 | — | 12 |
+| [system](#module-system) | 应用 | — | 4 |
+| [build](#module-build) | 版本 | — | 7 |
+| [testtask](#module-testtask) | 测试单 | — | 11 |
+| [release](#module-release) | 发布 | — | 7 |
+| [file](#module-file) | 附件 | — | 4 |
 | [workflow](#module-workflow) | 工作流 | — | 55 |
 | [doc](#module-doc) | 文档 | — | 41 |
 | [todo](#module-todo) | 待办 | — | 4 |
@@ -1200,6 +1200,8 @@ zentao help program
 | [get](#action-program-get) | 获取项目集详情 |
 | [update](#action-program-update) | 修改项目集 |
 | [delete](#action-program-delete) | 删除项目集 |
+| [history](#action-program-history) | 获取项目集历史记录 |
+| [comment](#action-program-comment) | 添加项目集备注 |
 
 <a id="action-program-list"></a>
 
@@ -1303,6 +1305,43 @@ zentao program delete --programID=<number> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-program-history"></a>
+
+#### `zentao program history` · 获取项目集历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao program history --programID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--programID` | 路径 | `number` | 是 | 未声明 | 项目集 ID |
+
+`--programID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-program-comment"></a>
+
+#### `zentao program comment` · 添加项目集备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao program comment --programID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--programID` | 路径 | `number` | 是 | 未声明 | 项目集 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--programID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-product"></a>
 
 ### product · 产品
@@ -1331,6 +1370,8 @@ zentao help product
 | [update](#action-product-update) | 修改产品 |
 | [delete](#action-product-delete) | 删除产品 |
 | [repos](#action-product-repos) | 获取产品关联的代码库列表 |
+| [history](#action-product-history) | 获取产品历史记录 |
+| [comment](#action-product-comment) | 添加产品备注 |
 
 <a id="action-product-list"></a>
 
@@ -1563,6 +1604,43 @@ zentao product repos --productID=<number> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-product-history"></a>
+
+#### `zentao product history` · 获取产品历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao product history --productID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--productID` | 路径 | `number` | 是 | 未声明 | 产品 ID |
+
+`--productID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-product-comment"></a>
+
+#### `zentao product comment` · 添加产品备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao product comment --productID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--productID` | 路径 | `number` | 是 | 未声明 | 产品 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--productID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-project"></a>
 
 ### project · 项目
@@ -1572,6 +1650,7 @@ zentao product repos --productID=<number> [选项]
 快捷用法与字段查询：
 
 ```text
+zentao project <id>
 zentao project [列表参数]
 zentao project props --format=json
 zentao help project
@@ -1593,6 +1672,9 @@ zentao help project
 | [update](#action-project-update) | 修改项目 |
 | [delete](#action-project-delete) | 删除项目 |
 | [members](#action-project-members) | 维护项目成员 |
+| [get](#action-project-get) | 获取项目详情 |
+| [history](#action-project-history) | 获取项目历史记录 |
+| [comment](#action-project-comment) | 添加项目备注 |
 
 <a id="action-project-list"></a>
 
@@ -1913,6 +1995,61 @@ zentao project members --projectID=<number> --account=<string[]> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-project-get"></a>
+
+#### `zentao project get` · 获取项目详情
+
+最低禅道版本：`22.4`。
+
+```text
+zentao project get --projectID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--projectID` | 路径 | `number` | 是 | 未声明 | projectID |
+
+`--projectID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-project-history"></a>
+
+#### `zentao project history` · 获取项目历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao project history --projectID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--projectID` | 路径 | `number` | 是 | 未声明 | 项目 ID |
+
+`--projectID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-project-comment"></a>
+
+#### `zentao project comment` · 添加项目备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao project comment --projectID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--projectID` | 路径 | `number` | 是 | 未声明 | 项目 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--projectID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-execution"></a>
 
 ### execution · 执行
@@ -1942,6 +2079,8 @@ zentao help execution
 | [update](#action-execution-update) | 修改执行 |
 | [delete](#action-execution-delete) | 删除执行 |
 | [members](#action-execution-members) | 维护执行成员 |
+| [history](#action-execution-history) | 获取执行历史记录 |
+| [comment](#action-execution-comment) | 添加执行备注 |
 
 <a id="action-execution-list"></a>
 
@@ -2204,6 +2343,43 @@ zentao execution members --executionID=<number> --account=<string[]> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-execution-history"></a>
+
+#### `zentao execution history` · 获取执行历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao execution history --executionID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--executionID` | 路径 | `number` | 是 | 未声明 | 执行 ID |
+
+`--executionID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-execution-comment"></a>
+
+#### `zentao execution comment` · 添加执行备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao execution comment --executionID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--executionID` | 路径 | `number` | 是 | 未声明 | 执行 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--executionID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-productplan"></a>
 
 ### productplan · 产品计划
@@ -2226,6 +2402,8 @@ zentao help productplan
 | [get](#action-productplan-get) | 获取产品计划详情 |
 | [update](#action-productplan-update) | 修改产品计划 |
 | [delete](#action-productplan-delete) | 删除产品计划 |
+| [history](#action-productplan-history) | 获取计划历史记录 |
+| [comment](#action-productplan-comment) | 添加计划备注 |
 
 <a id="action-productplan-list"></a>
 
@@ -2335,6 +2513,43 @@ zentao productplan delete --planID=<number> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-productplan-history"></a>
+
+#### `zentao productplan history` · 获取计划历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao productplan history --productplanID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--productplanID` | 路径 | `number` | 是 | 未声明 | 计划 ID |
+
+`--productplanID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-productplan-comment"></a>
+
+#### `zentao productplan comment` · 添加计划备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao productplan comment --productplanID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--productplanID` | 路径 | `number` | 是 | 未声明 | 计划 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--productplanID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-story"></a>
 
 ### story · 需求
@@ -2364,6 +2579,10 @@ zentao help story
 | [change](#action-story-change) | 变更需求 |
 | [close](#action-story-close) | 关闭需求 |
 | [getGrades](#action-story-getgrades) | 获取需求层级选项 |
+| [review](#action-story-review) | 需求评审 |
+| [assignto](#action-story-assignto) | 需求指派 |
+| [history](#action-story-history) | 获取需求历史记录 |
+| [comment](#action-story-comment) | 添加需求备注 |
 
 <a id="action-story-list"></a>
 
@@ -2619,6 +2838,85 @@ zentao story getGrades [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-story-review"></a>
+
+#### `zentao story review` · 需求评审
+
+最低禅道版本：`22.4`。
+
+```text
+zentao story review --storyID=<number> --result=<string> --reviewedDate=<string> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--storyID` | 路径 | `number` | 是 | 未声明 | story ID |
+| `--assignedTo` | 请求体 | `string` | 否 | 未声明 | 指派给 |
+| `--result` | 请求体 | `string` | 是 | 未声明 | 评审结果 |
+| `--reviewedDate` | 请求体 | `string` | 是 | 未声明 | 评审时间 |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注 |
+
+`--storyID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-story-assignto"></a>
+
+#### `zentao story assignto` · 需求指派
+
+最低禅道版本：`22.4`。
+
+```text
+zentao story assignto --storyID=<number> --assignedTo=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--storyID` | 路径 | `number` | 是 | 未声明 | story ID |
+| `--assignedTo` | 请求体 | `string` | 是 | 未声明 | 指派给 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--storyID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-story-history"></a>
+
+#### `zentao story history` · 获取需求历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao story history --storyID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--storyID` | 路径 | `number` | 是 | 未声明 | 需求 ID |
+
+`--storyID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-story-comment"></a>
+
+#### `zentao story comment` · 添加需求备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao story comment --storyID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--storyID` | 路径 | `number` | 是 | 未声明 | 需求 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--storyID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-epic"></a>
 
 ### epic · 业务需求
@@ -2644,6 +2942,10 @@ zentao help epic
 | [activate](#action-epic-activate) | 激活业务需求 |
 | [change](#action-epic-change) | 变更业务需求 |
 | [close](#action-epic-close) | 关闭业务需求 |
+| [review](#action-epic-review) | 业务需求评审 |
+| [assignto](#action-epic-assignto) | 业务需求指派 |
+| [history](#action-epic-history) | 获取业务需求历史记录 |
+| [comment](#action-epic-comment) | 添加业务需求备注 |
 
 <a id="action-epic-list"></a>
 
@@ -2822,6 +3124,85 @@ zentao epic close --storyID=<number> --closedReason=<string> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-epic-review"></a>
+
+#### `zentao epic review` · 业务需求评审
+
+最低禅道版本：`22.4`。
+
+```text
+zentao epic review --epicID=<number> --result=<string> --reviewedDate=<string> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--epicID` | 路径 | `number` | 是 | 未声明 | epic ID |
+| `--assignedTo` | 请求体 | `string` | 否 | 未声明 | 指派给 |
+| `--result` | 请求体 | `string` | 是 | 未声明 | 评审结果 |
+| `--reviewedDate` | 请求体 | `string` | 是 | 未声明 | 评审时间 |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注 |
+
+`--epicID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-epic-assignto"></a>
+
+#### `zentao epic assignto` · 业务需求指派
+
+最低禅道版本：`22.4`。
+
+```text
+zentao epic assignto --epicID=<number> --assignedTo=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--epicID` | 路径 | `number` | 是 | 未声明 | epic ID |
+| `--assignedTo` | 请求体 | `string` | 是 | 未声明 | 指派给 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--epicID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-epic-history"></a>
+
+#### `zentao epic history` · 获取业务需求历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao epic history --epicID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--epicID` | 路径 | `number` | 是 | 未声明 | 业务需求 ID |
+
+`--epicID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-epic-comment"></a>
+
+#### `zentao epic comment` · 添加业务需求备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao epic comment --epicID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--epicID` | 路径 | `number` | 是 | 未声明 | 业务需求 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--epicID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-requirement"></a>
 
 ### requirement · 用户需求
@@ -2847,6 +3228,10 @@ zentao help requirement
 | [activate](#action-requirement-activate) | 激活用户需求 |
 | [change](#action-requirement-change) | 变更用户需求 |
 | [close](#action-requirement-close) | 关闭用户需求 |
+| [review](#action-requirement-review) | 用户需求评审 |
+| [assignto](#action-requirement-assignto) | 用户需求指派 |
+| [history](#action-requirement-history) | 获取用户需求历史记录 |
+| [comment](#action-requirement-comment) | 添加用户需求备注 |
 
 <a id="action-requirement-list"></a>
 
@@ -3025,6 +3410,85 @@ zentao requirement close --storyID=<number> --closedReason=<string> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-requirement-review"></a>
+
+#### `zentao requirement review` · 用户需求评审
+
+最低禅道版本：`22.4`。
+
+```text
+zentao requirement review --requirementID=<number> --result=<string> --reviewedDate=<string> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--requirementID` | 路径 | `number` | 是 | 未声明 | requirement ID |
+| `--assignedTo` | 请求体 | `string` | 否 | 未声明 | 指派给 |
+| `--result` | 请求体 | `string` | 是 | 未声明 | 评审结果 |
+| `--reviewedDate` | 请求体 | `string` | 是 | 未声明 | 评审时间 |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注 |
+
+`--requirementID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-requirement-assignto"></a>
+
+#### `zentao requirement assignto` · 用户需求指派
+
+最低禅道版本：`22.4`。
+
+```text
+zentao requirement assignto --requirementID=<number> --assignedTo=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--requirementID` | 路径 | `number` | 是 | 未声明 | requirement ID |
+| `--assignedTo` | 请求体 | `string` | 是 | 未声明 | 指派给 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--requirementID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-requirement-history"></a>
+
+#### `zentao requirement history` · 获取用户需求历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao requirement history --requirementID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--requirementID` | 路径 | `number` | 是 | 未声明 | 用户需求 ID |
+
+`--requirementID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-requirement-comment"></a>
+
+#### `zentao requirement comment` · 添加用户需求备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao requirement comment --requirementID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--requirementID` | 路径 | `number` | 是 | 未声明 | 用户需求 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--requirementID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-bug"></a>
 
 ### bug · Bug
@@ -3054,6 +3518,9 @@ zentao help bug
 | [close](#action-bug-close) | 关闭Bug |
 | [confirm](#action-bug-confirm) | 确认Bug |
 | [resolve](#action-bug-resolve) | 解决Bug |
+| [assignto](#action-bug-assignto) | 指派Bug |
+| [history](#action-bug-history) | 获取Bug历史记录 |
+| [comment](#action-bug-comment) | 添加Bug备注 |
 
 <a id="action-bug-list"></a>
 
@@ -3320,6 +3787,63 @@ zentao bug resolve --bugID=<number> --resolution=<string> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-bug-assignto"></a>
+
+#### `zentao bug assignto` · 指派Bug
+
+最低禅道版本：`22.4`。
+
+```text
+zentao bug assignto --bugID=<number> --assignedTo=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--bugID` | 路径 | `number` | 是 | 未声明 | bug ID |
+| `--assignedTo` | 请求体 | `string` | 是 | 未声明 | 指派给 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--bugID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-bug-history"></a>
+
+#### `zentao bug history` · 获取Bug历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao bug history --bugID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--bugID` | 路径 | `number` | 是 | 未声明 | Bug ID |
+
+`--bugID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-bug-comment"></a>
+
+#### `zentao bug comment` · 添加Bug备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao bug comment --bugID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--bugID` | 路径 | `number` | 是 | 未声明 | Bug ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--bugID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-testcase"></a>
 
 ### testcase · 测试用例
@@ -3345,6 +3869,9 @@ zentao help testcase
 | [updateModule](#action-testcase-updatemodule) | 修改用例模块 |
 | [delete](#action-testcase-delete) | 删除测试用例 |
 | [deleteModule](#action-testcase-deletemodule) | 删除用例模块 |
+| [review](#action-testcase-review) | 评审用例 |
+| [history](#action-testcase-history) | 获取用例历史记录 |
+| [comment](#action-testcase-comment) | 添加用例备注 |
 
 <a id="action-testcase-list"></a>
 
@@ -3521,6 +4048,65 @@ zentao testcase deleteModule --moduleID=<number> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-testcase-review"></a>
+
+#### `zentao testcase review` · 评审用例
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testcase review --caseID=<number> --result=<string> --reviewedDate=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--caseID` | 路径 | `number` | 是 | 未声明 | testcase ID |
+| `--assignedTo` | 请求体 | `string` | 否 | 未声明 | 指派给 |
+| `--result` | 请求体 | `string` | 是 | 未声明 | 评审结果 |
+| `--reviewedDate` | 请求体 | `string` | 是 | 未声明 | 评审时间 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--caseID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testcase-history"></a>
+
+#### `zentao testcase history` · 获取用例历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testcase history --caseID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--caseID` | 路径 | `number` | 是 | 未声明 | 用例 ID |
+
+`--caseID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testcase-comment"></a>
+
+#### `zentao testcase comment` · 添加用例备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testcase comment --caseID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--caseID` | 路径 | `number` | 是 | 未声明 | 用例 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--caseID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-task"></a>
 
 ### task · 任务
@@ -3550,6 +4136,16 @@ zentao help task
 | [close](#action-task-close) | 关闭任务 |
 | [finish](#action-task-finish) | 完成任务 |
 | [start](#action-task-start) | 启动任务 |
+| [pause](#action-task-pause) | 暂停任务 |
+| [cancel](#action-task-cancel) | 取消任务 |
+| [restart](#action-task-restart) | 继续任务 |
+| [assignto](#action-task-assignto) | 指派任务 |
+| [recordestimate](#action-task-recordestimate) | 记录任务工时 |
+| [effort](#action-task-effort) | 获取任务工时记录 |
+| [editeffort](#action-task-editeffort) | 编辑工时记录 |
+| [deleteeffort](#action-task-deleteeffort) | 删除工时记录 |
+| [history](#action-task-history) | 获取任务历史记录 |
+| [comment](#action-task-comment) | 添加任务备注 |
 
 <a id="action-task-list"></a>
 
@@ -3807,6 +4403,205 @@ zentao task start --taskID=<number> --realStarted=<string> [选项]
 | `--consumed` | 请求体 | `number` | 否 | 未声明 | 总计消耗<br>格式：float |
 | `--left` | 请求体 | `number` | 否 | 未声明 | 预计剩余<br>格式：float |
 | `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-pause"></a>
+
+#### `zentao task pause` · 暂停任务
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task pause --taskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | task ID |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-cancel"></a>
+
+#### `zentao task cancel` · 取消任务
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task cancel --taskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | task ID |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-restart"></a>
+
+#### `zentao task restart` · 继续任务
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task restart --taskID=<number> --realStarted=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | task ID |
+| `--realStarted` | 请求体 | `string` | 是 | 未声明 | 实际开始 |
+| `--consumed` | 请求体 | `number` | 否 | 未声明 | 总计消耗<br>格式：float |
+| `--left` | 请求体 | `number` | 否 | 未声明 | 预计剩余<br>格式：float |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-assignto"></a>
+
+#### `zentao task assignto` · 指派任务
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task assignto --taskID=<number> --executionID=<number> --assignedTo=<string> --left=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | task ID |
+| `--executionID` | 查询 | `number` | 是 | 未声明 | 执行ID |
+| `--assignedTo` | 请求体 | `string` | 是 | 未声明 | 指派给 |
+| `--left` | 请求体 | `number` | 是 | 未声明 | 预计剩余<br>格式：float |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-recordestimate"></a>
+
+#### `zentao task recordestimate` · 记录任务工时
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task recordestimate --taskID=<number> --date=<string[]> --consumed=<number[]> --left=<number[]> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | 任务 ID |
+| `--date` | 请求体 | `string[]` | 是 | 未声明 | 日期，格式 YYYY-MM-DD，默认今天<br>数组元素类型：string |
+| `--work` | 请求体 | `string[]` | 否 | 未声明 | 工作内容<br>数组元素类型：string |
+| `--consumed` | 请求体 | `number[]` | 是 | 未声明 | 本次耗时（小时，累加到总计）<br>数组元素类型：number |
+| `--left` | 请求体 | `number[]` | 是 | 未声明 | 更新后的剩余工时（小时，覆盖之前值）<br>数组元素类型：number |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-effort"></a>
+
+#### `zentao task effort` · 获取任务工时记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task effort --taskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | 任务 ID |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-editeffort"></a>
+
+#### `zentao task editeffort` · 编辑工时记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task editeffort --effortID=<number> --consumed=<number> --left=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--effortID` | 路径 | `number` | 是 | 未声明 | 工时记录 ID |
+| `--date` | 请求体 | `string` | 否 | 未声明 | 日期，格式 YYYY-MM-DD |
+| `--work` | 请求体 | `string` | 否 | 未声明 | 工作内容 |
+| `--consumed` | 请求体 | `number` | 是 | 未声明 | 本次耗时（小时，累加到总计）<br>格式：float |
+| `--left` | 请求体 | `number` | 是 | 未声明 | 更新后的剩余工时（小时，覆盖之前值）<br>格式：float |
+
+`--effortID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-deleteeffort"></a>
+
+#### `zentao task deleteeffort` · 删除工时记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task deleteeffort --effortID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--effortID` | 路径 | `number` | 是 | 未声明 | 工时记录 ID |
+
+`--effortID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-history"></a>
+
+#### `zentao task history` · 获取任务历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task history --taskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | 任务 ID |
+
+`--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-task-comment"></a>
+
+#### `zentao task comment` · 添加任务备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao task comment --taskID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--taskID` | 路径 | `number` | 是 | 未声明 | 任务 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
 
 `--taskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
 
@@ -4359,6 +5154,9 @@ zentao help feedback
 | [delete](#action-feedback-delete) | 删除反馈 |
 | [activate](#action-feedback-activate) | 激活反馈 |
 | [close](#action-feedback-close) | 关闭反馈 |
+| [assignto](#action-feedback-assignto) | 指派反馈 |
+| [history](#action-feedback-history) | 获取反馈历史记录 |
+| [comment](#action-feedback-comment) | 添加反馈备注 |
 
 <a id="action-feedback-list"></a>
 
@@ -4626,6 +5424,63 @@ zentao feedback close --feedbackID=<number> --closedReason=<string> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-feedback-assignto"></a>
+
+#### `zentao feedback assignto` · 指派反馈
+
+最低禅道版本：`22.4`。
+
+```text
+zentao feedback assignto --feedbackID=<number> --assignedTo=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--feedbackID` | 路径 | `number` | 是 | 未声明 | feedback ID |
+| `--assignedTo` | 请求体 | `string` | 是 | 未声明 | 指派给 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--feedbackID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-feedback-history"></a>
+
+#### `zentao feedback history` · 获取反馈历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao feedback history --feedbackID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--feedbackID` | 路径 | `number` | 是 | 未声明 | 反馈 ID |
+
+`--feedbackID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-feedback-comment"></a>
+
+#### `zentao feedback comment` · 添加反馈备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao feedback comment --feedbackID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--feedbackID` | 路径 | `number` | 是 | 未声明 | 反馈 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--feedbackID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-ticket"></a>
 
 ### ticket · 工单
@@ -4652,6 +5507,9 @@ zentao help ticket
 | [delete](#action-ticket-delete) | 删除工单 |
 | [activate](#action-ticket-activate) | 激活工单 |
 | [close](#action-ticket-close) | 关闭工单 |
+| [assignto](#action-ticket-assignto) | 指派工单 |
+| [history](#action-ticket-history) | 获取工单历史记录 |
+| [comment](#action-ticket-comment) | 添加工单备注 |
 
 <a id="action-ticket-list"></a>
 
@@ -4852,6 +5710,63 @@ zentao ticket close --ticketID=<number> --closedReason=<string> --comment=<strin
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-ticket-assignto"></a>
+
+#### `zentao ticket assignto` · 指派工单
+
+最低禅道版本：`22.4`。
+
+```text
+zentao ticket assignto --ticketID=<number> --assignedTo=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--ticketID` | 路径 | `number` | 是 | 未声明 | ticket ID |
+| `--assignedTo` | 请求体 | `string` | 是 | 未声明 | 指派给 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--ticketID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-ticket-history"></a>
+
+#### `zentao ticket history` · 获取工单历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao ticket history --ticketID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--ticketID` | 路径 | `number` | 是 | 未声明 | 工单 ID |
+
+`--ticketID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-ticket-comment"></a>
+
+#### `zentao ticket comment` · 添加工单备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao ticket comment --ticketID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--ticketID` | 路径 | `number` | 是 | 未声明 | 工单 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--ticketID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-system"></a>
 
 ### system · 应用
@@ -4861,6 +5776,7 @@ zentao ticket close --ticketID=<number> --closedReason=<string> --comment=<strin
 快捷用法与字段查询：
 
 ```text
+zentao system <id>
 zentao system [列表参数]
 zentao system props --format=json
 zentao help system
@@ -4871,6 +5787,7 @@ zentao help system
 | [list](#action-system-list) | 获取应用列表，支持获取产品下的应用 |
 | [create](#action-system-create) | 创建应用 |
 | [update](#action-system-update) | 修改应用 |
+| [get](#action-system-get) | 获取应用详情 |
 
 <a id="action-system-list"></a>
 
@@ -4936,6 +5853,24 @@ zentao system update --systemID=<number> --name=<string> --children=<string[]> [
 
 未提供的更新字段会从当前对象自动补全；上表必填请求体字段可由原值补齐。
 
+<a id="action-system-get"></a>
+
+#### `zentao system get` · 获取应用详情
+
+最低禅道版本：`22.4`。
+
+```text
+zentao system get --systemID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--systemID` | 路径 | `number` | 是 | 未声明 | systemID |
+
+`--systemID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-build"></a>
 
 ### build · 版本
@@ -4945,6 +5880,7 @@ zentao system update --systemID=<number> --name=<string> --children=<string[]> [
 快捷用法与字段查询：
 
 ```text
+zentao build <id>
 zentao build [列表参数]
 zentao build props --format=json
 zentao help build
@@ -4956,6 +5892,9 @@ zentao help build
 | [create](#action-build-create) | 创建版本/构建 |
 | [update](#action-build-update) | 修改版本 |
 | [delete](#action-build-delete) | 删除版本 |
+| [get](#action-build-get) | 获取版本详情 |
+| [history](#action-build-history) | 获取版本历史记录 |
+| [comment](#action-build-comment) | 添加版本备注 |
 
 <a id="action-build-list"></a>
 
@@ -5053,6 +5992,61 @@ zentao build delete --buildID=<number> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-build-get"></a>
+
+#### `zentao build get` · 获取版本详情
+
+最低禅道版本：`22.4`。
+
+```text
+zentao build get --buildID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--buildID` | 路径 | `number` | 是 | 未声明 | buildID |
+
+`--buildID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-build-history"></a>
+
+#### `zentao build history` · 获取版本历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao build history --buildID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--buildID` | 路径 | `number` | 是 | 未声明 | 版本 ID |
+
+`--buildID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-build-comment"></a>
+
+#### `zentao build comment` · 添加版本备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao build comment --buildID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--buildID` | 路径 | `number` | 是 | 未声明 | 版本 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--buildID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-testtask"></a>
 
 ### testtask · 测试单
@@ -5062,6 +6056,7 @@ zentao build delete --buildID=<number> [选项]
 快捷用法与字段查询：
 
 ```text
+zentao testtask <id>
 zentao testtask [列表参数]
 zentao testtask props --format=json
 zentao help testtask
@@ -5073,6 +6068,13 @@ zentao help testtask
 | [create](#action-testtask-create) | 创建测试单 |
 | [update](#action-testtask-update) | 修改测试单 |
 | [delete](#action-testtask-delete) | 删除测试单 |
+| [get](#action-testtask-get) | 获取测试单详情 |
+| [start](#action-testtask-start) | 开始测试单 |
+| [close](#action-testtask-close) | 关闭测试单 |
+| [activate](#action-testtask-activate) | 激活测试单 |
+| [block](#action-testtask-block) | 阻塞测试单 |
+| [history](#action-testtask-history) | 获取测试单历史记录 |
+| [comment](#action-testtask-comment) | 添加测试单备注 |
 
 <a id="action-testtask-list"></a>
 
@@ -5169,6 +6171,138 @@ zentao testtask delete --testtaskID=<number> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-testtask-get"></a>
+
+#### `zentao testtask get` · 获取测试单详情
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testtask get --testtaskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--testtaskID` | 路径 | `number` | 是 | 未声明 | testtaskID |
+
+`--testtaskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testtask-start"></a>
+
+#### `zentao testtask start` · 开始测试单
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testtask start --testtaskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--testtaskID` | 路径 | `number` | 是 | 未声明 | testtask ID |
+| `--name` | 请求体 | `string` | 否 | 未声明 | 测试单名称 |
+
+`--testtaskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testtask-close"></a>
+
+#### `zentao testtask close` · 关闭测试单
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testtask close --testtaskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--testtaskID` | 路径 | `number` | 是 | 未声明 | testtask ID |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--testtaskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testtask-activate"></a>
+
+#### `zentao testtask activate` · 激活测试单
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testtask activate --testtaskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--testtaskID` | 路径 | `number` | 是 | 未声明 | testtask ID |
+| `--build` | 请求体 | `string` | 否 | 未声明 | 测试版本 |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--testtaskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testtask-block"></a>
+
+#### `zentao testtask block` · 阻塞测试单
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testtask block --testtaskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--testtaskID` | 路径 | `number` | 是 | 未声明 | testtask ID |
+| `--comment` | 请求体 | `string` | 否 | 未声明 | 备注 |
+
+`--testtaskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testtask-history"></a>
+
+#### `zentao testtask history` · 获取测试单历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testtask history --testtaskID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--testtaskID` | 路径 | `number` | 是 | 未声明 | 测试单 ID |
+
+`--testtaskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-testtask-comment"></a>
+
+#### `zentao testtask comment` · 添加测试单备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao testtask comment --testtaskID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--testtaskID` | 路径 | `number` | 是 | 未声明 | 测试单 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--testtaskID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-release"></a>
 
 ### release · 发布
@@ -5178,6 +6312,7 @@ zentao testtask delete --testtaskID=<number> [选项]
 快捷用法与字段查询：
 
 ```text
+zentao release <id>
 zentao release [列表参数]
 zentao release props --format=json
 zentao help release
@@ -5189,6 +6324,9 @@ zentao help release
 | [create](#action-release-create) | 创建发布 |
 | [update](#action-release-update) | 修改发布 |
 | [delete](#action-release-delete) | 删除发布 |
+| [get](#action-release-get) | 获取发布详情 |
+| [history](#action-release-history) | 获取发布历史记录 |
+| [comment](#action-release-comment) | 添加发布备注 |
 
 <a id="action-release-list"></a>
 
@@ -5280,6 +6418,61 @@ zentao release delete --releaseID=<number> [选项]
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
+<a id="action-release-get"></a>
+
+#### `zentao release get` · 获取发布详情
+
+最低禅道版本：`22.4`。
+
+```text
+zentao release get --releaseID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--releaseID` | 路径 | `number` | 是 | 未声明 | releaseID |
+
+`--releaseID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-release-history"></a>
+
+#### `zentao release history` · 获取发布历史记录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao release history --releaseID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--releaseID` | 路径 | `number` | 是 | 未声明 | 发布 ID |
+
+`--releaseID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--pick`、`--filter`、`--sort`、`--search`、`--search-fields`、`--limit`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-release-comment"></a>
+
+#### `zentao release comment` · 添加发布备注
+
+最低禅道版本：`22.4`。
+
+```text
+zentao release comment --releaseID=<number> --comment=<string> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--releaseID` | 路径 | `number` | 是 | 未声明 | 发布 ID |
+| `--comment` | 请求体 | `string` | 是 | 未声明 | 备注内容 |
+
+`--releaseID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--data`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
 <a id="module-file"></a>
 
 ### file · 附件
@@ -5300,6 +6493,7 @@ zentao help file
 | [create](#action-file-create) | 上传附件，使用【表单formdata】方式提交，不支持json |
 | [update](#action-file-update) | 编辑附件，修改附件的名称 |
 | [delete](#action-file-delete) | 删除附件 |
+| [download](#action-file-download) | 下载附件到本地目录 |
 
 <a id="action-file-create"></a>
 
@@ -5357,6 +6551,25 @@ zentao file delete --fileID=<number> [选项]
 `--fileID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
 
 可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--yes`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
+
+<a id="action-file-download"></a>
+
+#### `zentao file download` · 下载附件到本地目录
+
+最低禅道版本：`22.4`。
+
+```text
+zentao file download --fileID=<number> [选项]
+```
+
+| 参数 | 位置 | 类型 | 必填 | 默认值 | 说明与可选值 |
+| --- | --- | --- | --- | --- | --- |
+| `--fileID` | 路径 | `number` | 是 | 未声明 | 附件 ID |
+| `--output` | 查询 | `string` | 否 | 未声明 | 本地输出目录，默认当前目录 |
+
+`--fileID` 可用 `--id` 或首个数字位置参数代替；其余路径 ID 需分别提供。
+
+可配合[公共选项](#data-options)：`--params`、`--format`、`--silent`、`--batch-fail-fast`；其他全局选项见[全局选项](#global-options)。
 
 <a id="module-workflow"></a>
 
