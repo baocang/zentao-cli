@@ -5,8 +5,8 @@ import { getModuleNames, getModule } from '../modules/index.js';
 import { getScopeAliasTarget } from '../mcp/params.js';
 import { actionContract, actionParameters, kebabCase, parameterFlag, paginationFields } from '../modules/contract.js';
 import { parseCliValue, prepareCliParams } from '../modules/cli-input.js';
-import { ensureAuth } from '../auth/flow.js';
-import { handleModuleCommand, showModuleProps } from './module-handler.js';
+import { ensureAuth, tryReauth } from '../auth/flow.js';
+import { downloadFileAttachment, handleModuleCommand, showModuleProps } from './module-handler.js';
 import type { GlobalOptions, ModuleActionName, ModuleActionOptions } from '../types/index.js';
 
 /** Commander 的 `collect` 回调：将多次出现的选项累积为数组 */
@@ -23,6 +23,44 @@ export function registerModuleCommands(program: Command): void {
         resource.command('props').description('返回对象字段定义（离线）').action((_options, command: Command) => {
             showModuleProps(mod, command.optsWithGlobals());
         });
+        if (name === 'file') {
+            // Non-registry subcommand: binary download bypasses the JSON pipeline.
+            resource.command('download')
+                .description('下载附件到本地文件（原始字节流，支持 Content-Disposition 命名）')
+                .argument('<fileID>', '附件 ID')
+                .option('--output <dir>', '输出目录，默认当前目录')
+                .action(async (...args: unknown[]) => {
+                    const command = args.at(-1) as Command;
+                    const parsed = command.optsWithGlobals() as ModuleActionOptions;
+                    const fileID = args[0] as string;
+                    if (!/^\d+$/.test(fileID)) {
+                        throw new ZentaoError('E2009', { option: 'fileID', reason: '需要有效数字' });
+                    }
+                    const { client, profile } = await ensureAuth(parsed);
+                    try {
+                        await downloadFileAttachment(
+                            client,
+                            fileID,
+                            typeof parsed.output === 'string' ? parsed.output : undefined,
+                            parsed.format ?? 'markdown',
+                        );
+                    } catch (error) {
+                        if (error instanceof ZentaoError && error.code === '1004') {
+                            const reauthed = await tryReauth(profile, parsed);
+                            if (reauthed) {
+                                await downloadFileAttachment(
+                                    reauthed.client,
+                                    fileID,
+                                    typeof parsed.output === 'string' ? parsed.output : undefined,
+                                    parsed.format ?? 'markdown',
+                                );
+                                return;
+                            }
+                        }
+                        throw error;
+                    }
+                });
+        }
         for (const action of mod.actions) {
             const contract = actionContract(mod, action);
             const cmd = resource.command(kebabCase(action.name))
@@ -80,7 +118,19 @@ export function registerModuleCommands(program: Command): void {
                 const values = Object.fromEntries(mappings.map(item => [item.name, parsed[item.attribute]]));
                 const params = await prepareCliParams(mod, action, contract.target ? args[0] as string | undefined : undefined, options, values);
                 const { client, profile } = await ensureAuth(options);
-                await handleModuleCommand(client, mod, action.name, [], profile, options, params);
+                try {
+                    await handleModuleCommand(client, mod, action.name, [], profile, options, params);
+                } catch (error) {
+                    // Expired profile token: re-login once with matching environment credentials.
+                    if (error instanceof ZentaoError && error.code === '1004') {
+                        const reauthed = await tryReauth(profile, options);
+                        if (reauthed) {
+                            await handleModuleCommand(reauthed.client, mod, action.name, [], reauthed.profile, options, params);
+                            return;
+                        }
+                    }
+                    throw error;
+                }
             });
         }
     }

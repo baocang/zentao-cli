@@ -1,9 +1,27 @@
-import { ZentaoClient, type ActionAssistant } from 'zentao-api';
+import { ZentaoClient, type ActionAssistant, type ClientRequestOptions } from 'zentao-api';
 import { resolveAssistant } from './assistant.js';
 import { mapSdkError, ZentaoError } from '../errors.js';
+import { assertAuthenticatedPayload, assertAuthenticatedResponse } from '../auth/response.js';
 import type { ServerConfig } from '../types/index.js';
 
 export { ZentaoClient };
+
+/** CLI client guard for ZenTao installations that return a login page with HTTP 200. */
+class ValidatingZentaoClient extends ZentaoClient {
+    override request(path: string, options: ClientRequestOptions & { responseType: 'response' }): Promise<Response>;
+    override request(path: string, options: ClientRequestOptions & { responseType: 'arrayBuffer' }): Promise<ArrayBuffer>;
+    override request(path: string, options: ClientRequestOptions & { responseType: 'blob' }): Promise<Blob>;
+    override request<T = unknown>(path: string, options?: ClientRequestOptions): Promise<T>;
+    override async request<T = unknown>(path: string, options?: ClientRequestOptions): Promise<T> {
+        const payload = await super.request<T>(path, options);
+        if (payload instanceof Response) {
+            await assertAuthenticatedResponse(payload);
+        } else {
+            assertAuthenticatedPayload(payload);
+        }
+        return payload;
+    }
+}
 
 /** 创建 {@link ZentaoClient} 时的可选行为（TLS、超时等） */
 export interface ClientOptions {
@@ -20,7 +38,7 @@ export interface ClientOptions {
  * 内部映射到 `zentao-api` 的对象参数构造器，便于沿用 CLI 既有调用点。
  */
 export function createClient(serverUrl: string, token?: string, options?: ClientOptions): ZentaoClient {
-    return new ZentaoClient({
+    return new ValidatingZentaoClient({
         baseUrl: serverUrl,
         token,
         insecure: options?.insecure,

@@ -63,6 +63,9 @@ export interface ModuleActionOptions extends GlobalOptions {
     /** 用于提交的 JSON 数据，适用于 actionType 为 create、update 和 action 操作 */
     data?: string;
 
+    /** 下载输出目录，适用于 file download 命令 */
+    output?: string;
+
     /** 通过 JSON 对象来指定多个 API 调用参数，不包括 DataOptions 上的选项 */
     params?: string;
 

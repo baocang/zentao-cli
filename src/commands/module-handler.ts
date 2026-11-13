@@ -1,5 +1,8 @@
 import { brandText } from '../brand.js';
 import type { ZentaoClient } from '../api/index.js';
+import { mapSdkError } from '../errors.js';
+import { basename, join } from 'node:path';
+import { writeFileSync } from 'node:fs';
 import type { ModuleDefinition, Profile, ModuleActionName, UserConfig } from '../types/index.js';
 import { getAction, getObjectProps } from '../modules/helper.js';
 import { executeModuleCommand } from '../modules/executor.js';
@@ -32,7 +35,7 @@ async function confirmDelete(format: string, count: number, machineReadable = fa
     }
 }
 
-function renderModuleExecution(
+export function renderModuleExecution(
     execution: ModuleExecutionResult,
     options: ModuleActionOptions,
     config: UserConfig,
@@ -78,7 +81,68 @@ function renderModuleExecution(
         fields: execution.fields,
         jsonPretty: config.jsonPretty,
     });
-    if (output) console.log(output);
+    if (output) {
+        console.log(output);
+    } else if (format === 'markdown' || format === 'table') {
+        const raw = execution.rawResponse as { message?: unknown } | undefined;
+        const serverMessage = raw?.message;
+        console.log(typeof serverMessage === 'string' && serverMessage.trim() ? serverMessage : '操作成功');
+    }
+}
+
+/**
+ * Download an attachment as raw bytes.
+ *
+ * Lives outside the SDK registry: the JSON request pipeline cannot handle
+ * binary responses. routeV2 drops the path ID for GET /files/{id}/download,
+ * so the ID is duplicated into the query string.
+ */
+export async function downloadFileAttachment(
+    client: ZentaoClient,
+    fileID: string,
+    output: string | undefined,
+    format: string,
+): Promise<void> {
+    const url = `/files/${fileID}/download?fileID=${fileID}`;
+    let response: Response;
+    try {
+        response = await client.request(url, { method: 'GET', responseType: 'response' }) as Response;
+    } catch (error) {
+        throw mapSdkError(error);
+    }
+
+    // Extract filename from Content-Disposition header
+    const cd = response.headers.get('Content-Disposition') ?? '';
+    const encodedMatch = cd.match(/filename\*\s*=\s*(?:UTF-8'')?["']?([^"';\n]+)["']?/i);
+    const plainMatch = cd.match(/filename\s*=\s*(?:"([^"]+)"|'([^']+)'|([^;\n]+))/i);
+    const rawFilename = encodedMatch?.[1] ?? plainMatch?.[1] ?? plainMatch?.[2] ?? plainMatch?.[3];
+    let filename = rawFilename?.trim() || `file_${fileID}`;
+    if (encodedMatch) {
+        try {
+            filename = decodeURIComponent(filename);
+        } catch {
+            // Keep the undecoded server filename when percent encoding is malformed.
+        }
+    }
+
+    const outputDir = output ?? '.';
+    const outputPath = join(outputDir, basename(filename));
+
+    const buffer = await response.arrayBuffer();
+    try {
+        writeFileSync(outputPath, Buffer.from(buffer), { flag: 'wx' });
+    } catch (error) {
+        const reason = (error as NodeJS.ErrnoException).code === 'EEXIST'
+            ? `目标文件已存在: ${outputPath}`
+            : `无法写入目标文件: ${outputPath}`;
+        throw new ZentaoError('E2009', { option: 'output', reason });
+    }
+
+    if (format === 'json' || format === 'raw') {
+        console.log(JSON.stringify({ ok: true, data: { file: outputPath, size: buffer.byteLength } }));
+    } else {
+        console.log(`已下载: ${outputPath} (${buffer.byteLength} bytes)`);
+    }
 }
 
 type BatchId = number;
