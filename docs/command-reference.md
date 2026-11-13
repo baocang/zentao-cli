@@ -92,7 +92,7 @@ MCP 保留 structuredContent/outputSchema 与执行时策略检查。知识 POST
 
 ## 覆盖范围
 
-开发版本 CLI **0.4.4** / SDK **0.8.5**，14 个内置一级命令、42 个模块、361 个业务动作。数量、参数和实际 Commander 命令来自同一注册表。
+开发版本 CLI **0.4.4** / SDK **0.8.5**，14 个内置一级命令、42 个模块、410 个业务动作。数量、参数和实际 Commander 命令来自同一注册表。
 
 <a id="global-options"></a>
 
@@ -883,15 +883,17 @@ Usage: zentao program [options] [command]
 项目集
 
 Options:
-  -h, --help                 显示命令帮助
+  -h, --help                  显示命令帮助
 
 Commands:
-  props                      返回对象字段定义（离线）
-  list [options]             获取项目集列表（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  create [options]           创建项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]     获取项目集详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]  修改项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]  删除项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                       返回对象字段定义（离线）
+  list [options]              获取项目集列表（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  create [options]            创建项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]      获取项目集详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]   修改项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]   删除项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]  获取项目集历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]  添加项目集备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-program-list"></a>
@@ -1066,6 +1068,68 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --program-id | programID | path | integer | 是 | — | 项目集ID<br>{} |
 
+<a id="action-program-history"></a>
+
+## zentao program history
+
+```text
+Usage: zentao program history [options] [target]
+
+获取项目集历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 programID；也可使用命名参数
+
+Options:
+  --program-id <value>      项目集 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --program-id | programID | path | integer | 是 | — | 项目集 ID<br>{} |
+
+<a id="action-program-comment"></a>
+
+## zentao program comment
+
+```text
+Usage: zentao program comment [options] [target]
+
+添加项目集备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 programID；也可使用命名参数
+
+Options:
+  --program-id <value>    项目集 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --program-id | programID | path | integer | 是 | — | 项目集 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-product"></a>
 
 ## 产品 · product
@@ -1091,6 +1155,8 @@ Commands:
   update [options] [target]                  修改产品（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   delete [options] [target]                  删除产品（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   repos [options] [target]                   获取产品关联的代码库列表（最低版本：22.7 / biz13.7 / max8.7 / ipd5.7）
+  history [options] [target]                 获取产品历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]                 添加产品备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-product-list"></a>
@@ -1480,6 +1546,70 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --product-id | productID | path | integer | 是 | — | 产品 ID，正整数<br>{} |
 
+<a id="action-product-history"></a>
+
+## zentao product history
+
+```text
+Usage: zentao product history [options] [target]
+
+获取产品历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 productID；也可使用命名参数
+
+Options:
+  --product-id <value>      产品 ID（必填）
+  --product <id>            productID 或 scope/scopeID 别名
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --product-id | productID | path | integer | 是 | — | 产品 ID<br>{} |
+
+<a id="action-product-comment"></a>
+
+## zentao product comment
+
+```text
+Usage: zentao product comment [options] [target]
+
+添加产品备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 productID；也可使用命名参数
+
+Options:
+  --product-id <value>    产品 ID（必填）
+  --comment <value>       备注内容（必填）
+  --product <id>          productID 或 scope/scopeID 别名
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --product-id | productID | path | integer | 是 | — | 产品 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-project"></a>
 
 ## 项目 · project
@@ -1522,6 +1652,10 @@ Commands:
                                        ipd5.0）
   members [options] [target]           维护项目成员（最低版本：22.5 / biz13.5 / max8.5 /
                                        ipd5.5）
+  history [options] [target]           获取项目历史记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                       ipd5.0）
+  comment [options] [target]           添加项目备注（最低版本：22.0 / biz13.0 / max8.0 /
+                                       ipd5.0）
 ```
 
 <a id="action-project-list"></a>
@@ -1694,6 +1828,7 @@ Options:
   --parent <value>          所属项目集
   --workflow-group <value>  项目流程，付费版功能，开源版可以不填（必填）
   --pm <value>              项目负责人
+  --desc <value>            项目描述（必填）
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
   -h, --help                显示命令帮助
 ```
@@ -1712,6 +1847,7 @@ Options:
 | --parent | parent | body | integer | 否 | — | 所属项目集<br>{"format":"int32"} |
 | --workflow-group | workflowGroup | body | integer | 是 | — | 项目流程，付费版功能，开源版可以不填<br>{"format":"int32"} |
 | --pm | PM | body | string | 否 | — | 项目负责人<br>{} |
+| --desc | desc | body | string | 是 | — | 项目描述<br>{} |
 
 <a id="action-project-close"></a>
 
@@ -2081,6 +2217,70 @@ Options:
 | --hours | hours | body | array | 否 | — | 每日工时，与account顺序一一对应<br>{"items":{"type":"string"}} |
 | --limited | limited | body | array | 否 | — | 是否限制日期，与account顺序一一对应<br>{"items":{"type":"string"}} |
 
+<a id="action-project-history"></a>
+
+## zentao project history
+
+```text
+Usage: zentao project history [options] [target]
+
+获取项目历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 projectID；也可使用命名参数
+
+Options:
+  --project-id <value>      项目 ID（必填）
+  --project <id>            projectID 或 scope/scopeID 别名
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --project-id | projectID | path | integer | 是 | — | 项目 ID<br>{} |
+
+<a id="action-project-comment"></a>
+
+## zentao project comment
+
+```text
+Usage: zentao project comment [options] [target]
+
+添加项目备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 projectID；也可使用命名参数
+
+Options:
+  --project-id <value>    项目 ID（必填）
+  --comment <value>       备注内容（必填）
+  --project <id>          projectID 或 scope/scopeID 别名
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --project-id | projectID | path | integer | 是 | — | 项目 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-execution"></a>
 
 ## 执行 · execution
@@ -2107,6 +2307,8 @@ Commands:
   update [options] [target]              修改执行（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   delete [options] [target]              删除执行（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   members [options] [target]             维护执行成员（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
+  history [options] [target]             获取执行历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]             添加执行备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-execution-list"></a>
@@ -2569,6 +2771,70 @@ Options:
 | --hours | hours | body | array | 否 | — | 每日工时，与account顺序一一对应<br>{"items":{"type":"string"}} |
 | --limited | limited | body | array | 否 | — | 是否限制日期，与account顺序一一对应<br>{"items":{"type":"string"}} |
 
+<a id="action-execution-history"></a>
+
+## zentao execution history
+
+```text
+Usage: zentao execution history [options] [target]
+
+获取执行历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 executionID；也可使用命名参数
+
+Options:
+  --execution-id <value>    执行 ID（必填）
+  --execution <id>          executionID 或 scope/scopeID 别名
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --execution-id | executionID | path | integer | 是 | — | 执行 ID<br>{} |
+
+<a id="action-execution-comment"></a>
+
+## zentao execution comment
+
+```text
+Usage: zentao execution comment [options] [target]
+
+添加执行备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 executionID；也可使用命名参数
+
+Options:
+  --execution-id <value>  执行 ID（必填）
+  --comment <value>       备注内容（必填）
+  --execution <id>        executionID 或 scope/scopeID 别名
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --execution-id | executionID | path | integer | 是 | — | 执行 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-productplan"></a>
 
 ## 产品计划 · productplan
@@ -2579,16 +2845,18 @@ Usage: zentao productplan [options] [command]
 产品计划
 
 Options:
-  -h, --help                 显示命令帮助
+  -h, --help                  显示命令帮助
 
 Commands:
-  props                      返回对象字段定义（离线）
-  list [options] [target]    获取产品计划列表，支持获取产品下的产品计划（最低版本：22.0 / biz13.0 / max8.0
-                             / ipd5.0）
-  create [options]           创建产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]     获取产品计划详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]  修改产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]  删除产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                       返回对象字段定义（离线）
+  list [options] [target]     获取产品计划列表，支持获取产品下的产品计划（最低版本：22.0 / biz13.0 / max8.0
+                              / ipd5.0）
+  create [options]            创建产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]      获取产品计划详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]   修改产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]   删除产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]  获取计划历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]  添加计划备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-productplan-list"></a>
@@ -2774,6 +3042,68 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --plan-id | planID | path | integer | 是 | — | 产品计划ID<br>{} |
 
+<a id="action-productplan-history"></a>
+
+## zentao productplan history
+
+```text
+Usage: zentao productplan history [options] [target]
+
+获取计划历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 planID；也可使用命名参数
+
+Options:
+  --plan-id <value>         计划 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --plan-id | planID | path | integer | 是 | — | 计划 ID<br>{} |
+
+<a id="action-productplan-comment"></a>
+
+## zentao productplan comment
+
+```text
+Usage: zentao productplan comment [options] [target]
+
+添加计划备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 planID；也可使用命名参数
+
+Options:
+  --plan-id <value>       计划 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --plan-id | planID | path | integer | 是 | — | 计划 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-story"></a>
 
 ## 需求 · story
@@ -2806,6 +3136,11 @@ Commands:
   close [options] [target]          关闭需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   get-grades [options]              获取需求层级选项（最低版本：22.5 / biz13.5 / max8.5 /
                                     ipd5.5）
+  review [options] [target]         需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]        获取需求历史记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
+  comment [options] [target]        添加需求备注（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
 ```
 
 <a id="action-story-list"></a>
@@ -3269,6 +3604,104 @@ Options:
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
 
+<a id="action-story-review"></a>
+
+## zentao story review
+
+```text
+Usage: zentao story review [options] [target]
+
+需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                   单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>       story ID（必填）
+  --assigned-to <value>    指派给
+  --result <value>         评审结果（必填）
+  --reviewed-date <value>  评审时间（必填）
+  --comment <value>        备注（必填）
+  --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --ids <ids>              批量目标 ID，逗号分隔并去重
+  --batch-fail-fast        失败后跳过剩余目标
+  -h, --help               显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | story ID<br>{} |
+| --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
+| --result | result | body | string | 是 | — | 评审结果<br>{"options":[{"value":"pass","label":"通过"},{"value":"reject","label":"拒绝"},{"value":"clarify","label":"需澄清"}]} |
+| --reviewed-date | reviewedDate | body | string | 是 | — | 评审时间<br>{} |
+| --comment | comment | body | string | 是 | — | 备注<br>{} |
+
+<a id="action-story-history"></a>
+
+## zentao story history
+
+```text
+Usage: zentao story history [options] [target]
+
+获取需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>        需求 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | 需求 ID<br>{} |
+
+<a id="action-story-comment"></a>
+
+## zentao story comment
+
+```text
+Usage: zentao story comment [options] [target]
+
+添加需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>      需求 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | 需求 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-epic"></a>
 
 ## 业务需求 · epic
@@ -3292,6 +3725,9 @@ Commands:
   activate [options] [target]  激活业务需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   change [options] [target]    变更业务需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]     关闭业务需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  review [options] [target]    业务需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]   获取业务需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]   添加业务需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-epic-list"></a>
@@ -3627,6 +4063,104 @@ Options:
 | --closed-reason | closedReason | body | string | 是 | — | 关闭原因(done 已完成 \| subdivided 已拆分 \| duplicate 重复 \| postponed 延期 \| willnotdo 不做 \| cancel 已取消 \| bydesign 设计如此)<br>{} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 
+<a id="action-epic-review"></a>
+
+## zentao epic review
+
+```text
+Usage: zentao epic review [options] [target]
+
+业务需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                   单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>       epic ID（必填）
+  --assigned-to <value>    指派给
+  --result <value>         评审结果（必填）
+  --reviewed-date <value>  评审时间（必填）
+  --comment <value>        备注（必填）
+  --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --ids <ids>              批量目标 ID，逗号分隔并去重
+  --batch-fail-fast        失败后跳过剩余目标
+  -h, --help               显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | epic ID<br>{} |
+| --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
+| --result | result | body | string | 是 | — | 评审结果<br>{"options":[{"value":"pass","label":"通过"},{"value":"reject","label":"拒绝"},{"value":"clarify","label":"需澄清"}]} |
+| --reviewed-date | reviewedDate | body | string | 是 | — | 评审时间<br>{} |
+| --comment | comment | body | string | 是 | — | 备注<br>{} |
+
+<a id="action-epic-history"></a>
+
+## zentao epic history
+
+```text
+Usage: zentao epic history [options] [target]
+
+获取业务需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>        业务需求 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | 业务需求 ID<br>{} |
+
+<a id="action-epic-comment"></a>
+
+## zentao epic comment
+
+```text
+Usage: zentao epic comment [options] [target]
+
+添加业务需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>      业务需求 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | 业务需求 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-requirement"></a>
 
 ## 用户需求 · requirement
@@ -3650,6 +4184,9 @@ Commands:
   activate [options] [target]  激活用户需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   change [options] [target]    变更用户需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]     关闭用户需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  review [options] [target]    用户需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]   获取用户需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]   添加用户需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-requirement-list"></a>
@@ -3985,6 +4522,104 @@ Options:
 | --closed-reason | closedReason | body | string | 是 | — | 关闭原因(done 已完成 \| subdivided 已拆分 \| duplicate 重复 \| postponed 延期 \| willnotdo 不做 \| cancel 已取消 \| bydesign 设计如此)<br>{} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 
+<a id="action-requirement-review"></a>
+
+## zentao requirement review
+
+```text
+Usage: zentao requirement review [options] [target]
+
+用户需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                   单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>       requirement ID（必填）
+  --assigned-to <value>    指派给
+  --result <value>         评审结果（必填）
+  --reviewed-date <value>  评审时间（必填）
+  --comment <value>        备注（必填）
+  --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --ids <ids>              批量目标 ID，逗号分隔并去重
+  --batch-fail-fast        失败后跳过剩余目标
+  -h, --help               显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | requirement ID<br>{} |
+| --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
+| --result | result | body | string | 是 | — | 评审结果<br>{"options":[{"value":"pass","label":"通过"},{"value":"reject","label":"拒绝"},{"value":"clarify","label":"需澄清"}]} |
+| --reviewed-date | reviewedDate | body | string | 是 | — | 评审时间<br>{} |
+| --comment | comment | body | string | 是 | — | 备注<br>{} |
+
+<a id="action-requirement-history"></a>
+
+## zentao requirement history
+
+```text
+Usage: zentao requirement history [options] [target]
+
+获取用户需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>        用户需求 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | 用户需求 ID<br>{} |
+
+<a id="action-requirement-comment"></a>
+
+## zentao requirement comment
+
+```text
+Usage: zentao requirement comment [options] [target]
+
+添加用户需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 storyID；也可使用命名参数
+
+Options:
+  --story-id <value>      用户需求 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --story-id | storyID | path | integer | 是 | — | 用户需求 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-bug"></a>
 
 ## Bug · bug
@@ -4016,6 +4651,11 @@ Commands:
   close [options] [target]          关闭Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   confirm [options] [target]        确认Bug（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
   resolve [options] [target]        解决Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  assignto [options] [target]       指派Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]        获取Bug历史记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
+  comment [options] [target]        添加Bug备注（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
 ```
 
 <a id="action-bug-list"></a>
@@ -4131,22 +4771,24 @@ Usage: zentao bug create [options]
 创建Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 
 Options:
-  --product-id <value>    所属产品（必填）
-  --title <value>         Bug标题（必填）
-  --opened-build <value>  影响版本,主干是trunk，其他版本使用版本ID（必填）
-  --project <value>       所属项目
-  --execution <value>     所属执行
-  --severity <value>      严重程度，默认是3
-  --pri <value>           优先级，默认是3
-  --type <value>          Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
-                          security 安全相关 | performance 性能问题 | standard 标准规范 |
-                          automation 测试脚本 | designdefect 设计缺陷 | others 其他)
-  --steps <value>         重现步骤
-  --story <value>         相关需求
-  --assigned-to <value>   指派给
-  --product <id>          productID 或 scope/scopeID 别名
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  -h, --help              显示命令帮助
+  --product-id <value>     所属产品（必填）
+  --title <value>          Bug标题（必填）
+  --opened-build <value>   影响版本,主干是trunk，其他版本使用版本ID（必填）
+  --project <value>        所属项目
+  --execution <value>      所属执行
+  --severity <value>       严重程度，默认是3
+  --pri <value>            优先级，默认是3
+  --type <value>           Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
+                           security 安全相关 | performance 性能问题 | standard 标准规范 |
+                           automation 测试脚本 | designdefect 设计缺陷 | others 其他)
+  --steps <value>          重现步骤
+  --story <value>          相关需求
+  --assigned-to <value>    指派给
+  --data-deadline <value>  截止日期，格式 YYYY-MM-DD
+  --module <value>         所属模块 ID
+  --product <id>           productID 或 scope/scopeID 别名
+  --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  -h, --help               显示命令帮助
 ```
 
 最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
@@ -4166,6 +4808,8 @@ Options:
 | --steps | steps | body | string | 否 | — | 重现步骤<br>{} |
 | --story | story | body | integer | 否 | — | 相关需求<br>{"format":"int32"} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
+| --data-deadline | deadline | body | string | 否 | — | 截止日期，格式 YYYY-MM-DD<br>{} |
+| --module | module | body | number | 否 | — | 所属模块 ID<br>{} |
 
 <a id="action-bug-get"></a>
 
@@ -4206,26 +4850,28 @@ Usage: zentao bug update [options] [target]
 修改Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 
 Arguments:
-  target                  单个 bugID；也可使用命名参数
+  target                   单个 bugID；也可使用命名参数
 
 Options:
-  --bug-id <value>        Bug ID（必填）
-  --title <value>         Bug标题
-  --severity <value>      严重程度，默认是3
-  --pri <value>           优先级，默认是3
-  --type <value>          Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
-                          security 安全相关 | performance 性能问题 | standard 标准规范 |
-                          automation 测试脚本 | designdefect 设计缺陷 | others 其他)
-  --opened-build <value>  影响版本,主干是trunk，其他版本使用版本ID
-  --steps <value>         重现步骤
-  --project <value>       所属项目
-  --execution <value>     所属执行
-  --story <value>         相关需求
-  --assigned-to <value>   指派给
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
+  --bug-id <value>         Bug ID（必填）
+  --title <value>          Bug标题
+  --severity <value>       严重程度，默认是3
+  --pri <value>            优先级，默认是3
+  --type <value>           Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
+                           security 安全相关 | performance 性能问题 | standard 标准规范 |
+                           automation 测试脚本 | designdefect 设计缺陷 | others 其他)
+  --opened-build <value>   影响版本,主干是trunk，其他版本使用版本ID
+  --steps <value>          重现步骤
+  --project <value>        所属项目
+  --execution <value>      所属执行
+  --story <value>          相关需求
+  --assigned-to <value>    指派给
+  --data-deadline <value>  截止日期，格式 YYYY-MM-DD
+  --module <value>         所属模块 ID
+  --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --ids <ids>              批量目标 ID，逗号分隔并去重
+  --batch-fail-fast        失败后跳过剩余目标
+  -h, --help               显示命令帮助
 ```
 
 最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
@@ -4247,6 +4893,8 @@ Options:
 | --execution | execution | body | integer | 否 | — | 所属执行<br>{"format":"int32"} |
 | --story | story | body | integer | 否 | — | 相关需求<br>{"format":"int32"} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
+| --data-deadline | deadline | body | string | 否 | — | 截止日期，格式 YYYY-MM-DD<br>{} |
+| --module | module | body | number | 否 | — | 所属模块 ID<br>{} |
 
 <a id="action-bug-update-module"></a>
 
@@ -4484,6 +5132,100 @@ Options:
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 
+<a id="action-bug-assignto"></a>
+
+## zentao bug assignto
+
+```text
+Usage: zentao bug assignto [options] [target]
+
+指派Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 bugID；也可使用命名参数
+
+Options:
+  --bug-id <value>        bug ID（必填）
+  --assigned-to <value>   指派给（必填）
+  --comment <value>       备注
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --bug-id | bugID | path | integer | 是 | — | bug ID<br>{} |
+| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
+| --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-bug-history"></a>
+
+## zentao bug history
+
+```text
+Usage: zentao bug history [options] [target]
+
+获取Bug历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 bugID；也可使用命名参数
+
+Options:
+  --bug-id <value>          Bug ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --bug-id | bugID | path | integer | 是 | — | Bug ID<br>{} |
+
+<a id="action-bug-comment"></a>
+
+## zentao bug comment
+
+```text
+Usage: zentao bug comment [options] [target]
+
+添加Bug备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 bugID；也可使用命名参数
+
+Options:
+  --bug-id <value>        Bug ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --bug-id | bugID | path | integer | 是 | — | Bug ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-testcase"></a>
 
 ## 测试用例 · testcase
@@ -4514,6 +5256,10 @@ Commands:
                                     ipd5.0）
   delete-module [options] [target]  删除用例模块（最低版本：22.5 / biz13.5 / max8.5 /
                                     ipd5.5）
+  history [options] [target]        获取用例历史记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
+  comment [options] [target]        添加用例备注（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
 ```
 
 <a id="action-testcase-list"></a>
@@ -4831,6 +5577,68 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --module-id | moduleID | path | integer | 是 | — | 模块ID<br>{} |
 
+<a id="action-testcase-history"></a>
+
+## zentao testcase history
+
+```text
+Usage: zentao testcase history [options] [target]
+
+获取用例历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 caseID；也可使用命名参数
+
+Options:
+  --case-id <value>         用例 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --case-id | caseID | path | integer | 是 | — | 用例 ID<br>{} |
+
+<a id="action-testcase-comment"></a>
+
+## zentao testcase comment
+
+```text
+Usage: zentao testcase comment [options] [target]
+
+添加用例备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 caseID；也可使用命名参数
+
+Options:
+  --case-id <value>       用例 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --case-id | caseID | path | integer | 是 | — | 用例 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-task"></a>
 
 ## 任务 · task
@@ -4841,27 +5649,43 @@ Usage: zentao task [options] [command]
 任务
 
 Options:
-  -h, --help                        显示命令帮助
+  -h, --help                         显示命令帮助
 
 Commands:
-  props                             返回对象字段定义（离线）
-  list [options] [target]           获取任务列表，支持获取执行下的任务（最低版本：22.0 / biz13.0 /
-                                    max8.0 / ipd5.0）
-  modules [options] [target]        执行的任务模块树（最低版本：22.5 / biz13.5 / max8.5 /
-                                    ipd5.5）
-  create [options]                  创建任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]            获取任务详情（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
-  update [options] [target]         修改任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update-module [options] [target]  修改任务模块（最低版本：22.5 / biz13.5 / max8.5 /
-                                    ipd5.5）
-  delete [options] [target]         删除任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete-module [options] [target]  删除任务模块（最低版本：22.5 / biz13.5 / max8.5 /
-                                    ipd5.5）
-  activate [options] [target]       激活任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  close [options] [target]          关闭任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  finish [options] [target]         完成任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  start [options] [target]          启动任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                              返回对象字段定义（离线）
+  list [options] [target]            获取任务列表，支持获取执行下的任务（最低版本：22.0 / biz13.0 /
+                                     max8.0 / ipd5.0）
+  modules [options] [target]         执行的任务模块树（最低版本：22.5 / biz13.5 / max8.5 /
+                                     ipd5.5）
+  create [options]                   创建任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]             获取任务详情（最低版本：22.0 / biz13.0 / max8.0 /
+                                     ipd5.0）
+  update [options] [target]          修改任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update-module [options] [target]   修改任务模块（最低版本：22.5 / biz13.5 / max8.5 /
+                                     ipd5.5）
+  delete [options] [target]          删除任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete-module [options] [target]   删除任务模块（最低版本：22.5 / biz13.5 / max8.5 /
+                                     ipd5.5）
+  activate [options] [target]        激活任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  close [options] [target]           关闭任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  finish [options] [target]          完成任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  start [options] [target]           启动任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  pause [options] [target]           暂停任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  cancel [options] [target]          取消任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  restart [options] [target]         继续任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  assignto [options] [target]        指派任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  recordestimate [options] [target]  记录任务工时（最低版本：22.0 / biz13.0 / max8.0 /
+                                     ipd5.0）
+  effort [options] [target]          获取任务工时记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                     ipd5.0）
+  editeffort [options] [target]      编辑工时记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                     ipd5.0）
+  deleteeffort [options] [target]    删除工时记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                     ipd5.0）
+  history [options] [target]         获取任务历史记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                     ipd5.0）
+  comment [options] [target]         添加任务备注（最低版本：22.0 / biz13.0 / max8.0 /
+                                     ipd5.0）
 ```
 
 <a id="action-task-list"></a>
@@ -5295,6 +6119,336 @@ Options:
 | --consumed | consumed | body | number | 否 | — | 总计消耗<br>{"format":"float"} |
 | --left | left | body | number | 否 | — | 预计剩余<br>{"format":"float"} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-task-pause"></a>
+
+## zentao task pause
+
+```text
+Usage: zentao task pause [options] [target]
+
+暂停任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>       task ID（必填）
+  --comment <value>       备注
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
+| --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-task-cancel"></a>
+
+## zentao task cancel
+
+```text
+Usage: zentao task cancel [options] [target]
+
+取消任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>       task ID（必填）
+  --comment <value>       备注
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
+| --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-task-restart"></a>
+
+## zentao task restart
+
+```text
+Usage: zentao task restart [options] [target]
+
+继续任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>       task ID（必填）
+  --real-started <value>  实际开始（必填）
+  --consumed <value>      总计消耗
+  --left <value>          预计剩余
+  --comment <value>       备注
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
+| --real-started | realStarted | body | string | 是 | — | 实际开始<br>{} |
+| --consumed | consumed | body | number | 否 | — | 总计消耗<br>{"format":"float"} |
+| --left | left | body | number | 否 | — | 预计剩余<br>{"format":"float"} |
+| --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-task-assignto"></a>
+
+## zentao task assignto
+
+```text
+Usage: zentao task assignto [options] [target]
+
+指派任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>       task ID（必填）
+  --execution-id <value>  执行ID（必填）
+  --assigned-to <value>   指派给（必填）
+  --left <value>          预计剩余（必填）
+  --comment <value>       备注
+  --execution <id>        executionID 或 scope/scopeID 别名
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
+| --execution-id | executionID | query | number | 是 | — | 执行ID<br>{} |
+| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
+| --left | left | body | number | 是 | — | 预计剩余<br>{"format":"float"} |
+| --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-task-recordestimate"></a>
+
+## zentao task recordestimate
+
+```text
+Usage: zentao task recordestimate [options] [target]
+
+记录任务工时（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>       任务 ID（必填）
+  --date <value>          日期，格式 YYYY-MM-DD，默认今天（必填）
+  --work <value>          工作内容
+  --consumed <value>      本次耗时（小时，累加到总计）（必填）
+  --left <value>          更新后的剩余工时（小时，覆盖之前值）（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
+| --date | date | body | array | 是 | — | 日期，格式 YYYY-MM-DD，默认今天<br>{"items":{"type":"string"}} |
+| --work | work | body | array | 否 | — | 工作内容<br>{"items":{"type":"string"}} |
+| --consumed | consumed | body | array | 是 | — | 本次耗时（小时，累加到总计）<br>{"items":{"type":"number"}} |
+| --left | left | body | array | 是 | — | 更新后的剩余工时（小时，覆盖之前值）<br>{"items":{"type":"number"}} |
+
+<a id="action-task-effort"></a>
+
+## zentao task effort
+
+```text
+Usage: zentao task effort [options] [target]
+
+获取任务工时记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>         任务 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
+| --task-id | taskID | query | number | 是 | — | 任务 ID<br>{} |
+
+<a id="action-task-editeffort"></a>
+
+## zentao task editeffort
+
+```text
+Usage: zentao task editeffort [options] [target]
+
+编辑工时记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 effortID；也可使用命名参数
+
+Options:
+  --effort-id <value>     工时记录 ID（必填）
+  --date <value>          日期，格式 YYYY-MM-DD
+  --work <value>          工作内容
+  --consumed <value>      本次耗时（小时，累加到总计）（必填）
+  --left <value>          更新后的剩余工时（小时，覆盖之前值）（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --effort-id | effortID | path | integer | 是 | — | 工时记录 ID<br>{} |
+| --effort-id | effortID | query | number | 是 | — | 工时记录 ID<br>{} |
+| --date | date | body | string | 否 | — | 日期，格式 YYYY-MM-DD<br>{} |
+| --work | work | body | string | 否 | — | 工作内容<br>{} |
+| --consumed | consumed | body | number | 是 | — | 本次耗时（小时，累加到总计）<br>{"format":"float"} |
+| --left | left | body | number | 是 | — | 更新后的剩余工时（小时，覆盖之前值）<br>{"format":"float"} |
+
+<a id="action-task-deleteeffort"></a>
+
+## zentao task deleteeffort
+
+```text
+Usage: zentao task deleteeffort [options] [target]
+
+删除工时记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target               单个 effortID；也可使用命名参数
+
+Options:
+  --effort-id <value>  工时记录 ID（必填）
+  --ids <ids>          批量目标 ID，逗号分隔并去重
+  --batch-fail-fast    失败后跳过剩余目标
+  --yes                确认删除
+  -h, --help           显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --effort-id | effortID | path | integer | 是 | — | 工时记录 ID<br>{} |
+| --effort-id | effortID | query | number | 是 | — | 工时记录 ID<br>{} |
+
+<a id="action-task-history"></a>
+
+## zentao task history
+
+```text
+Usage: zentao task history [options] [target]
+
+获取任务历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>         任务 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
+
+<a id="action-task-comment"></a>
+
+## zentao task comment
+
+```text
+Usage: zentao task comment [options] [target]
+
+添加任务备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 taskID；也可使用命名参数
+
+Options:
+  --task-id <value>       任务 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
 
 <a id="module-issue"></a>
 
@@ -6219,6 +7373,11 @@ Commands:
   delete [options] [target]         删除反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   activate [options] [target]       激活反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]          关闭反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  assignto [options] [target]       指派反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]        获取反馈历史记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
+  comment [options] [target]        添加反馈备注（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
 ```
 
 <a id="action-feedback-list"></a>
@@ -6661,6 +7820,100 @@ Options:
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 | --confirm-close | confirmClose | body | string | 否 | — | 存在未关闭转化对象时是否强制关闭<br>{} |
 
+<a id="action-feedback-assignto"></a>
+
+## zentao feedback assignto
+
+```text
+Usage: zentao feedback assignto [options] [target]
+
+指派反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 feedbackID；也可使用命名参数
+
+Options:
+  --feedback-id <value>   feedback ID（必填）
+  --assigned-to <value>   指派给（必填）
+  --comment <value>       备注
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --feedback-id | feedbackID | path | integer | 是 | — | feedback ID<br>{} |
+| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
+| --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-feedback-history"></a>
+
+## zentao feedback history
+
+```text
+Usage: zentao feedback history [options] [target]
+
+获取反馈历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 feedbackID；也可使用命名参数
+
+Options:
+  --feedback-id <value>     反馈 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --feedback-id | feedbackID | path | integer | 是 | — | 反馈 ID<br>{} |
+
+<a id="action-feedback-comment"></a>
+
+## zentao feedback comment
+
+```text
+Usage: zentao feedback comment [options] [target]
+
+添加反馈备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 feedbackID；也可使用命名参数
+
+Options:
+  --feedback-id <value>   反馈 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --feedback-id | feedbackID | path | integer | 是 | — | 反馈 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-ticket"></a>
 
 ## 工单 · ticket
@@ -6685,6 +7938,10 @@ Commands:
   delete [options] [target]        删除工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   activate [options] [target]      激活工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]         关闭工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  assignto [options] [target]      指派工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]       获取工单历史记录（最低版本：22.0 / biz13.0 / max8.0 /
+                                   ipd5.0）
+  comment [options] [target]       添加工单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-ticket-list"></a>
@@ -7021,6 +8278,100 @@ Options:
 | --closed-reason | closedReason | body | string | 是 | — | 关闭原因(commented 已处理 \| repeat 重复 \| refuse 不予处理)<br>{} |
 | --comment | comment | body | string | 是 | — | 备注<br>{} |
 
+<a id="action-ticket-assignto"></a>
+
+## zentao ticket assignto
+
+```text
+Usage: zentao ticket assignto [options] [target]
+
+指派工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 ticketID；也可使用命名参数
+
+Options:
+  --ticket-id <value>     ticket ID（必填）
+  --assigned-to <value>   指派给（必填）
+  --comment <value>       备注
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --ticket-id | ticketID | path | integer | 是 | — | ticket ID<br>{} |
+| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
+| --comment | comment | body | string | 否 | — | 备注<br>{} |
+
+<a id="action-ticket-history"></a>
+
+## zentao ticket history
+
+```text
+Usage: zentao ticket history [options] [target]
+
+获取工单历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 ticketID；也可使用命名参数
+
+Options:
+  --ticket-id <value>       工单 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --ticket-id | ticketID | path | integer | 是 | — | 工单 ID<br>{} |
+
+<a id="action-ticket-comment"></a>
+
+## zentao ticket comment
+
+```text
+Usage: zentao ticket comment [options] [target]
+
+添加工单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 ticketID；也可使用命名参数
+
+Options:
+  --ticket-id <value>     工单 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --ticket-id | ticketID | path | integer | 是 | — | 工单 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-system"></a>
 
 ## 应用 · system
@@ -7157,15 +8508,18 @@ Usage: zentao build [options] [command]
 版本
 
 Options:
-  -h, --help                 显示命令帮助
+  -h, --help                  显示命令帮助
 
 Commands:
-  props                      返回对象字段定义（离线）
-  list [options]             获取版本列表，支持获取项目/执行下的版本（最低版本：22.0 / biz13.0 / max8.0 /
-                             ipd5.0）
-  create [options]           创建版本/构建（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]  修改版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]  删除版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                       返回对象字段定义（离线）
+  list [options]              获取版本列表，支持获取项目/执行下的版本（最低版本：22.0 / biz13.0 / max8.0
+                              / ipd5.0）
+  create [options]            创建版本/构建（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]   修改版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]   删除版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]      获取版本详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]  获取版本历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]  添加版本备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-build-list"></a>
@@ -7289,6 +8643,8 @@ Options:
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
+未提供的请求体字段可由匹配的详情操作自动补全。
+
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
 | --build-id | buildID | path | integer | 是 | — | 版本ID<br>{} |
@@ -7330,6 +8686,97 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --build-id | buildID | path | integer | 是 | — | 版本ID<br>{} |
 
+<a id="action-build-get"></a>
+
+## zentao build get
+
+```text
+Usage: zentao build get [options] [target]
+
+获取版本详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target              单个 buildID；也可使用命名参数
+
+Options:
+  --build-id <value>  build ID（必填）
+  --ids <ids>         批量目标 ID，逗号分隔并去重
+  --batch-fail-fast   失败后跳过剩余目标
+  --fields <fields>   返回字段，逗号分隔
+  --html-to-markdown  显式将富文本字段转换为 Markdown
+  -h, --help          显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --build-id | buildID | path | integer | 是 | — | build ID<br>{} |
+
+<a id="action-build-history"></a>
+
+## zentao build history
+
+```text
+Usage: zentao build history [options] [target]
+
+获取版本历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 buildID；也可使用命名参数
+
+Options:
+  --build-id <value>        版本 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --build-id | buildID | path | integer | 是 | — | 版本 ID<br>{} |
+
+<a id="action-build-comment"></a>
+
+## zentao build comment
+
+```text
+Usage: zentao build comment [options] [target]
+
+添加版本备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 buildID；也可使用命名参数
+
+Options:
+  --build-id <value>      版本 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --build-id | buildID | path | integer | 是 | — | 版本 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-testtask"></a>
 
 ## 测试单 · testtask
@@ -7340,15 +8787,18 @@ Usage: zentao testtask [options] [command]
 测试单
 
 Options:
-  -h, --help                 显示命令帮助
+  -h, --help                  显示命令帮助
 
 Commands:
-  props                      返回对象字段定义（离线）
-  list [options]             获取测试单列表，支持获取产品/项目/执行下的测试单（最低版本：22.0 / biz13.0 /
-                             max8.0 / ipd5.0）
-  create [options]           创建测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]  修改测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]  删除测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                       返回对象字段定义（离线）
+  list [options]              获取测试单列表，支持获取产品/项目/执行下的测试单（最低版本：22.0 / biz13.0 /
+                              max8.0 / ipd5.0）
+  create [options]            创建测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]   修改测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]   删除测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]      获取测试单详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]  获取测试单历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]  添加测试单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-testtask-list"></a>
@@ -7471,6 +8921,8 @@ Options:
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
+未提供的请求体字段可由匹配的详情操作自动补全。
+
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
 | --testtask-id | testtaskID | path | integer | 是 | — | 测试单ID<br>{} |
@@ -7512,6 +8964,97 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --testtask-id | testtaskID | path | integer | 是 | — | 测试单ID<br>{} |
 
+<a id="action-testtask-get"></a>
+
+## zentao testtask get
+
+```text
+Usage: zentao testtask get [options] [target]
+
+获取测试单详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                 单个 testtaskID；也可使用命名参数
+
+Options:
+  --testtask-id <value>  testtask ID（必填）
+  --ids <ids>            批量目标 ID，逗号分隔并去重
+  --batch-fail-fast      失败后跳过剩余目标
+  --fields <fields>      返回字段，逗号分隔
+  --html-to-markdown     显式将富文本字段转换为 Markdown
+  -h, --help             显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --testtask-id | testtaskID | path | integer | 是 | — | testtask ID<br>{} |
+
+<a id="action-testtask-history"></a>
+
+## zentao testtask history
+
+```text
+Usage: zentao testtask history [options] [target]
+
+获取测试单历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 testtaskID；也可使用命名参数
+
+Options:
+  --testtask-id <value>     测试单 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --testtask-id | testtaskID | path | integer | 是 | — | 测试单 ID<br>{} |
+
+<a id="action-testtask-comment"></a>
+
+## zentao testtask comment
+
+```text
+Usage: zentao testtask comment [options] [target]
+
+添加测试单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 testtaskID；也可使用命名参数
+
+Options:
+  --testtask-id <value>   测试单 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --testtask-id | testtaskID | path | integer | 是 | — | 测试单 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-release"></a>
 
 ## 发布 · release
@@ -7522,15 +9065,18 @@ Usage: zentao release [options] [command]
 发布
 
 Options:
-  -h, --help                 显示命令帮助
+  -h, --help                  显示命令帮助
 
 Commands:
-  props                      返回对象字段定义（离线）
-  list [options] [target]    获取发布列表，支持获取产品下的发布（最低版本：22.0 / biz13.0 / max8.0 /
-                             ipd5.0）
-  create [options]           创建发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]  修改发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]  删除发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                       返回对象字段定义（离线）
+  list [options] [target]     获取发布列表，支持获取产品下的发布（最低版本：22.0 / biz13.0 / max8.0 /
+                              ipd5.0）
+  create [options]            创建发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]   修改发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]   删除发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]      获取发布详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  history [options] [target]  获取发布历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  comment [options] [target]  添加发布备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-release-list"></a>
@@ -7650,6 +9196,8 @@ Options:
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
+未提供的请求体字段可由匹配的详情操作自动补全。
+
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
 | --release-id | releaseID | path | integer | 是 | — | 发布ID<br>{} |
@@ -7688,6 +9236,97 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --release-id | releaseID | path | integer | 是 | — | 发布ID<br>{} |
 
+<a id="action-release-get"></a>
+
+## zentao release get
+
+```text
+Usage: zentao release get [options] [target]
+
+获取发布详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                单个 releaseID；也可使用命名参数
+
+Options:
+  --release-id <value>  release ID（必填）
+  --ids <ids>           批量目标 ID，逗号分隔并去重
+  --batch-fail-fast     失败后跳过剩余目标
+  --fields <fields>     返回字段，逗号分隔
+  --html-to-markdown    显式将富文本字段转换为 Markdown
+  -h, --help            显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --release-id | releaseID | path | integer | 是 | — | release ID<br>{} |
+
+<a id="action-release-history"></a>
+
+## zentao release history
+
+```text
+Usage: zentao release history [options] [target]
+
+获取发布历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                    单个 releaseID；也可使用命名参数
+
+Options:
+  --release-id <value>      发布 ID（必填）
+  --fields <fields>         返回字段，逗号分隔
+  --html-to-markdown        显式将富文本字段转换为 Markdown
+  --max-items <number>      整次命令最多返回条数
+  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
+  --search <keywords>       当前获取范围内搜索
+  --search-fields <fields>  本地搜索字段
+  --sort <expr>             当前获取范围内排序，如 id:asc
+  -h, --help                显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --release-id | releaseID | path | integer | 是 | — | 发布 ID<br>{} |
+
+<a id="action-release-comment"></a>
+
+## zentao release comment
+
+```text
+Usage: zentao release comment [options] [target]
+
+添加发布备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+
+Arguments:
+  target                  单个 releaseID；也可使用命名参数
+
+Options:
+  --release-id <value>    发布 ID（必填）
+  --comment <value>       备注内容（必填）
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
+```
+
+最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+
+能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --release-id | releaseID | path | integer | 是 | — | 发布 ID<br>{} |
+| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
+
 <a id="module-file"></a>
 
 ## 附件 · file
@@ -7698,14 +9337,16 @@ Usage: zentao file [options] [command]
 附件
 
 Options:
-  -h, --help                 显示命令帮助
+  -h, --help                   显示命令帮助
 
 Commands:
-  props                      返回对象字段定义（离线）
-  create [options]           上传附件，使用【表单formdata】方式提交，不支持json（最低版本：22.0 / biz13.0
-                             / max8.0 / ipd5.0）
-  update [options] [target]  编辑附件，修改附件的名称（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
-  delete [options] [target]  删除附件（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                        返回对象字段定义（离线）
+  download [options] <fileID>  下载附件到本地文件（原始字节流，支持 Content-Disposition 命名）
+  create [options]             上传附件，使用【表单formdata】方式提交，不支持json（最低版本：22.0 /
+                               biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]    编辑附件，修改附件的名称（最低版本：22.5 / biz13.5 / max8.5 /
+                               ipd5.5）
+  delete [options] [target]    删除附件（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-file-create"></a>

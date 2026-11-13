@@ -1,5 +1,33 @@
 # Changes
 
+## Unreleased
+
+### ✨ 新特性 (Feat)
+
+- **操作历史与备注（修正端点）**: 所有业务对象模块（bug/task/story/epic/requirement/testcase/testtask/feedback/ticket/product/project/execution/build/release/productplan/program）提供 `history` 与 `comment` 操作。
+  - 实测确认 ZenTao RESTful API v2 **不存在** `/actions/{objectType}/{objectID}` 端点：该路径会落入通用回退路由（module=`action`、method=数字 ID），对一切非管理员账号返回 403 `Access not allowed`。此前版本的 `bug history` 从未真正可用即源于此。
+  - `history` 改为从详情接口读取内嵌的顶层 `actions` 数组（bug/story/task/testcase/testtask/feedback/build/release/productplan）；详情不含历史的模块（product/project/execution/program/epic/requirement/ticket）回退到 `GET /action/ajaxGetList`，并把以 ID 为键的响应转换为数组。
+  - `comment` 使用 `POST /actions/comment?objectType=..&objectID=..`（回退路由到 action->comment，实测返回 `{status:'success',data:<actionID>}`），全部账号可用，无需额外权限。
+  - epic/requirement 的历史与备注按禅道存储约定使用 objectType `story`。
+- **缺失的工作流动作**: 补齐 SDK 注册表缺少的 bug `assignto`，task `pause`/`cancel`/`restart`/`assignto`，story/epic/requirement `review`，feedback/ticket `assignto`。
+- **任务工时**: task 模块提供 `recordestimate`（PUT /tasks/{id}/recordworkhour，数组形参配合 form::batchData）、`effort`（逐条工时，路径 ID 复制到查询参数以规避 routeV2 GET 不注入路径 ID 的问题）、`editeffort`、`deleteeffort`。
+- **缺失的详情动作**: build/release/testtask 新增 `get`。
+- **附件下载**: `zentao file download <fileID> [--output <dir>]` —— 原始字节流下载（绕过 JSON 管道），解析 Content-Disposition（含 RFC 5987 编码文件名），不覆盖已有文件。实测上传→下载字节一致。
+- **CLI/MCP 全量数据**: MCP 模块工具新增 `all`/`maxItems`（对齐 CLI `--all`/`--max-items`）与 `ids`/`batchFailFast`（对齐 CLI 批量语义，逐项返回结果）。
+
+### 🐛 修复 (Fix)
+
+- **创建/更新字段补全**: bug create/update 补充 `deadline`、`module`（ZenTao 22.5 创建 Bug 实测必填 deadline 且 module 不能为 0）；project create 补充必填 `desc`。
+- **HTTP MCP 上传白名单**: 沿用上游"远程 MCP 默认禁止本地文件上传"的模型，新增 `ZENTAO_MCP_UPLOAD_ROOT` 显式开启：设置后 HTTP MCP 允许 multipart 上传，且路径经 realpath 解析后必须位于根目录内，越界即拒绝。
+- **登录页伪装 200**: 禅道在 Token 失效时可能以 HTTP 200 返回登录页 HTML；CLI 客户端统一识别并映射为 E1004，避免查询静默返回登录页、下载把登录页存成附件。
+- **空响应提示**: create/update/action 类操作返回无可展示数据时，人读格式输出服务端 message 或 `操作成功`，不再静默无输出。
+- **前缀 ID 归一化**: 数值字段接受 `case_48` 风格的前缀 ID（测试用例列表常见），`--ids case_48,49` 同样支持；同时拒绝 `1e2` 等指数写法，避免静默变成 100。
+- **Token 自动重连**: 当 profile Token 失效（E1004）且环境变量 `ZENTAO_URL`/`ZENTAO_ACCOUNT`/`ZENTAO_PASSWORD` 与当前 profile 匹配时，自动重新登录、刷新已存 Token 并重试一次（CLI 全部模块命令与 `file download`）。
+
+### ✅ 测试 (Test)
+
+- 新增扩展注册表、登录页识别、附件下载、空响应渲染、MCP 上传白名单、前缀 ID 归一化等回归测试；命令参考随注册表再生成（410 个业务动作）。
+
 ## 0.4.4
 
 ### ✨ 新特性 (Feat)
