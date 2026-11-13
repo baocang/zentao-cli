@@ -1,5 +1,5 @@
 {
-  "name": "zentao-cli",
+  "name": "@baocang/zentao-cli",
   "version": "0.4.4",
   "type": "module",
   "description": "禅道命令行工具，支持在你喜爱的终端里访问和操作禅道数据，对 AI Agents 友好。",
@@ -7,7 +7,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/easysoft/zentao-cli.git"
+    "url": "https://github.com/baocang/zentao-cli.git"
   },
   "keywords": [
     "zentao",
@@ -52,5 +52,8 @@
   },
   "engines": {
     "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
