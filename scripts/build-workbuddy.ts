@@ -43,7 +43,7 @@ if (local) rmSync(join(previewDir, 'live-validation.json'), { force: true });
 let installedPackage: string;
 let validation: Awaited<ReturnType<typeof verifyWorkbuddyLifecycle>>;
 try {
-    let spec = `zentao-cli@${pkg.version}`;
+    let spec = `${pkg.name}@${pkg.version}`;
     if (local) {
         console.log('Building and packing the local CLI; this does not create a submission ZIP.');
         execFileSync(process.execPath, ['run', 'build'], { cwd: projectDir, env, stdio: 'inherit' });
