@@ -287,6 +287,20 @@ function completeCreateUpdateSchemas(): void {
         }
         return act;
     });
+
+    // story create lacks plan; ZenTao 22.1+ enforces a non-empty plan on some
+    // editions (easysoft/zentao-cli#30). Web form semantics: plan is an array.
+    extendModuleAction('story', 'create', (act) => {
+        const schema = act.requestBody?.schema as
+            | { properties?: Record<string, PropertyDef> }
+            | undefined;
+        if (!schema) return act;
+        schema.properties = {
+            ...(schema.properties ?? {}),
+            plan: { type: 'array', items: { type: 'number' }, description: '所属计划 ID（可多个）' },
+        };
+        return act;
+    });
 }
 
 // ──────────────────────────── 5. Action history & comments ────────────────────────────
@@ -333,6 +347,11 @@ const OBJECT_MODULES: Array<{
 function actionMapGetter(response: unknown): unknown[] {
     const { status: _status, ...records } = (response ?? {}) as Record<string, unknown>;
     return Object.values(records).filter((entry) => entry && typeof entry === 'object');
+}
+
+/** ZenTao-side objectType for a module's actions (epic/requirement store as story). */
+export function actionObjectTypeFor(moduleName: string): string | undefined {
+    return OBJECT_MODULES.find(def => def.module === moduleName)?.actionObjectType;
 }
 
 function addActionHistoryAndComments(): void {

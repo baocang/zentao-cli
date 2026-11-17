@@ -69,13 +69,21 @@ describe('CLI command entry points', () => {
         expect(JSON.parse(result.stdout)).toMatchObject({ ok: true, meta: { success: 2, failed: 0 } });
     });
 
-    test.each([['product', 'delete', '1,2'], ['delete', 'product', '1'], ['do', 'product', 'get', '1'], ['product', '1'], ['ls', 'product']])(
+    test.each([['product', 'delete', '1,2'], ['delete', 'product', '1'], ['do', 'product', 'get', '1'], ['ls', 'product']])(
         'removed implicit syntax is rejected before HTTP: %j', async (...args) => {
             const result = await run(args as string[]);
             expect(result.exitCode).toBe(2);
             expect(requests).toEqual([]);
         },
     );
+
+    test('bare numeric target dispatches to get', async () => {
+        const result = await run(['product', '1']);
+        expect(result.exitCode, result.stderr).toBe(0);
+        expect(requests.map(({ method, path }) => ({ method, path }))).toEqual([
+            { method: 'GET', path: '/products/1' },
+        ]);
+    });
 
     test.each(['delete', 'get'])('routes one positional target for %s', async action => {
         const result = await run(['product', action, '1', '--yes']);

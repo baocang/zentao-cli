@@ -1,5 +1,22 @@
 # Changes
 
+## Unreleased
+
+### ✨ 新特性 (Feat)
+
+- **裸 ID 查看简写**: `zentao <module> <id>` 直接等价于 `get`（如 `zentao bug 24314`）。历史使用记录显示这是 AI agent 最高频的用法摩擦（上游 0.4.4 移除后 4 天内 4+ 次失败，错误提示也不指路）；无法识别的参数现在报错并给出正确写法。
+- **备注内嵌图片**: `zentao <module> comment <id> --comment <text> --image <path>`（可多次 `--image`）。上传走 multipart 并显式挂到目标对象，备注正文嵌入内嵌标记；实测服务端会把它规范化为禅道标准占位符（网页端内嵌渲染）。安全路径已验证：显式挂对象的附件不会被同 token 后续写入搬走（album-only 上传才会被搬，见 zentao-cli#25）。
+- **凭据文件**: `ZENTAO_CREDENTIALS_FILE` 指向 0600 的 KEY=VALUE 文件（ZENTAO_URL/ACCOUNT/PASSWORD/TOKEN），供无人值守自动化启用 Token 失效自动重连；真实环境变量优先，权限过宽直接报错。
+- **story create 补充 plan 字段**（数组，对应 easysoft/zentao-cli#30）。
+
+### 🐛 修复 (Fix)
+
+- **update 请求 comment 键防护**: ZenTao routeV2 会把 update 请求体中的 `comment` 当作"仅备注"开关并静默丢弃整个更新（zentao-cli#26）；现在直接拒绝并指引用 `<module> comment` 命令（auditplan/baseline/weekly 的合法 comment 字段豁免）。
+- **--sort 校验**: 语法错误立即报错；排序字段不存在于返回数据时不再静默无操作（字段筛选场景豁免，排序在筛选前执行）。
+- **file download 自动创建输出目录**（原目标目录不存在时 E2009）。
+- **--version 输出包名与解析路径**，便于排查多副本/装错包（如 liuhui.win 装了未加 scope 的官方包）。
+
+
 ## 0.5.1
 
 ### ✨ 新特性 (Feat)

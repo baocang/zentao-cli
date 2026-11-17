@@ -1,13 +1,15 @@
 import { isDeepStrictEqual } from 'node:util';
 import { ZentaoError } from '../errors.js';
+import { brandText } from '../brand.js';
 import { Command, Option } from 'commander';
 import { getModuleNames, getModule } from '../modules/index.js';
 import { getScopeAliasTarget } from '../mcp/params.js';
 import { actionContract, actionParameters, kebabCase, parameterFlag, paginationFields } from '../modules/contract.js';
 import { parseCliValue, prepareCliParams } from '../modules/cli-input.js';
 import { ensureAuth, tryReauth } from '../auth/flow.js';
-import { downloadFileAttachment, handleModuleCommand, showModuleProps } from './module-handler.js';
+import { downloadFileAttachment, embedCommentImages, handleModuleCommand, showModuleProps } from './module-handler.js';
 import type { GlobalOptions, ModuleActionName, ModuleActionOptions } from '../types/index.js';
+import { normalizeIdLike } from '../modules/targets.js';
 
 /** Commander 的 `collect` 回调：将多次出现的选项累积为数组 */
 function collect(value: string, previous: string[] = []): string[] {
@@ -19,7 +21,30 @@ export function registerModuleCommands(program: Command): void {
     for (const name of getModuleNames()) {
         const mod = getModule(name)!;
         const resource = program.command(name).description(mod.display ?? name);
-        resource.action(() => resource.outputHelp());
+        // Bare numeric positional dispatches to `get` — the shorthand agents
+        // keep typing (`zentao bug 24314`) even after upstream removed it.
+        resource.argument('[target]', brandText`对象 ID 简写，等价于 zentao ${name} get <target>`);
+        resource.action(async (target: string | undefined, _opts: unknown, command: Command) => {
+            if (target === undefined) {
+                resource.outputHelp();
+                return;
+            }
+            const normalized = normalizeIdLike(target.trim());
+            if (!/^\d+$/.test(normalized) || !Number.isSafeInteger(Number(normalized)) || Number(normalized) < 1) {
+                throw new ZentaoError('E2009', {
+                    option: 'target',
+                    reason: brandText`无法识别 "${target}"；查看对象请使用 zentao ${name} get <id>，全部操作见 zentao ${name} --help`,
+                });
+            }
+            const getAction = mod.actions.find(action => action.name === 'get');
+            if (!getAction) {
+                throw new ZentaoError('E2009', { option: 'target', reason: brandText`模块 ${name} 没有 get 操作，请查看 zentao ${name} --help` });
+            }
+            const options = command.optsWithGlobals() as ModuleActionOptions;
+            const params = await prepareCliParams(mod, getAction, normalized, options, {});
+            const { client, profile } = await ensureAuth(options);
+            await handleModuleCommand(client, mod, 'get', [], profile, options, params);
+        });
         resource.command('props').description('返回对象字段定义（离线）').action((_options, command: Command) => {
             showModuleProps(mod, command.optsWithGlobals());
         });
@@ -100,6 +125,7 @@ export function registerModuleCommands(program: Command): void {
             }
             if (action.requestBody) cmd.option('--data <json|@file|@->', 'JSON 对象、文件或显式标准输入');
             if (contract.batch) cmd.option('--ids <ids>', '批量目标 ID，逗号分隔并去重').option('--batch-fail-fast', '失败后跳过剩余目标');
+            if (action.name === 'comment') cmd.option('--image <path>', '随备注上传并内嵌到正文的图片路径（可多次）', collect);
             if (action.type === 'delete') cmd.option('--yes', '确认删除');
             if (action.type === 'list' || action.type === 'get') cmd.option('--fields <fields>', '返回字段，逗号分隔').option('--html-to-markdown', '显式将富文本字段转换为 Markdown');
             if (action.type === 'list') {
@@ -118,14 +144,21 @@ export function registerModuleCommands(program: Command): void {
                 const values = Object.fromEntries(mappings.map(item => [item.name, parsed[item.attribute]]));
                 const params = await prepareCliParams(mod, action, contract.target ? args[0] as string | undefined : undefined, options, values);
                 const { client, profile } = await ensureAuth(options);
+                const images = parsed.image as string[] | undefined;
+                const run = async (activeClient: typeof client, activeProfile: typeof profile): Promise<void> => {
+                    const effectiveParams = images?.length
+                        ? await embedCommentImages(activeClient, mod, params, images)
+                        : params;
+                    await handleModuleCommand(activeClient, mod, action.name, [], activeProfile, options, effectiveParams);
+                };
                 try {
-                    await handleModuleCommand(client, mod, action.name, [], profile, options, params);
+                    await run(client, profile);
                 } catch (error) {
                     // Expired profile token: re-login once with matching environment credentials.
                     if (error instanceof ZentaoError && error.code === '1004') {
                         const reauthed = await tryReauth(profile, options);
                         if (reauthed) {
-                            await handleModuleCommand(reauthed.client, mod, action.name, [], reauthed.profile, options, params);
+                            await run(reauthed.client, reauthed.profile);
                             return;
                         }
                     }

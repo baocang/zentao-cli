@@ -676,9 +676,12 @@ Options:
 ## 用户 · user
 
 ```text
-Usage: zentao user [options] [command]
+Usage: zentao user [options] [command] [target]
 
 用户
+
+Arguments:
+  target                     对象 ID 简写，等价于 zentao user get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -878,9 +881,12 @@ Options:
 ## 项目集 · program
 
 ```text
-Usage: zentao program [options] [command]
+Usage: zentao program [options] [command] [target]
 
 项目集
+
+Arguments:
+  target                      对象 ID 简写，等价于 zentao program get <target>
 
 Options:
   -h, --help                  显示命令帮助
@@ -1118,6 +1124,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -1135,9 +1142,12 @@ Options:
 ## 产品 · product
 
 ```text
-Usage: zentao product [options] [command]
+Usage: zentao product [options] [command] [target]
 
 产品
+
+Arguments:
+  target                                     对象 ID 简写，等价于 zentao product get <target>
 
 Options:
   -h, --help                                 显示命令帮助
@@ -1598,6 +1608,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -1615,9 +1626,12 @@ Options:
 ## 项目 · project
 
 ```text
-Usage: zentao project [options] [command]
+Usage: zentao project [options] [command] [target]
 
 项目
+
+Arguments:
+  target                               对象 ID 简写，等价于 zentao project get <target>
 
 Options:
   -h, --help                           显示命令帮助
@@ -2269,6 +2283,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -2286,9 +2301,12 @@ Options:
 ## 执行 · execution
 
 ```text
-Usage: zentao execution [options] [command]
+Usage: zentao execution [options] [command] [target]
 
 执行
+
+Arguments:
+  target                                 对象 ID 简写，等价于 zentao execution get <target>
 
 Options:
   -h, --help                             显示命令帮助
@@ -2823,6 +2841,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -2840,9 +2859,12 @@ Options:
 ## 产品计划 · productplan
 
 ```text
-Usage: zentao productplan [options] [command]
+Usage: zentao productplan [options] [command] [target]
 
 产品计划
+
+Arguments:
+  target                      对象 ID 简写，等价于 zentao productplan get <target>
 
 Options:
   -h, --help                  显示命令帮助
@@ -3092,6 +3114,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -3109,9 +3132,12 @@ Options:
 ## 需求 · story
 
 ```text
-Usage: zentao story [options] [command]
+Usage: zentao story [options] [command] [target]
 
 需求
+
+Arguments:
+  target                            对象 ID 简写，等价于 zentao story get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -3277,6 +3303,7 @@ Options:
   --project <value>       所属项目
   --execution <value>     所属执行
   --grade <value>         需求层级，可用的需求层级可以通过 story-getGrades 操作获取
+  --plan <value>          所属计划 ID（可多个）
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   -h, --help              显示命令帮助
@@ -3304,6 +3331,7 @@ Options:
 | --project | project | body | integer | 否 | — | 所属项目<br>{"format":"int32"} |
 | --execution | execution | body | integer | 否 | — | 所属执行<br>{"format":"int32"} |
 | --grade | grade | body | integer | 否 | — | 需求层级，可用的需求层级可以通过 story-getGrades 操作获取<br>{} |
+| --plan | plan | body | array | 否 | — | 所属计划 ID（可多个）<br>{"items":{"type":"number"}} |
 
 <a id="action-story-get"></a>
 
@@ -3690,6 +3718,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -3707,9 +3736,12 @@ Options:
 ## 业务需求 · epic
 
 ```text
-Usage: zentao epic [options] [command]
+Usage: zentao epic [options] [command] [target]
 
 业务需求
+
+Arguments:
+  target                       对象 ID 简写，等价于 zentao epic get <target>
 
 Options:
   -h, --help                   显示命令帮助
@@ -4149,6 +4181,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -4166,9 +4199,12 @@ Options:
 ## 用户需求 · requirement
 
 ```text
-Usage: zentao requirement [options] [command]
+Usage: zentao requirement [options] [command] [target]
 
 用户需求
+
+Arguments:
+  target                       对象 ID 简写，等价于 zentao requirement get <target>
 
 Options:
   -h, --help                   显示命令帮助
@@ -4608,6 +4644,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -4625,9 +4662,12 @@ Options:
 ## Bug · bug
 
 ```text
-Usage: zentao bug [options] [command]
+Usage: zentao bug [options] [command] [target]
 
 Bug
+
+Arguments:
+  target                            对象 ID 简写，等价于 zentao bug get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -5214,6 +5254,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -5231,9 +5272,12 @@ Options:
 ## 测试用例 · testcase
 
 ```text
-Usage: zentao testcase [options] [command]
+Usage: zentao testcase [options] [command] [target]
 
 测试用例
+
+Arguments:
+  target                            对象 ID 简写，等价于 zentao testcase get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -5627,6 +5671,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -5644,9 +5689,12 @@ Options:
 ## 任务 · task
 
 ```text
-Usage: zentao task [options] [command]
+Usage: zentao task [options] [command] [target]
 
 任务
+
+Arguments:
+  target                             对象 ID 简写，等价于 zentao task get <target>
 
 Options:
   -h, --help                         显示命令帮助
@@ -6438,6 +6486,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -6455,9 +6504,12 @@ Options:
 ## 问题 · issue
 
 ```text
-Usage: zentao issue [options] [command]
+Usage: zentao issue [options] [command] [target]
 
 问题
+
+Arguments:
+  target                               对象 ID 简写，等价于 zentao issue get <target>
 
 Options:
   -h, --help                           显示命令帮助
@@ -6693,9 +6745,12 @@ Options:
 ## 风险 · risk
 
 ```text
-Usage: zentao risk [options] [command]
+Usage: zentao risk [options] [command] [target]
 
 风险
+
+Arguments:
+  target                              对象 ID 简写，等价于 zentao risk get <target>
 
 Options:
   -h, --help                          显示命令帮助
@@ -7005,9 +7060,12 @@ Options:
 ## 会议 · meeting
 
 ```text
-Usage: zentao meeting [options] [command]
+Usage: zentao meeting [options] [command] [target]
 
 会议
+
+Arguments:
+  target                                 对象 ID 简写，等价于 zentao meeting get <target>
 
 Options:
   -h, --help                             显示命令帮助
@@ -7349,9 +7407,12 @@ Options:
 ## 反馈 · feedback
 
 ```text
-Usage: zentao feedback [options] [command]
+Usage: zentao feedback [options] [command] [target]
 
 反馈
+
+Arguments:
+  target                            对象 ID 简写，等价于 zentao feedback get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -7902,6 +7963,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -7919,9 +7981,12 @@ Options:
 ## 工单 · ticket
 
 ```text
-Usage: zentao ticket [options] [command]
+Usage: zentao ticket [options] [command] [target]
 
 工单
+
+Arguments:
+  target                           对象 ID 简写，等价于 zentao ticket get <target>
 
 Options:
   -h, --help                       显示命令帮助
@@ -8360,6 +8425,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -8377,9 +8443,12 @@ Options:
 ## 应用 · system
 
 ```text
-Usage: zentao system [options] [command]
+Usage: zentao system [options] [command] [target]
 
 应用
+
+Arguments:
+  target                     对象 ID 简写，等价于 zentao system get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -8503,9 +8572,12 @@ Options:
 ## 版本 · build
 
 ```text
-Usage: zentao build [options] [command]
+Usage: zentao build [options] [command] [target]
 
 版本
+
+Arguments:
+  target                      对象 ID 简写，等价于 zentao build get <target>
 
 Options:
   -h, --help                  显示命令帮助
@@ -8765,6 +8837,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -8782,9 +8855,12 @@ Options:
 ## 测试单 · testtask
 
 ```text
-Usage: zentao testtask [options] [command]
+Usage: zentao testtask [options] [command] [target]
 
 测试单
+
+Arguments:
+  target                      对象 ID 简写，等价于 zentao testtask get <target>
 
 Options:
   -h, --help                  显示命令帮助
@@ -9043,6 +9119,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -9060,9 +9137,12 @@ Options:
 ## 发布 · release
 
 ```text
-Usage: zentao release [options] [command]
+Usage: zentao release [options] [command] [target]
 
 发布
+
+Arguments:
+  target                      对象 ID 简写，等价于 zentao release get <target>
 
 Options:
   -h, --help                  显示命令帮助
@@ -9315,6 +9395,7 @@ Options:
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
+  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
   -h, --help              显示命令帮助
 ```
 
@@ -9332,9 +9413,12 @@ Options:
 ## 附件 · file
 
 ```text
-Usage: zentao file [options] [command]
+Usage: zentao file [options] [command] [target]
 
 附件
+
+Arguments:
+  target                       对象 ID 简写，等价于 zentao file get <target>
 
 Options:
   -h, --help                   显示命令帮助
@@ -9439,9 +9523,12 @@ Options:
 ## 工作流 · workflow
 
 ```text
-Usage: zentao workflow [options] [command]
+Usage: zentao workflow [options] [command] [target]
 
 工作流
+
+Arguments:
+  target                                      对象 ID 简写，等价于 zentao workflow get <target>
 
 Options:
   -h, --help                                  显示命令帮助
@@ -11207,9 +11294,12 @@ Options:
 ## 文档 · doc
 
 ```text
-Usage: zentao doc [options] [command]
+Usage: zentao doc [options] [command] [target]
 
 文档
+
+Arguments:
+  target                                    对象 ID 简写，等价于 zentao doc get <target>
 
 Options:
   -h, --help                                显示命令帮助
@@ -12575,9 +12665,12 @@ Options:
 ## 待办 · todo
 
 ```text
-Usage: zentao todo [options] [command]
+Usage: zentao todo [options] [command] [target]
 
 待办
+
+Arguments:
+  target                     对象 ID 简写，等价于 zentao todo get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -12737,9 +12830,12 @@ Options:
 ## 地盘 · my
 
 ```text
-Usage: zentao my [options] [command]
+Usage: zentao my [options] [command] [target]
 
 地盘
+
+Arguments:
+  target                            对象 ID 简写，等价于 zentao my get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -14318,9 +14414,12 @@ Options:
 ## 过程裁剪 · process
 
 ```text
-Usage: zentao process [options] [command]
+Usage: zentao process [options] [command] [target]
 
 过程裁剪
+
+Arguments:
+  target                            对象 ID 简写，等价于 zentao process get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -14441,9 +14540,12 @@ Options:
 ## 质量保证计划 · auditplan
 
 ```text
-Usage: zentao auditplan [options] [command]
+Usage: zentao auditplan [options] [command] [target]
 
 质量保证计划
+
+Arguments:
+  target                           对象 ID 简写，等价于 zentao auditplan get <target>
 
 Options:
   -h, --help                       显示命令帮助
@@ -14740,9 +14842,12 @@ Options:
 ## 不符合项 · nc
 
 ```text
-Usage: zentao nc [options] [command]
+Usage: zentao nc [options] [command] [target]
 
 不符合项
+
+Arguments:
+  target                               对象 ID 简写，等价于 zentao nc get <target>
 
 Options:
   -h, --help                           显示命令帮助
@@ -14997,9 +15102,12 @@ Options:
 ## 机会 · opportunity
 
 ```text
-Usage: zentao opportunity [options] [command]
+Usage: zentao opportunity [options] [command] [target]
 
 机会
+
+Arguments:
+  target                           对象 ID 简写，等价于 zentao opportunity get <target>
 
 Options:
   -h, --help                       显示命令帮助
@@ -15281,9 +15389,12 @@ Options:
 ## 交付物 · deliverable
 
 ```text
-Usage: zentao deliverable [options] [command]
+Usage: zentao deliverable [options] [command] [target]
 
 交付物
+
+Arguments:
+  target                      对象 ID 简写，等价于 zentao deliverable get <target>
 
 Options:
   -h, --help                  显示命令帮助
@@ -15472,9 +15583,12 @@ Options:
 ## 基线 · baseline
 
 ```text
-Usage: zentao baseline [options] [command]
+Usage: zentao baseline [options] [command] [target]
 
 基线
+
+Arguments:
+  target                     对象 ID 简写，等价于 zentao baseline get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -15668,9 +15782,12 @@ Options:
 ## 项目变更 · change
 
 ```text
-Usage: zentao change [options] [command]
+Usage: zentao change [options] [command] [target]
 
 项目变更
+
+Arguments:
+  target                     对象 ID 简写，等价于 zentao change get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -15870,9 +15987,12 @@ Options:
 ## 对象关联 · relation
 
 ```text
-Usage: zentao relation [options] [command]
+Usage: zentao relation [options] [command] [target]
 
 对象关联
+
+Arguments:
+  target                         对象 ID 简写，等价于 zentao relation get <target>
 
 Options:
   -h, --help                     显示命令帮助
@@ -16034,9 +16154,12 @@ Options:
 ## 项目流程 · workflowgroup
 
 ```text
-Usage: zentao workflowgroup [options] [command]
+Usage: zentao workflowgroup [options] [command] [target]
 
 项目流程
+
+Arguments:
+  target          对象 ID 简写，等价于 zentao workflowgroup get <target>
 
 Options:
   -h, --help      显示命令帮助
@@ -16087,9 +16210,12 @@ Options:
 ## 人力资源日历 · resourcecalendar
 
 ```text
-Usage: zentao resourcecalendar [options] [command]
+Usage: zentao resourcecalendar [options] [command] [target]
 
 人力资源日历
+
+Arguments:
+  target         对象 ID 简写，等价于 zentao resourcecalendar get <target>
 
 Options:
   -h, --help     显示命令帮助
@@ -16137,9 +16263,12 @@ Options:
 ## 项目周报 · weekly
 
 ```text
-Usage: zentao weekly [options] [command]
+Usage: zentao weekly [options] [command] [target]
 
 项目周报
+
+Arguments:
+  target                     对象 ID 简写，等价于 zentao weekly get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -16337,9 +16466,12 @@ Options:
 ## 数据库 · db
 
 ```text
-Usage: zentao db [options] [command]
+Usage: zentao db [options] [command] [target]
 
 数据库
+
+Arguments:
+  target                    对象 ID 简写，等价于 zentao db get <target>
 
 Options:
   -h, --help                显示命令帮助
@@ -16454,9 +16586,12 @@ meta 返回表信息、主键和列定义；sql 返回包含表信息、dialect 
 ## 知识库 · knowledgelib
 
 ```text
-Usage: zentao knowledgelib [options] [command]
+Usage: zentao knowledgelib [options] [command] [target]
 
 知识库
+
+Arguments:
+  target          对象 ID 简写，等价于 zentao knowledgelib get <target>
 
 Options:
   -h, --help      显示命令帮助
@@ -16507,9 +16642,12 @@ Options:
 ## 知识 · knowledge
 
 ```text
-Usage: zentao knowledge [options] [command]
+Usage: zentao knowledge [options] [command] [target]
 
 知识
+
+Arguments:
+  target                       对象 ID 简写，等价于 zentao knowledge get <target>
 
 Options:
   -h, --help                   显示命令帮助
@@ -16694,9 +16832,12 @@ Options:
 ## 代码库空间 · space
 
 ```text
-Usage: zentao space [options] [command]
+Usage: zentao space [options] [command] [target]
 
 代码库空间
+
+Arguments:
+  target          对象 ID 简写，等价于 zentao space get <target>
 
 Options:
   -h, --help      显示命令帮助
@@ -16745,9 +16886,12 @@ Options:
 ## 代码库 · repo
 
 ```text
-Usage: zentao repo [options] [command]
+Usage: zentao repo [options] [command] [target]
 
 代码库
+
+Arguments:
+  target                   对象 ID 简写，等价于 zentao repo get <target>
 
 Options:
   -h, --help               显示命令帮助

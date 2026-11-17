@@ -1,8 +1,8 @@
 import { brandText } from '../brand.js';
 import type { ZentaoClient } from '../api/index.js';
 import { mapSdkError } from '../errors.js';
-import { basename, join } from 'node:path';
-import { writeFileSync } from 'node:fs';
+import { basename, extname, join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { ModuleDefinition, Profile, ModuleActionName, UserConfig } from '../types/index.js';
 import { getAction, getObjectProps } from '../modules/helper.js';
 import { executeModuleCommand } from '../modules/executor.js';
@@ -15,7 +15,8 @@ import { createInterface } from 'node:readline/promises';
 import { renderObject } from '../utils/render.js';
 import { ZentaoError } from '../errors.js';
 import { commandSignal } from '../utils/lifecycle.js';
-import { batchTargets } from '../modules/targets.js';
+import { batchTargets, targetId } from '../modules/targets.js';
+import { actionObjectTypeFor } from '../modules/extensions.js';
 
 
 async function confirmDelete(format: string, count: number, machineReadable = false): Promise<boolean> {
@@ -128,6 +129,7 @@ export async function downloadFileAttachment(
     const outputDir = output ?? '.';
     const outputPath = join(outputDir, basename(filename));
 
+    mkdirSync(outputDir, { recursive: true });
     const buffer = await response.arrayBuffer();
     try {
         writeFileSync(outputPath, Buffer.from(buffer), { flag: 'wx' });
@@ -143,6 +145,69 @@ export async function downloadFileAttachment(
     } else {
         console.log(`已下载: ${outputPath} (${buffer.byteLength} bytes)`);
     }
+}
+
+const INLINE_IMAGE_MIME: Record<string, string> = {
+    '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
+    '.webp': 'image/webp', '.bmp': 'image/bmp', '.svg': 'image/svg+xml', '.avif': 'image/avif',
+};
+
+/**
+ * Upload images for a comment and embed them inline in the comment body.
+ *
+ * The upload attaches the file to the target object; the comment body then
+ * references the returned file-read URL, which the ZenTao web UI renders
+ * inline. Both calls share the caller's token: the server's uid session-album
+ * re-attachment (easysoft/zentao-cli#25) re-attaches the freshly uploaded
+ * files to this comment's object, which is exactly where they belong.
+ */
+export async function embedCommentImages(
+    client: ZentaoClient,
+    mod: ModuleDefinition,
+    params: Record<string, unknown>,
+    images: string[],
+): Promise<Record<string, unknown>> {
+    const objectType = actionObjectTypeFor(mod.name);
+    const commentAction = mod.actions.find(action => action.name === 'comment');
+    const idKey = commentAction ? targetId(commentAction) : undefined;
+    if (!objectType || !idKey) throw new ZentaoError('E2005', { module: mod.name });
+    const objectID = params[idKey] ?? params.id;
+    if (objectID === undefined) throw new ZentaoError('E2003', { param: idKey });
+
+    const data = { ...(params.data as Record<string, unknown>) };
+    const text = typeof data.comment === 'string' ? data.comment : '';
+    const marks: string[] = [];
+    for (const imagePath of images) {
+        if (!existsSync(imagePath)) {
+            throw new ZentaoError('E2009', { option: 'image', reason: `图片文件不存在: ${imagePath}` });
+        }
+        const ext = extname(imagePath).toLowerCase();
+        const mime = INLINE_IMAGE_MIME[ext];
+        if (!mime) {
+            throw new ZentaoError('E2009', { option: 'image', reason: `不支持的图片格式 ${ext || '(无扩展名)'}，支持 ${Object.keys(INLINE_IMAGE_MIME).join(' ')}` });
+        }
+        const form = new FormData();
+        form.append('file', new Blob([readFileSync(imagePath)], { type: mime }), basename(imagePath));
+        form.append('objectType', objectType);
+        form.append('objectID', String(objectID));
+        let result: { status?: string; id?: number; url?: string };
+        try {
+            result = await client.request('/files', { method: 'POST', body: form }) as typeof result;
+        } catch (error) {
+            throw mapSdkError(error);
+        }
+        if (!result || typeof result !== 'object' || result.id === undefined || (result.status && result.status !== 'success')) {
+            throw new ZentaoError('E2008', {
+                url: '/files',
+                status: '',
+                serverResponse: JSON.stringify(result).slice(0, 300),
+            });
+        }
+        const url = result.url ?? `/file-read-${result.id}${ext}`;
+        marks.push(`<img src="${url}" alt="${basename(imagePath)}" />`);
+    }
+    data.comment = text ? `${text}\n${marks.join('\n')}` : marks.join('\n');
+    return { ...params, data };
 }
 
 type BatchId = number;
