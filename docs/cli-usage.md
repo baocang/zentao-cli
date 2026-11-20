@@ -168,7 +168,7 @@ stdio 是默认模式，由 MCP 客户端启动并管理进程。通过 `zentao 
 
 stdio 在首次业务调用时绑定账号和站点，环境凭证不会写入本地 Profile。`zentao_switch_profile` 只切换当前 stdio MCP 实例，不改变 CLI 或其他实例的当前账号；在 CLI 中切换账号也不会改变已运行的实例。显式选择的本地 Profile 会读取同一账号的 Token 和配置更新，删除该 Profile 后后续调用会报错。
 
-stdio 的 `zentao_profile` 返回绑定的 `account`、`server`、远端详情 `user` 和 `userFound`。详情按账号过滤并按需翻页，仅返回 ID、账号、姓名、部门、角色；未找到时 `user=null`、`userFound=false`。远端权限、Token 或业务错误会明确报错。
+`zentao_profile` 返回 `account`、`server`、`user` 和 `userFound`。禅道 23.0、biz14.0、max9.0、ipd6.0 及各系列更新版本通过 `my/profile` 查询当前 Token 对应的用户。连接较早版本时，stdio 按绑定账号查询用户列表，必要时翻页。HTTP 仅持有 Token，在这些旧版本上返回 `account=null`。用户详情仅含 ID、账号、姓名、部门和角色。未找到详情时返回 `user=null`、`userFound=false`，远端权限和凭据错误会报错。
 
 ### 远程 HTTP 模式
 
@@ -192,17 +192,45 @@ zentao mcp --transport http --url https://zentao.example.com
 
 业务参数使用 `params` 中的正式名称，例如任务列表 `{"action":"list","params":{"executionID":3}}`。`id`、`product`、`project`、`execution` 是按动作定义映射的数字 ID 简写，与正式参数冲突时会报错。数组字段不使用数字简写，例如创建代码库用 `{"action":"create","params":{"space":10,"product":[12,13],"name":"demo_repo"}}`。请求体直接使用 JSON 对象；MCP 不读取 CLI 管道或 `@-` 输入。
 
-MCP 发送请求前按动作定义检查必填字段、JSON 类型、明确枚举和未知参数，以及已声明的整数、数值范围、字符串长度/格式、数组长度和元素类型。路径 ID 使用非负整数，`page` 从 1 开始，`recPerPage` 范围为 1–1000；业务字段仍按自身定义处理，例如预计工时允许小数、根模块允许 0。更新时可由详情自动补齐的请求体字段允许省略。权限和字段间业务规则由服务端校验。
+MCP 发送请求前按动作定义检查必填字段、JSON 类型、明确枚举和未知参数，以及已声明的整数、数值范围、字符串长度/格式、数组长度和元素类型。路径 ID 使用非负整数，附件元数据查询 `file/get` 的 `params.fileID` 还接受服务端提供的 Base64 gid。`page` 从 1 开始，`recPerPage` 范围为 1–1000；业务字段仍按自身定义处理，例如预计工时允许小数、根模块允许 0。更新时可由详情自动补齐的请求体字段允许省略。权限和字段间业务规则由服务端校验。
 
 所有工具都声明 `outputSchema`，成功时通过 `structuredContent.data` 返回数据；列表还包含 `pager` 和 `meta`。文本结果保留原有 JSON 形态（列表带 `data`，详情直接返回对象）。业务错误设置 `isError=true` 并返回 `structuredContent.error`，包含 `code`、`message` 及适用的 `module`、`action`；协议和顶层 schema 校验错误由 MCP SDK 返回。
+
+SDK 能确定结果对象类型时，CLI 在 JSON 的 `meta.resultObjectType` 中、MCP 在 `structuredContent.resultObjectType` 中返回类型。终端列表据此选择默认列，例如 `zentao my bugs` 显示 Bug 严重程度。可用 `--fields` 指定需要的列。
 
 `filter`、`search`、`sort` 仅处理当前页。列表的 `meta.processingScope="page"`、`meta.returnedCount` 表示实际返回条数；`pager.recTotal` 是远端总数，`meta.totalScope="serverBeforeLocalProcessing"` 表明总数未经过本地筛选。跨页筛选需使用操作支持的 `params.filters` 等服务端参数，并逐页请求。
 
 ## 禅道数据访问和操作
 
+### 页面链接
+
+`zentao link create` 根据站点配置生成 GET、PATH_INFO 或 PATH_INFO2 页面地址。`--var` 按页面方法的参数顺序重复传入，值使用原文。默认输出完整网址，`--relative` 返回站内路径。`zentao link parse` 可解析完整网址和站内路径。
+
+```bash
+zentao link create bug view --var bugID=329
+zentao link create task view --var taskID=42 --relative
+zentao link parse 'https://zentao.example.com/bug-view-329.html' --format=json
+```
+
+使用 `--server`、`--profile`、`ZENTAO_URL` 或当前 Profile 选择站点。已有路由配置时可离线处理，缺少配置时向选定站点匿名获取。MCP 工具 `zentao_link` 使用绑定的站点，支持 `create` 和 `parse` 两个动作。
+
 ### API 覆盖与版本兼容
 
-CLI 使用 `zentao-api 0.8.4` 的注册表，提供 42 个模块、361 个操作，覆盖问题（`issue`）、风险（`risk`）、会议（`meeting`）、工作流（`workflow`）、文档（`doc`）、待办（`todo`）、地盘（`my`）和代码库（`repo`）等模块，并支持项目集/项目/执行下的关联列表、需求层级、附件上传和 Markdown 文档正文。
+CLI 使用 `zentao-api 0.9.3` 的注册表，提供 43 个模块、365 个操作，覆盖问题（`issue`）、风险（`risk`）、会议（`meeting`）、工作流（`workflow`）、文档（`doc`）、待办（`todo`）、地盘（`my`）和代码库（`repo`）等模块，并支持项目集/项目/执行下的关联列表、需求层级、附件上传和 Markdown 文档正文。使用 `zentao setting work-hours` 可查询每日可用工时和工时展示单位。
+
+从 SDK 0.9.0 升级后，脚本中的 `zentao my info` 改为 `zentao my profile`，MCP 工具 `zentao_my` 的 `action` 改为 `profile`。`zentao file get` 查询附件元数据，`zentao file read` 读取附件内容。各操作支持的禅道版本可通过 `--help` 查看。
+
+CLI 和 stdio MCP 保存富文本时可以上传本机图片。图片上传失败但正文保存成功时，CLI 的 JSON 结果在 `meta.fileWarnings` 中返回警告，批量结果将警告列在对应对象下。终端和 raw 模式将警告写入 stderr。MCP 返回 `structuredContent.fileWarnings`。如果服务端未确认保存结果，请先按错误中的 `uid` 和 `fileIDs` 核对附件归属，再决定是否重试。
+
+`zentao file read 42 --output ./attachment.pdf` 将附件流式写入文件，下载成功后替换目标文件。普通终端和 JSON 输出使用 Base64。`--format=raw` 可将原始字节重定向到管道，显式指定 `--stream=1` 时输出服务端返回的 Base64 文本。MCP 的 `file/read` 在 `data` 中返回 `{encoding:"base64",content:"…"}`。大附件优先使用 CLI 的 `--output`。
+
+可以把图片地址或附件下载链接直接作为位置参数。相对链接使用当前站点，带域名的链接需要匹配所选站点的协议、主机、端口和安装目录。链接在本地解析为单个文件 ID，与 `--file-id`、`--ids` 互斥。带有 `&` 的链接请用引号包起来。
+
+```bash
+zentao file get '/file-read-298.png' --fields id,title,extension,size
+zentao file read 'https://pm.example.com/zentao/file-download-298.html' --output ./需求说明.pdf
+zentao file read '/index.php?module=file&method=read&fileID=298' --output ./截图.png
+```
 
 SDK 0.8.2 修正了 `story`、`requirement`、`epic` 的 `create` / `change`：未提供有效评审人时发送 `needNotReview: "1"`，状态默认 `active`；显式传入的非空状态会保留，空字符串仍回落为 `active`。提供有效评审人时状态为 `reviewing`，优先于显式状态。CLI 支持 `--status=draft` 或 `--data '{"status":"draft"}'`；MCP 使用 `params.status` 或 `params.data.status`。`change` 不会自动读取并保留原状态，需要保留草稿时应明确传入 `draft`。
 
@@ -242,14 +270,47 @@ zentao doc create-my-doc --space-id=1 --lib-id=2 --data '{"title":"开发说明"
 # 修改文档库，自动从同一路径的详情接口补全已有字段
 zentao doc update-lib --lib-id=2 --name=开发文档
 
-# SDK 自动按 multipart/form-data 上传本地文件（默认上限 50 MiB）
-zentao file create --file=/path/to/screenshot.png --object-type=bug --object-id=1
+# 上传普通 Bug 附件（默认上限 50 MiB）。省略 --extra 时 SDK 发送编辑器图片标记 editor
+zentao file create --file=/path/to/screenshot.png --object-type=bug --object-id=1 --extra=''
 
 # 查看路径、查询、请求体参数和最低版本
 zentao doc create-my-doc --help
 ```
 
 首个位置参数是首个路径目标的简写，其他路径参数使用各自的 kebab-case 选项。`doc`、`my` 等没有默认 `list` 的模块，在省略操作时会显示帮助。命名的列表、详情、创建、更新和删除操作遵循各自的类型，删除操作仍需确认或显式 `--yes`。
+
+### 在富文本中插入本地图片
+
+把本地图片写在需要显示的位置。CLI 会先上传图片，再用同一 Token 和自动生成的 UID 保存对象。下面的命令将两张截图插入产品 12 的 Bug 重现步骤。
+
+```bash
+zentao bug create --product 12 --opened-build trunk --title '登录失败' \
+  --steps '<img src="file:./screenshot-1.png" alt="复现截图1"><img src="file:~/imgs/screenshot-2.png" alt="复现截图2">'
+
+zentao bug update 329 --markdown --steps '![复现截图1](file:./screenshot-1.png)'
+```
+
+- `file:./` 和 `file:../` 从命令执行目录查找，`file:~/` 从当前用户主目录查找，`file:///` 用于绝对路径。`--data @body.json` 和 `--data @-` 同样以命令执行目录解析相对路径。Markdown 路径中有空格时可写 `![截图](<file:./登录 页面.png>)`。
+- 图片保留磁盘文件名，`alt` 用作正文说明。同一文件在一次对象保存中只上传一次。`--ids` 批量更新时，每个对象使用独立 UID。本地 stdio MCP 可在 HTML 字段中使用相同路径。
+- 某张图片读取或上传失败时，其位置显示“图片未上传：说明”，省略说明时显示文件名。其他内容继续保存。JSON 输出在 `meta.fileWarnings` 中列出路径和原因，表格和 `raw` 输出将告警写入 stderr。
+
+自动关联与分步预上传使用相同的服务端 UID 机制，适用版本见下节。
+
+### 将预上传的图片绑定到对象
+
+需要分步上传和编辑时，为每个要保存的对象生成一个 UID。上传和保存使用同一个禅道 Token，例如在两个命令中使用同一个已登录的 Profile。服务端会将该 UID 下的全部图片绑定到这次保存的对象。
+
+```bash
+uid=$(node -p "require('node:crypto').randomUUID()")
+zentao file create --file ./screenshot.png --uid "$uid" --format=json
+
+# 假设上传返回的文件 ID 为 42，把它引用在 Bug 329 的重现步骤里
+zentao bug update 329 --uid "$uid" --steps '<img src="file:42" alt="复现截图">'
+```
+
+上传时 UID 属于查询参数。保存时，带富文本正文的动作支持 `--uid` 或 `--data` 中的 `uid`。MCP 对应使用 `params.uid`，保存时也可使用 `params.data.uid`。HTTP MCP 可绑定已上传的图片，本地图片上传使用 CLI 或 stdio MCP。
+
+UID 支持字母、数字、下划线和连字符，保留值为 `0`、`1`、`apiv2` 和 `used`。此功能要求禅道 23.0、biz14.0、max9.0、ipd6.0 或更新版本，并包含服务端提交 `0a4de3a66f5` 或等效修复。
 
 <a id="usage"></a>
 ## 命令格式与传参
@@ -276,6 +337,25 @@ zentao help bug create --format=json
 - `--ids 123,124` 仅用于支持批量的对象操作，与单个目标互斥，先校验全部 ID 再去重。创建多条记录请显式逐条调用 create，不将对象 ID 当成批量创建输入。
 - 删除需要确认；非交互调用必须 `--yes`。批量部分失败会保留逐项结果并返回非零退出码；`--batch-fail-fast` 跳过后续项，不回滚。
 - 更新只自动补全动作声明的可写字段，存在匹配详情操作时才生效。
+
+### 用 Markdown 写入 HTML 字段
+
+CLI 默认把 HTML 字段作为 HTML 输入。加上 `--markdown` 后，CLI 会把本次提供的所有 HTML 字段从 Markdown 转为 HTML。下面这条命令提交的 `steps` 是 `这是<strong>重现步骤</strong>`。
+
+```bash
+zentao bug update 329 --steps '这是**重现步骤**' --markdown
+```
+
+同一次请求可以混用 Markdown 和已有 HTML。下面的 `--markdown spec` 只转换需求描述，`verify` 中的验收标准按原有 HTML 提交。
+
+```bash
+zentao story change 11 --data '{"spec":"支持**扫码登录**","verify":"<p>扫码后进入首页</p>"}' --markdown spec
+```
+
+- 多个字段用逗号分隔，例如 `--markdown spec,verify`。字段名可查动作的 `--help` 或 JSON 帮助的 `markdownFields`。有位置目标时，将目标 ID 放在 `--markdown` 前。
+- 命名参数、`--data` 内联 JSON、`@file` 和 `@-` 均可提供字段值。显式列出的字段须在本次输入中提供且属于该动作的 HTML 字段。更新时，自动补全的字段保留原值。
+- 列表、代码块和多段文字保留各自的 HTML 结构。Markdown 中的原始 HTML 标签按文本转义。空字符串仍可清空字段。
+- 禅道协同文档原生接受 Markdown 正文，直接传入 `content` 即可。写入旧式 HTML 文档时，显式指定 `--content-type html`（或请求体中的 `"contentType":"html"`）后即可转换 `content`。
 
 <a id="examples"></a>
 ## 常用示例

@@ -25,6 +25,29 @@ async function fixture(handler: (req: Request) => Response | Promise<Response> =
 }
 
 const headers = { token: 'test-token', 'content-type': 'application/json', accept: 'application/json, text/event-stream' };
+
+test('HTTP file URLs use the fixed ZenTao site and the calling user’s token', async () => {
+    const requests: Array<[string, string | null]> = [];
+    const f = await fixture(req => {
+        const url = new URL(req.url);
+        requests.push([url.pathname + url.search, req.headers.get('token')]);
+        if (url.searchParams.has('mode')) return Response.json({ version: '23.0' });
+        return new Response(Uint8Array.from([0, 255, 128]));
+    }, { modules: ['file'], readOnly: true });
+    try {
+        const { client } = await f.connect({ token: 'reader-token' });
+        const read = (target: { url: string } | { id: number }) => client.callTool({ name: 'zentao_file', arguments: { action: 'read', ...target } });
+        const wrongSite = await read({ url: new URL('/file-download-298.html', f.url).href });
+        expect(wrongSite.structuredContent).toMatchObject({ error: { code: 'E2009' } });
+        expect(requests).toEqual([]);
+        for (const target of [{ id: 298 }, { url: new URL('/file-download-298.html?session=private-query', f.api.url).href }]) {
+            const result = await read(target);
+            expect(result.structuredContent).toEqual({ data: { encoding: 'base64', content: 'AP+A' } });
+            expect(requests.splice(0)).toEqual([['/?mode=getconfig', null], ['/api.php/v2/files/298/read?stream=0', 'reader-token']]);
+        }
+    } finally { await f.close(); }
+});
+
 const call = (id = 7, action = 'get') => ({ jsonrpc: '2.0', id, method: 'tools/call', params: { name: 'zentao_product', arguments: { action, id: 1 } } });
 function sseResult(text: string): any {
     return JSON.parse(text.split('\n').find(line => line.startsWith('data: '))!.slice(6));
@@ -46,22 +69,41 @@ function rawRequest(url: URL, rawHeaders: string[], body: string | string[] = '{
     });
 }
 
-test('HTTP client initializes, discovers shared tools and reports unknown Token identity without upstream requests', async () => {
-    let requests = 0;
-    const f = await fixture(() => { requests++; return Response.json({}); });
+test('HTTP tool discovery is offline and profile resolves the caller Token on supported servers', async () => {
+    const requests: string[] = [];
+    let status = 200;
+    const f = await fixture(req => {
+        const url = new URL(req.url);
+        requests.push(url.pathname + url.search);
+        if (url.searchParams.get('mode') === 'getconfig') return Response.json({ version: '23.0' });
+        expect(req.headers.get('token')).toBe('test-token');
+        if (status !== 200) return Response.json({ error: 'identity unavailable' }, { status });
+        return Response.json({ user: { id: 17, account: 'remote', realname: 'Remote', role: 'dev', dept: 3, phone: 'private-phone' } });
+    });
     const stdio = await createMcpTestClient(() => Response.json({}), ['--modules', 'product']);
     try {
         const { client, transport } = await f.connect();
         expect(transport.sessionId).toBeUndefined();
         const { tools } = await client.listTools();
-        expect(tools.map(tool => tool.name)).toEqual(['zentao_action_help', 'zentao_profile', 'zentao_product']);
+        expect(tools.map(tool => tool.name)).toEqual(['zentao_action_help', 'zentao_profile', 'zentao_product', 'zentao_link']);
         const localTools = await stdio.client.listTools();
         expect(tools.find(tool => tool.name === 'zentao_product')).toEqual(localTools.tools.find(tool => tool.name === 'zentao_product'));
-        expect(toolData(await client.callTool({ name: 'zentao_profile', arguments: {} }))).toMatchObject({
-            server: f.api.url.toString().replace(/\/$/, ''), account: null, user: null, userFound: false,
+        expect(requests).toEqual([]);
+        const profile = await client.callTool({ name: 'zentao_profile', arguments: {} });
+        expect(toolData(profile)).toEqual({
+            server: f.api.url.origin, account: 'remote', userFound: true,
+            user: { id: 17, account: 'remote', realname: 'Remote', role: 'dev', dept: 3 },
         });
+        expect(JSON.stringify(profile)).not.toContain('private-phone');
         expect((await client.callTool({ name: 'zentao_switch_profile', arguments: { profileKey: 'local-user' } })).isError).toBe(true);
-        expect(requests).toBe(0);
+        expect(requests).toEqual(['/?mode=getconfig', '/api.php/v2/my/profile']);
+        for (const [failure, code] of [[401, 'E1004'], [403, 'E2006'], [404, 'E2002']] as const) {
+            status = failure;
+            requests.length = 0;
+            const denied = await client.callTool({ name: 'zentao_profile', arguments: {} });
+            expect(denied).toMatchObject({ isError: true, structuredContent: { error: { code } } });
+            expect(requests.filter(path => !path.includes('getconfig'))).toEqual(['/api.php/v2/my/profile']);
+        }
     } finally { await stdio.close(); await f.close(); }
 });
 
@@ -81,6 +123,36 @@ test('concurrent requests with identical RPC IDs keep Token credentials and resp
         expect(results.map(result => toolData(result.result).name)).toEqual(['alice', 'bob']);
         expect(seen.sort()).toEqual(['alice', 'bob']);
     } finally { await f.close(); }
+});
+
+test('read-only HTTP links use one anonymous routing config across tokens and never fetch the input page', async () => {
+    const visits: string[] = [];
+    const external = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch(req) { visits.push(req.url); return new Response(); } });
+    const calls: Array<{ path: string; token: string | null; marker: string | null }> = [];
+    const f = await fixture(async req => {
+        const url = new URL(req.url);
+        calls.push({ path: url.pathname + url.search, token: req.headers.get('token'), marker: req.headers.get('ZenTao-Action-Assistant') });
+        await Bun.sleep(15);
+        return Response.json({ version: '23.0', requestType: 'PATH_INFO', requestFix: '-', moduleVar: 'm', methodVar: 'f' });
+    }, { readOnly: true });
+    try {
+        const { client } = await f.connect({ token: 'user-a' });
+        const { client: other } = await f.connect({ token: 'user-b' });
+        const target = new URL('/release.html', external.url).href;
+        const input = { action: 'create', module: 'bug', method: 'view', vars: ['bugID=42'] };
+        const link = (args: Record<string, unknown>) => client.callTool({ name: 'zentao_link', arguments: args });
+        expect(toolData(await link({ action: 'parse', url: target }))).toEqual({ url: target, external: true });
+        for (const args of [{ ...input, server: target }, { action: 'parse', url: target, relative: true }, { action: 'create', url: target }]) {
+            expect((await link(args)).isError).toBe(true);
+        }
+        expect(calls).toEqual([]);
+        const [relative, full] = await Promise.all([link({ ...input, relative: true }), other.callTool({ name: 'zentao_link', arguments: input })]);
+        expect(toolData(relative)).toBe('/bug-view-42.html');
+        expect(toolData(full)).toBe(new URL('/bug-view-42.html', f.api.url).href);
+        expect(toolData(await link({ action: 'parse', url: toolData(full) }))).toMatchObject({ moduleName: 'bug', methodName: 'view', params: { $1: '42' } });
+        expect(calls).toEqual([{ path: '/?mode=getconfig', token: null, marker: null }]);
+        expect(visits).toEqual([]);
+    } finally { await f.close(); external.stop(true); }
 });
 
 test('accepts Bearer credentials and maps upstream invalid-token and permission errors without retries', async () => {
@@ -141,7 +213,7 @@ test('module filtering, read-only and split tools remain enforced remotely', asy
     const f = await fixture(() => { requests++; return Response.json({}); }, { readOnly: true, splitTools: true });
     try {
         const { client } = await f.connect();
-        expect((await client.listTools()).tools.map(tool => tool.name)).toEqual(['zentao_action_help', 'zentao_profile', 'zentao_product_read']);
+        expect((await client.listTools()).tools.map(tool => tool.name)).toEqual(['zentao_action_help', 'zentao_profile', 'zentao_product_read', 'zentao_link']);
         for (const [name, action] of [['zentao_product_read', 'delete'], ['zentao_product_write', 'delete'], ['zentao_bug_read', 'get']]) {
             expect((await client.callTool({ name, arguments: { action, id: 1 } })).isError).toBe(true);
         }

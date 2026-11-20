@@ -1,13 +1,13 @@
 import { isDeepStrictEqual } from 'node:util';
-import { paginationFields } from './contract.js';
-import { getModuleActionParams } from 'zentao-api';
+import { canAutoFill, paginationFields, pathIdType } from './contract.js';
+import { getModuleActionParams } from './helper.js';
 import type { ModuleAction, ModuleDefinition } from '../types/index.js';
 import { ZentaoError } from '../errors.js';
 import { brandText } from '../brand.js';
 
 // The SDK retains these schema constraints at runtime, beyond its public param type.
 export interface ValueSchema {
-    type?: string;
+    type?: string | readonly ['integer', 'string'];
     minimum?: number;
     maximum?: number;
     minLength?: number;
@@ -19,9 +19,23 @@ export interface ValueSchema {
     options?: readonly { value: unknown }[];
 }
 
+export function isFileGid(value: string): boolean {
+    return value.length > 0 && /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}(?:==)?|[A-Za-z0-9+/]{3}=?)?$/.test(value);
+}
+
 export function validateValue(name: string, value: unknown, schema: ValueSchema): void {
     const invalid = (reason: string): never => { throw new ZentaoError('E2009', { option: name, reason }); };
     const { type } = schema;
+    if (type && typeof type !== 'string') {
+        // file/get accepts a decimal ID or an opaque Base64 gid, including unpadded Base64.
+        if (typeof value === 'string' && !/^\d+$/.test(value)) {
+            if (!isFileGid(value)) {
+                invalid('必须为数字 ID 或 Base64 编码的 gid');
+            }
+            return;
+        }
+        return validateValue(name, typeof value === 'string' ? Number(value) : value, { type: 'integer', minimum: 0 });
+    }
     if (type === 'number' || type === 'integer') {
         if (typeof value !== 'number' || !Number.isFinite(value)) invalid('必须为有限数字');
         if (type === 'integer' && !Number.isSafeInteger(value)) invalid('必须为安全整数');
@@ -84,7 +98,7 @@ export function validateToolParams(mod: ModuleDefinition, action: ModuleAction, 
             if (value !== undefined) validateValue(field.name, value, { ...field, type: 'integer', minimum: 1, maximum });
         }
     }
-    const autoFill = action.type === 'update' && mod.actions.some(candidate => candidate.type === 'get' && candidate.path === action.path);
+    const autoFill = canAutoFill(mod, action);
     const bodyProperties = action.requestBody?.schema.properties as Record<string, ValueSchema> | undefined;
     for (const param of definitions) {
         const fromBody = param.role === 'body' && Object.hasOwn(body, param.name);
@@ -95,9 +109,12 @@ export function validateToolParams(mod: ModuleDefinition, action: ModuleAction, 
             }
             continue;
         }
-        const pathID = param.role === 'path' && param.name.endsWith('ID');
+        const pathID = param.role === 'path' ? pathIdType(mod, action, param.name) : undefined;
         // Flattened SDK params convert integer to number; recover the original body type.
-        validateValue(param.name, value, { ...param, type: param.type ?? (pathID ? 'number' : undefined), ...(param.role === 'body' ? bodyProperties?.[param.name] : {}) });
+        validateValue(param.name, value, { ...param, type: param.type ?? pathID, ...(param.role === 'body' ? bodyProperties?.[param.name] : {}) });
+        if (param.name === 'uid' && (typeof value !== 'string' || !value || /[^A-Za-z0-9_-]/.test(value) || ['0', '1', 'used', 'apiv2'].includes(value))) {
+            invalid('uid', '批次标识仅接受英文字母、数字、下划线和连字符，不能为空或使用保留值 0、1、used、apiv2');
+        }
         if (typeof value === 'number') {
             if ((pathID || param.name.endsWith('ID') || ['pageID', 'recPerPage'].includes(param.name)) && (!Number.isSafeInteger(value) || value < 0)) {
                 invalid(param.name, '必须为非负安全整数');

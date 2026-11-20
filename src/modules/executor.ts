@@ -1,4 +1,4 @@
-import { request, processData, type RequestOptions, type ResponseData } from 'zentao-api';
+import { request, processData, type FileWarning, type RequestOptions, type ResponseData } from 'zentao-api';
 import type { ZentaoClient } from '../api/index.js';
 import { mapSdkError } from '../errors.js';
 import type {
@@ -14,8 +14,10 @@ import { resolveData } from '../utils/stdin.js';
 import { buildParams } from './args.js';
 import { getAction } from './helper.js';
 import { ZentaoError } from '../errors.js';
-import { actionContract, paginationFields } from './contract.js';
+import { canAutoFill, defaultTableFields, paginationFields } from './contract.js';
 import { validateValue } from './validation.js';
+import { localUploadsBlocked } from './file-policy.js';
+import { setHtmlImageInputs } from './html-images.js';
 
 export interface ModuleExecutionResult {
     /** 解析到的动作定义 */
@@ -27,6 +29,8 @@ export interface ModuleExecutionResult {
     /** 分页信息（CLI 字段命名） */
     pager?: ListPagerInfo;
     meta?: Record<string, unknown>;
+    fileWarnings?: FileWarning[];
+    resultObjectType?: string;
     /** 用户通过 --pick 指定的字段 */
     fields?: string[];
     /** 是否为列表结果 */
@@ -116,12 +120,16 @@ export async function executeModuleCommand(
     const shouldProcess = !rawOutput;
     const processList = shouldProcess && action.type === 'list';
     const processSingle = shouldProcess && action.type === 'get';
+    const rawFileWarnings: FileWarning[] = [];
+    setHtmlImageInputs(module.name, action, params);
 
     const requestOptions: RequestOptions = {
         client,
         actionAssistant: options.assistant,
-        autoFill: action.type === 'update',
+        autoFill: canAutoFill(module, action),
         throwOnFail: true,
+        continueOnFileUploadError: !localUploadsBlocked(),
+        onFileError: rawOutput ? warning => { rawFileWarnings.push(warning); } : undefined,
         recPerPage: pagination ? String(getParam(pagination.size.name)) : undefined,
         timeout: options.timeout,
         insecure: options.insecure,
@@ -140,20 +148,23 @@ export async function executeModuleCommand(
     };
 
     let response: ResponseData;
-    let collected: Record<string, unknown>[] = [];
+    let collected: unknown[] = [];
+    let resultObjectType: string | undefined;
     let fetched = 0;
     let processedCount = 0;
     try {
         if (rawOutput) {
             const rawResponse = await request(requestName, params, { ...requestOptions, raw: true });
             // The SDK returns raw responses before applying throwOnFail.
-            if (rawResponse && typeof rawResponse === 'object' && 'status' in rawResponse && rawResponse.status === 'fail') {
-                const message = 'message' in rawResponse ? rawResponse.message : undefined;
+            const record = rawResponse && typeof rawResponse === 'object' ? rawResponse as Record<string, unknown> : undefined;
+            const writeFailed = action.requestBody && (record?.status === 'error' || record?.result === 'fail' || record?.result === 'error');
+            if (record && (record.status === 'fail' || writeFailed)) {
+                const message = record.message;
                 throw new ZentaoError('E2008', {
                     url: '',
                     status: '',
                     serverResponse: typeof message === 'string' ? message : JSON.stringify(message ?? rawResponse),
-                }, rawResponse);
+                }, rawFileWarnings.length ? { response: rawResponse, fileWarnings: rawFileWarnings } : rawResponse);
             }
             return {
                 action,
@@ -161,14 +172,17 @@ export async function executeModuleCommand(
                 rawResponse,
                 fields,
                 isList: action.type === 'list',
+                ...(rawFileWarnings.length ? { fileWarnings: rawFileWarnings } : {}),
             };
         }
         let previousPage: string | undefined;
         for (;;) {
             response = await request(requestName, params, { ...requestOptions, raw: false,
                 convert: undefined, filter: undefined, search: undefined, sort: undefined, limit: undefined, pick: processList ? undefined : requestOptions.pick });
+            if (previousPage === undefined) resultObjectType = response.resultObjectType;
+            else if (response.resultObjectType !== resultObjectType) resultObjectType = undefined;
             if (!processList) break;
-            const rows = (Array.isArray(response.data) ? response.data : []) as Record<string, unknown>[];
+            const rows = Array.isArray(response.data) ? response.data : [];
             fetched += rows.length;
             collected.push(...rows);
             if (!options.all) break;
@@ -184,7 +198,12 @@ export async function executeModuleCommand(
             setParam(pagination!.page.name, pager.page + 1);
         }
         if (processList) {
-            collected = processData(collected, { ...requestOptions, limit: undefined });
+            // Object transforms would spread scalar entries into empty or numeric-keyed records.
+            if (collected.every((row): row is Record<string, unknown> => row !== null && typeof row === 'object' && !Array.isArray(row))) {
+                collected = processData(collected, { ...requestOptions, limit: undefined });
+            } else {
+                resultObjectType = undefined;
+            }
             processedCount = collected.length;
             if (options.maxItems) collected = collected.slice(0, Number(options.maxItems));
         }
@@ -222,15 +241,17 @@ export async function executeModuleCommand(
         const meta = { returned: data.length, fetched, page: pager?.pageID ?? null, pageSize: pager?.recPerPage ?? null,
             total: pager?.recTotal ?? null, hasMore, truncated: processedCount > data.length,
             processingScope: options.all ? 'all' : 'page', totalScope: 'serverBeforeLocalProcessing' };
-        const displayFields = outputFormat === 'table' && !fields && data.some(row => row && typeof row === 'object')
-            ? actionContract(module, action).defaultFields.filter(key => data.some(row => row && Object.hasOwn(row, key))) : fields;
-        return { action, data, rawResponse: response, pager, fields: displayFields?.length ? displayFields : undefined, isList: true, meta };
+        const displayFields = outputFormat === 'table' && !fields && resultObjectType
+            ? defaultTableFields(resultObjectType).filter(key => data.some(row => row != null && Object.hasOwn(row, key))) : fields;
+        return { action, data, rawResponse: response, resultObjectType, pager,
+            fields: displayFields?.length ? displayFields : undefined, isList: true, meta };
     }
 
     if (action.type === 'get') {
-        const data = (response.data ?? {}) as Record<string, unknown>;
-        return { action, data, rawResponse: response, fields, isList: false };
+        const data = response.data instanceof ArrayBuffer ? Buffer.from(response.data).toString('base64') : response.data ?? {};
+        return { action, data, rawResponse: response, resultObjectType: response.resultObjectType, fields, isList: false };
     }
 
-    return { action, data: response.data, rawResponse: response, fields, isList: false };
+    return { action, data: response.data, rawResponse: response, resultObjectType: response.resultObjectType, fields, isList: false,
+        ...(response.fileWarnings?.length ? { fileWarnings: response.fileWarnings } : {}) };
 }

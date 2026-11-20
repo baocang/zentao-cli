@@ -4,12 +4,16 @@ import { brandText } from '../brand.js';
 import { Command, Option } from 'commander';
 import { getModuleNames, getModule } from '../modules/index.js';
 import { getScopeAliasTarget } from '../mcp/params.js';
-import { actionContract, actionParameters, kebabCase, parameterFlag, paginationFields } from '../modules/contract.js';
+import { actionContract, kebabCase, paginationFields } from '../modules/contract.js';
 import { parseCliValue, prepareCliParams } from '../modules/cli-input.js';
-import { ensureAuth, tryReauth } from '../auth/flow.js';
+import { ensureAuth, resolveAuthSource, tryReauth } from '../auth/flow.js';
+import { fileIdAtSite, supportsFileUrl } from '../modules/file-url.js';
+import { getProfileConfig } from '../config/store.js';
+import { downloadFile } from './file-download.js';
 import { downloadFileAttachment, embedCommentImages, handleModuleCommand, showModuleProps } from './module-handler.js';
 import type { GlobalOptions, ModuleActionName, ModuleActionOptions } from '../types/index.js';
 import { normalizeIdLike } from '../modules/targets.js';
+import { emitResult } from '../utils/output.js';
 
 /** Commander 的 `collect` 回调：将多次出现的选项累积为数组 */
 function collect(value: string, previous: string[] = []): string[] {
@@ -88,17 +92,21 @@ export function registerModuleCommands(program: Command): void {
         }
         for (const action of mod.actions) {
             const contract = actionContract(mod, action);
+            const fileRead = name === 'file' && action.name === 'read';
+            const acceptsFileUrl = supportsFileUrl(name, action.name);
             const cmd = resource.command(kebabCase(action.name))
                 .description(`${action.display ?? action.name}（最低版本：${action.minVersion.join(' / ')}）`);
-            if (contract.target) cmd.argument('[target]', `单个 ${contract.target}；也可使用命名参数`);
+            if (contract.target) cmd.argument('[target]', acceptsFileUrl
+                ? '单个附件标识或当前站点的附件 URL，--file-id 可单独指定标识'
+                : `单个 ${contract.target}；也可使用命名参数`);
             const mappings: Array<{ name: string; attribute: string }> = [];
             const pagination = paginationFields(mod, action);
             const reserved = new Set(pagination ? [pagination.page.name, pagination.size.name] : []);
-            for (const param of actionParameters(mod, action)) {
+            for (const param of contract.parameters) {
                 if (reserved.has(param.name) || mappings.some(item => item.name === param.name)) continue;
-                const flag = parameterFlag(param.name).slice(2);
+                const flag = param.flag.slice(2);
                 const option = new Option(`--${flag} ${param.type === 'boolean' ? '[boolean]' : '<value>'}`,
-                    `${param.description ?? param.name}${param.required ? '（必填）' : ''}`);
+                    `${param.description ?? param.name}${param.required && !(acceptsFileUrl && param.name === 'fileID') ? '（必填）' : ''}`);
                 if (param.type === 'array') option.argParser((value: string, previous: string[] = []) => previous.concat(value));
                 if (param.type === 'boolean') option.preset(true);
                 cmd.addOption(option);
@@ -124,10 +132,16 @@ export function registerModuleCommands(program: Command): void {
                 mappings.push({ name: scope, attribute: option.attributeName() });
             }
             if (action.requestBody) cmd.option('--data <json|@file|@->', 'JSON 对象、文件或显式标准输入');
+            if (contract.markdownFields.length) {
+                const fields = contract.markdownFields.join(', ');
+                const condition = name === 'doc' ? '（content 需显式指定 --content-type html）' : '';
+                cmd.option('--markdown [fields]', `将 Markdown 转为 HTML。可选 ${fields}${condition}，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段`);
+            }
+            if (fileRead) cmd.option('--output <path>', '流式保存附件，下载完成后替换目标文件');
             if (contract.batch) cmd.option('--ids <ids>', '批量目标 ID，逗号分隔并去重').option('--batch-fail-fast', '失败后跳过剩余目标');
             if (action.name === 'comment') cmd.option('--image <path>', '随备注上传并内嵌到正文的图片路径（可多次）', collect);
             if (action.type === 'delete') cmd.option('--yes', '确认删除');
-            if (action.type === 'list' || action.type === 'get') cmd.option('--fields <fields>', '返回字段，逗号分隔').option('--html-to-markdown', '显式将富文本字段转换为 Markdown');
+            if (action.type === 'list' || (action.type === 'get' && !fileRead)) cmd.option('--fields <fields>', '返回字段，逗号分隔').option('--html-to-markdown', '显式将富文本字段转换为 Markdown');
             if (action.type === 'list') {
                 cmd.option('--max-items <number>', '整次命令最多返回条数');
                 cmd.option('--filter <expr>', '当前获取范围内过滤；组内 AND，多次指定为 OR', collect);
@@ -142,8 +156,19 @@ export function registerModuleCommands(program: Command): void {
                 const parsed = command.optsWithGlobals();
                 const options: ModuleActionOptions = { ...parsed, pick: parsed.fields, recPerPage: parsed.pageSize };
                 const values = Object.fromEntries(mappings.map(item => [item.name, parsed[item.attribute]]));
-                const params = await prepareCliParams(mod, action, contract.target ? args[0] as string | undefined : undefined, options, values);
-                const { client, profile } = await ensureAuth(options);
+                let source: ReturnType<typeof resolveAuthSource> | undefined;
+                const params = await prepareCliParams(mod, action, contract.target ? args[0] as string | undefined : undefined, options, values, url => {
+                    source = resolveAuthSource(options.profile);
+                    fileIdAtSite(url, source.server);
+                });
+                const { client, profile } = await ensureAuth(options, source);
+                if (fileRead && options.output !== undefined) {
+                    const format = options.format ?? getProfileConfig(profile).defaultOutputFormat;
+                    if (format === 'raw') throw new ZentaoError('E2009', { option: 'output', reason: '写入文件时请使用 table、markdown 或 json 输出下载结果' });
+                    const result = await downloadFile(client, action, String(params.fileID), options.output, options);
+                    emitResult(result, { format });
+                    return;
+                }
                 const images = parsed.image as string[] | undefined;
                 const run = async (activeClient: typeof client, activeProfile: typeof profile): Promise<void> => {
                     const effectiveParams = images?.length

@@ -2,10 +2,12 @@ import { isDeepStrictEqual } from 'node:util';
 import type { ModuleAction, ModuleActionOptions, ModuleDefinition } from '../types/index.js';
 import { ZentaoError } from '../errors.js';
 import { resolveData } from '../utils/stdin.js';
+import { getMarkdownRenderer } from '../utils/markdown.js';
 import { normalizeToolParams } from '../mcp/params.js';
 import { actionContract, actionParameters, paginationFields } from './contract.js';
 import { batchTargets, normalizeIdLike, targetId } from './targets.js';
-import type { ValueSchema } from './validation.js';
+import { isFileGid, type ValueSchema } from './validation.js';
+import { supportsFileUrl } from './file-url.js';
 
 function invalid(option: string, reason: string): never { throw new ZentaoError('E2009', { option, reason }); }
 
@@ -25,6 +27,7 @@ export function parseCliValue(value: string | string[] | boolean, schema: ValueS
     }
     if (typeof value === 'boolean') return value;
     if (Array.isArray(value)) invalid('data', '此字段不能重复');
+    if (Array.isArray(schema.type)) return /^\d+$/.test(value) ? Number(value) : value;
     if (schema.type === 'number' || schema.type === 'integer') {
         // ZenTao list rows return prefixed composite IDs like case_48; accept them.
         const normalized = typeof value === 'string' ? normalizeIdLike(value) : value;
@@ -43,12 +46,38 @@ export function parseCliValue(value: string | string[] | boolean, schema: ValueS
     return value;
 }
 
+/** Only transform user inputs, before the SDK can fill missing fields from the server. */
+async function convertMarkdownInput(moduleName: string, candidates: string[], selection: true | string, params: Record<string, unknown>) {
+    const body = (params.data ?? {}) as Record<string, unknown>;
+    const nativeDoc = moduleName === 'doc' && (body.contentType ?? params.contentType) !== 'html';
+    const names = selection === true ? candidates : selection.split(',').map(name => name.trim());
+    const inputs = new Map<string, string>();
+    for (const name of names) {
+        if (!candidates.includes(name)) invalid('markdown', `无效的字段名「${name}」，可选 HTML 字段为 ${candidates.join(', ')}`);
+        if (nativeDoc && name === 'content') {
+            if (selection === true) continue;
+            invalid('markdown', '文档正文可直接传入 Markdown，转换为 HTML 需显式指定 --content-type html');
+        }
+        const value = body[name] ?? params[name];
+        if (typeof value === 'string') inputs.set(name, value);
+        else if (selection !== true) invalid('markdown', `本次请求未提供字段 ${name}`);
+    }
+    if (!inputs.size) return;
+    const render = await getMarkdownRenderer();
+    for (const [name, value] of inputs) {
+        const html = render(value);
+        if (Object.hasOwn(params, name)) params[name] = html;
+        if (Object.hasOwn(body, name)) body[name] = html;
+    }
+}
+
 /** Prepare and validate every input before authentication, including all batch targets. */
 export async function prepareCliParams(mod: ModuleDefinition, action: ModuleAction, target: string | undefined,
-    options: ModuleActionOptions, values: Record<string, unknown>): Promise<Record<string, unknown>> {
+    options: ModuleActionOptions, values: Record<string, unknown>, checkFileUrlSite?: (url: string) => void): Promise<Record<string, unknown>> {
     if (options.format === 'raw' && (options.ids || options.all || options.maxItems || options.pick || options.filter?.length || options.search?.length || options.sort || options.searchFields || options.htmlToMarkdown)) invalid('raw', '原始响应不能与本地处理或自动翻页组合');
     const params: Record<string, unknown> = {};
-    const definitions = actionParameters(mod, action);
+    const contract = actionContract(mod, action);
+    const definitions = contract.parameters;
     const assign = (name: string, value: unknown) => {
         if (value === undefined) return;
         if (Object.hasOwn(params, name) && !isDeepStrictEqual(params[name], value)) invalid(name, '同一字段的输入值冲突');
@@ -59,10 +88,23 @@ export async function prepareCliParams(mod: ModuleDefinition, action: ModuleActi
         const schema = definitions.find(param => param.name === name);
         assign(name, schema ? parseCliValue(value as string, schema) : Number(value));
     }
-    const primary = actionContract(mod, action).target;
+    if (mod.name === 'file' && action.name === 'read' && options.output !== undefined) {
+        if (!options.output.trim()) invalid('output', '请输入目标文件路径');
+        if (options.ids !== undefined || options.batchFailFast || options.format === 'raw' || params.stream === 1) {
+            invalid('output', '写入单个附件的原始字节时不能同时指定 --ids、--batch-fail-fast、--format=raw 或 --stream=1');
+        }
+    }
+    const primary = contract.target;
+    let url: string | undefined;
     if (target !== undefined) {
         if (!primary) invalid('target', '此操作没有位置参数');
-        assign(primary!, parseCliValue(target, definitions.find(param => param.name === primary)!));
+        if (supportsFileUrl(mod.name, action.name) && !Number.isFinite(Number(target))
+            && !(action.name === 'get' && isFileGid(target))) {
+            if (options.ids !== undefined) invalid('ids', '--ids 与单个附件链接只能指定一个');
+            url = target;
+        } else {
+            assign(primary!, parseCliValue(target, definitions.find(param => param.name === primary)!));
+        }
     }
     if (options.data !== undefined) params.data = await resolveData(options.data);
     const pagination = paginationFields(mod, action);
@@ -80,7 +122,8 @@ export async function prepareCliParams(mod: ModuleDefinition, action: ModuleActi
             delete params[name];
         }
     }
-    const normalized = normalizeToolParams(mod, action, { ...aliases, params: ids ? { ...params, [targetId(action)!]: ids[0] } : params });
+    const normalized = normalizeToolParams(mod, action, { ...aliases, url, params: ids ? { ...params, [targetId(action)!]: ids[0] } : params }, checkFileUrlSite);
+    if (options.markdown !== undefined) await convertMarkdownInput(mod.name, contract.markdownFields, options.markdown, normalized);
     if (ids) delete normalized[targetId(action)!];
     return normalized;
 }

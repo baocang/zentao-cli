@@ -58,14 +58,15 @@ test('remote MCP blocks server file uploads before authentication while stdio pr
             }
         }
 
-        let uploaded: string | undefined;
+        const extras: Array<FormDataEntryValue | null> = [];
         const stdio = await createMcpTestClient(async req => {
-            if (new URL(req.url).searchParams.get('mode') === 'getconfig') return Response.json({ version: '22.5' });
+            if (new URL(req.url).searchParams.get('mode') === 'getconfig') return Response.json({ version: '23.0' });
             expect(req.method).toBe('POST');
             expect(req.headers.get('ZenTao-Action-Assistant')).toBe('AI <upload>');
             expect(new URL(req.url).pathname).toBe('/api.php/v2/files');
             const form = await req.formData();
-            uploaded = await (form.get('file') as File).text();
+            expect(await (form.get('file') as File).text()).toBe(sentinel);
+            extras.push(form.get('extra'));
             expect(form.get('objectType')).toBe('story');
             expect(form.get('objectID')).toBe('1');
             expect(form.has('assistant')).toBe(false);
@@ -74,9 +75,11 @@ test('remote MCP blocks server file uploads before authentication while stdio pr
         try {
             const help = toolData(await stdio.client.callTool({ name: 'zentao_action_help', arguments: { module: 'file', action: 'create' } }));
             expect(help.available).toBe(true);
-            const result = await stdio.client.callTool({ name: 'zentao_file', arguments: { action: 'create', assistant: 'AI <upload>', params: { data: body } } });
-            expect(result.isError).not.toBe(true);
-            expect(uploaded).toBe(sentinel);
+            for (const data of [{ ...body, extra: '' }, body]) {
+                const result = await stdio.client.callTool({ name: 'zentao_file', arguments: { action: 'create', assistant: 'AI <upload>', params: { data } } });
+                expect(result.isError).not.toBe(true);
+            }
+            expect(extras).toEqual(['', 'editor']);
         } finally {
             await stdio.close();
         }
@@ -85,3 +88,68 @@ test('remote MCP blocks server file uploads before authentication while stdio pr
         rmSync(dir, { recursive: true, force: true });
     }
 }, { timeout: 10_000 });
+
+test('HTTP MCP blocks local images in submitted and auto-filled HTML and preserves relative links', async () => {
+    const localImage = '<img src="file:///__zentao_cli_missing_fixture__/image.png">';
+    const relativeImage = '<p><img src="../images/preview.png" alt="预览"></p>';
+    const api = createClient('https://zentao.example.test', 'test-token');
+    const calls: Array<{ method?: string; path: string; body?: unknown }> = [];
+    api.fetch = async (url, options) => {
+        const { pathname, searchParams } = new URL(url);
+        if (searchParams.get('mode') === 'getconfig') return { version: '23.0' };
+        calls.push({ method: options.method, path: pathname, body: options.body });
+        const data = options.method === 'GET'
+            ? { product: { id: 1, name: '测试产品', desc: localImage } }
+            : { status: 'success', id: 1 };
+        return options.responseType === 'response' ? Response.json(data) : data;
+    };
+    let authentications = 0;
+    const server = createMcpServer({
+        async getContext() {
+            authentications++;
+            return { client: api, config: DEFAULT_CONFIG, identity: { server: api.siteUrl } };
+        },
+    }, { modules: ['product'], allowLocalFiles: false });
+    const client = new Client({ name: 'rich-text-policy-test', version: '0.0.0' });
+    const [clientTransport, serverTransport] = InMemoryTransport.createLinkedPair();
+    try {
+        await server.connect(serverTransport);
+        await client.connect(clientTransport);
+        const call = (action: string, params: Record<string, unknown>) =>
+            client.callTool({ name: 'zentao_product', arguments: { action, params } });
+        for (const [action, params] of [
+            ['create', { name: '测试产品', uid: 'apiv2' }],
+            ['create', { name: '测试产品', uid: 'first', data: { uid: 'second' } }],
+            ['create', { name: '测试产品', data: { uid: 'valid_batch', unexpected: true } }],
+            ['list', { uid: 'valid_batch' }],
+        ] as const) {
+            expect(await call(action, params)).toMatchObject({ isError: true, structuredContent: { error: { code: 'E2009' } } });
+        }
+        expect(authentications).toBe(0);
+        expect(calls).toEqual([]);
+        const blocked = {
+            isError: true,
+            structuredContent: { error: { code: 'E2009', message: expect.stringContaining('HTTP MCP') } },
+        };
+        const blockedCreate = await call('create', { data: { name: '测试产品', desc: localImage } });
+        expect(blockedCreate).toMatchObject(blocked);
+        expect(blockedCreate).not.toHaveProperty('structuredContent.error.details');
+        expect(JSON.stringify(blockedCreate.content)).not.toContain('fileWarnings');
+        for (const src of ['file:./image.png', 'file:../image.png', 'file:~/imgs/image.png']) {
+            const result = await call('create', { name: '测试产品', desc: '<img src="' + src + '">' });
+            expect(result).toMatchObject(blocked);
+        }
+        expect(calls).toEqual([]);
+        expect(await call('update', { productID: 1, name: '改名' })).toMatchObject(blocked);
+        expect(calls).toEqual([expect.objectContaining({ method: 'GET', path: '/api.php/v2/products/1' })]);
+
+        const created = await call('create', { name: '测试产品', desc: relativeImage });
+        expect(created.isError, JSON.stringify(created.content)).not.toBe(true);
+        expect(calls.slice(1)).toEqual([{
+            method: 'POST', path: '/api.php/v2/products', body: expect.objectContaining({ desc: relativeImage }),
+        }]);
+    } finally {
+        await client.close();
+        await server.close();
+    }
+});

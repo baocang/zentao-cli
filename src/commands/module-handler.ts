@@ -1,4 +1,4 @@
-import { brandText } from '../brand.js';
+import type { FileWarning } from 'zentao-api';
 import type { ZentaoClient } from '../api/index.js';
 import { mapSdkError } from '../errors.js';
 import { basename, extname, join } from 'node:path';
@@ -13,7 +13,7 @@ import { formatJson, formatOutput } from '../utils/format.js';
 import type { ModuleActionOptions } from '../types/index.js';
 import { createInterface } from 'node:readline/promises';
 import { renderObject } from '../utils/render.js';
-import { ZentaoError } from '../errors.js';
+import { fileRecoveryDetails, formatError, ZentaoError } from '../errors.js';
 import { commandSignal } from '../utils/lifecycle.js';
 import { batchTargets, targetId } from '../modules/targets.js';
 import { actionObjectTypeFor } from '../modules/extensions.js';
@@ -36,20 +36,44 @@ async function confirmDelete(format: string, count: number, machineReadable = fa
     }
 }
 
+function reportFileWarnings(warnings: FileWarning[], objectID?: number): void {
+    for (const warning of warnings) {
+        const label = objectID === undefined ? '附件警告' : `对象 ${objectID} 附件警告`;
+        console.error(`${label}：${JSON.stringify(warning)}`);
+    }
+}
+
+function resultMeta(execution: ModuleExecutionResult): Record<string, unknown> | undefined {
+    const { meta, fileWarnings, resultObjectType } = execution;
+    if (!resultObjectType && !fileWarnings?.length) return meta;
+    return { ...meta, ...(resultObjectType && { resultObjectType }), ...(fileWarnings?.length && { fileWarnings }) };
+}
+
 export function renderModuleExecution(
     execution: ModuleExecutionResult,
     options: ModuleActionOptions,
     config: UserConfig,
 ): void {
     const format = options.format ?? config.defaultOutputFormat ?? 'markdown';
+    if (format !== 'json' && execution.fileWarnings?.length) reportFileWarnings(execution.fileWarnings);
 
-    if (format === 'raw') {
+    if (execution.action.path === '/files/{fileID}/read' && format !== 'json') {
+        if (format === 'raw') {
+            const content = execution.rawResponse;
+            process.stdout.write(content instanceof ArrayBuffer ? Buffer.from(content) : String(content));
+        } else {
+            console.log(execution.data);
+        }
+        return;
+    }
+
+    if (format === 'raw' || format === 'json') {
         const output = formatOutput(execution.data, {
             format,
             isList: execution.isList,
             fields: execution.fields,
             pager: execution.pager,
-            meta: execution.meta,
+            meta: resultMeta(execution),
             jsonPretty: config.jsonPretty,
             rawResponse: execution.rawResponse,
         });
@@ -214,6 +238,7 @@ type BatchId = number;
 
 interface BatchError {
     objectID: BatchId;
+    recoveryMessage?: string;
     error: {
         code?: string;
         message: string;
@@ -226,7 +251,7 @@ interface BatchResult {
     success: BatchId[];
     failed: BatchId[];
     skipped: BatchId[];
-    data?: Array<{ objectID: BatchId; value: unknown }>;
+    data: Map<BatchId, { value: unknown; meta?: Record<string, unknown> }>;
     errors: BatchError[];
 }
 
@@ -234,6 +259,8 @@ function toBatchError(id: BatchId, error: unknown): BatchError {
     const normalized = error instanceof Error ? error : new Error(String(error));
     return {
         objectID: id,
+        ...(normalized instanceof ZentaoError && fileRecoveryDetails(normalized.details)
+            ? { recoveryMessage: formatError(normalized, 'table') } : {}),
         error: {
             ...(normalized instanceof ZentaoError ? { code: normalized.code, details: normalized.details } : {}),
             message: normalized.message,
@@ -241,21 +268,25 @@ function toBatchError(id: BatchId, error: unknown): BatchError {
     };
 }
 
-function renderBatchResult(result: BatchResult, format: string, pretty: boolean): string {
+function renderBatchResult(result: BatchResult, format: string, pretty: boolean, includeData: boolean): string {
     if (format === 'json' || format === 'raw') {
         return formatJson({
             ok: result.failed.length === 0,
-            data: result.ids.map(objectID => result.success.includes(objectID)
-                ? { objectID, ok: true, data: result.data?.find(item => item.objectID === objectID)?.value ?? null }
-                : result.skipped.includes(objectID) ? { objectID, ok: false, skipped: true }
-                    : { objectID, ok: false, error: result.errors.find(item => item.objectID === objectID)!.error }),
+            data: result.ids.map(objectID => {
+                const item = result.data.get(objectID);
+                if (item) {
+                    return { objectID, ok: true, data: item.value ?? null, ...(item.meta && { meta: item.meta }) };
+                }
+                return result.skipped.includes(objectID) ? { objectID, ok: false, skipped: true }
+                    : { objectID, ok: false, error: result.errors.find(item => item.objectID === objectID)!.error };
+            }),
             meta: { success: result.success.length, failed: result.failed.length, skipped: result.skipped.length },
         }, pretty);
     }
 
     const lines: string[] = [];
-    if (result.data?.length) {
-        const rows = result.data.map(({ objectID, value }) => (
+    if (includeData && result.data.size) {
+        const rows = Array.from(result.data, ([objectID, { value }]) => (
             value && typeof value === 'object' && !Array.isArray(value)
                 ? { ...(value as Record<string, unknown>), objectID }
                 : { objectID, value }
@@ -272,7 +303,7 @@ function renderBatchResult(result: BatchResult, format: string, pretty: boolean)
     }
     for (const item of result.errors) {
         const code = item.error.code ? `E${item.error.code}: ` : '';
-        lines.push(`${item.objectID}: ${code}${item.error.message}`);
+        lines.push(`${item.objectID}: ${item.recoveryMessage ?? code + item.error.message}`);
     }
     return lines.join('\n');
 }
@@ -324,7 +355,7 @@ export async function handleModuleCommand(
             success: [],
             failed: [],
             skipped: [],
-            ...(action.type === 'delete' ? {} : { data: [] }),
+            data: new Map(),
             errors: [],
         };
         for (let index = 0; index < batchIds.length; index++) {
@@ -342,8 +373,10 @@ export async function handleModuleCommand(
                     { ...params, id: rawId },
                 );
                 result.success.push(id);
-                result.data?.push({ objectID: id, value: execution.data });
+                result.data.set(id, { value: action.type === 'delete' ? null : execution.data, meta: resultMeta(execution) });
+                if (format !== 'json' && execution.fileWarnings?.length) reportFileWarnings(execution.fileWarnings, id);
             } catch (error) {
+                if (commandSignal()?.aborted && error instanceof ZentaoError && fileRecoveryDetails(error.details)) throw error;
                 commandSignal()?.throwIfAborted();
                 result.failed.push(id);
                 result.errors.push(toBatchError(id, error));
@@ -354,7 +387,7 @@ export async function handleModuleCommand(
             }
         }
 
-        console.log(renderBatchResult(result, format, config.jsonPretty ?? false));
+        console.log(renderBatchResult(result, format, config.jsonPretty ?? false, action.type !== 'delete'));
         if (result.failed.length > 0) {
             process.exitCode = 1;
         }

@@ -29,10 +29,14 @@ export interface GlobalOptions {
 
 /** 模块操作选项 */
 export interface ModuleActionOptions extends GlobalOptions {
+    /** Destination for a streamed file/read download. */
+    output?: string;
     /** Explicit, validated and deduplicated batch targets. */
     ids?: string;
     maxItems?: string;
     htmlToMarkdown?: boolean;
+    /** Bare flag converts supplied HTML fields; a comma-separated list selects specific fields. */
+    markdown?: true | string;
     /** 摘取指定字段（逗号分隔），适用于 resultType 为 object 或 list 的模块操作 */
     pick?: string;
 
@@ -62,9 +66,6 @@ export interface ModuleActionOptions extends GlobalOptions {
 
     /** 用于提交的 JSON 数据，适用于 actionType 为 create、update 和 action 操作 */
     data?: string;
-
-    /** 下载输出目录，适用于 file download 命令 */
-    output?: string;
 
     /** 通过 JSON 对象来指定多个 API 调用参数，不包括 DataOptions 上的选项 */
     params?: string;

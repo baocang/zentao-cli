@@ -1,8 +1,8 @@
 import { brandText } from '../brand.js';
-import { findRemoteUser } from '../auth/user.js';
+import { findCurrentUser } from '../auth/user.js';
 import { actionContract, actionIsReadOnly } from '../modules/contract.js';
 import { z } from 'zod';
-import { request } from 'zentao-api';
+import { LOCAL_FILE_UPLOAD_UNAVAILABLE, withoutLocalUploads } from '../modules/file-policy.js';
 import { getModuleActionParams } from '../modules/helper.js';
 import { realpathSync } from 'node:fs';
 import { sep } from 'node:path';
@@ -16,7 +16,8 @@ import type { AuthProvider } from './server.js';
 import { withRequestSignal } from '../api/index.js';
 import { validateAssistant } from '../api/assistant.js';
 import { getScopeAliasTarget, normalizeToolParams } from './params.js';
-import { listOutputSchema, outputSchema, toolError, toolResult } from './results.js';
+import { fileIdAtSite, supportsFileUrl } from '../modules/file-url.js';
+import { moduleOutputSchema, outputSchema, toolError, toolResult } from './results.js';
 import { supportsBatch, targetId } from '../modules/targets.js';
 
 export interface McpToolOptions {
@@ -33,8 +34,6 @@ export interface McpToolOptions {
      */
     localUploadRoot?: string;
 }
-
-const LOCAL_FILE_UPLOAD_UNAVAILABLE = 'HTTP MCP 不支持通过本地路径上传服务端文件，请使用本地 CLI 或 stdio MCP';
 
 function isReadAction(action: ModuleAction): boolean { return actionIsReadOnly(action); }
 
@@ -70,10 +69,11 @@ function buildActionEnum(mod: ModuleDefinition): [string, ...string[]] {
     return [names[0], ...names.slice(1)];
 }
 
-function buildInputSchema(mod: ModuleDefinition) {
+function buildToolSchemas(mod: ModuleDefinition) {
     const actionEnum = buildActionEnum(mod);
     const parameters = mod.actions.flatMap(action => getModuleActionParams(mod.name, action.name));
     const names = new Set(parameters.map(param => param.name));
+    const hasList = mod.actions.some(action => action.type === 'list');
     const shape: Record<string, z.ZodType> = {
         assistant: z.string().optional().describe('本次操作来源标记；省略继承服务设置，空字符串关闭'),
         action: z.enum(actionEnum).describe(mod.actions.map(action => `${action.name}: ${action.display ?? action.name}`).join('; ')),
@@ -81,6 +81,9 @@ function buildInputSchema(mod: ModuleDefinition) {
     };
     if (parameters.some(param => param.role === 'path' && param.name.endsWith('ID') && param.name !== 'scopeID')) {
         shape.id = z.number().int().nonnegative().optional().describe('首个路径 ID 简写；多 ID 用 params');
+    }
+    if (mod.actions.some(action => supportsFileUrl(mod.name, action.name))) {
+        shape.url = z.string().optional().describe('get 或 read 的附件 URL，可代替文件 ID');
     }
     for (const name of ['product', 'project', 'execution']) {
         if (mod.actions.some(action => getScopeAliasTarget(mod, action, name))) {
@@ -90,7 +93,7 @@ function buildInputSchema(mod: ModuleDefinition) {
     if (mod.actions.some(action => action.type === 'list' || action.type === 'get')) {
         shape.pick = z.string().optional().describe('返回字段，逗号分隔');
     }
-    if (mod.actions.some(action => action.type === 'list')) {
+    if (hasList) {
         shape.all = z.boolean().optional().describe('显式遍历全部页面后本地处理');
         shape.maxItems = z.number().int().positive().optional().describe('整次调用最多返回条数');
         shape.filter = z.array(z.string()).optional().describe('当前页过滤，组内逗号为 AND、多组为 OR；远端筛选见 params.filters');
@@ -104,7 +107,10 @@ function buildInputSchema(mod: ModuleDefinition) {
     }
     if (names.has('pageID')) shape.page = z.number().int().positive().optional().describe('页码，从 1 开始');
     if (names.has('recPerPage')) shape.recPerPage = z.number().int().min(1).max(1000).optional().describe('每页 1–1000 条');
-    return z.object(shape).strict();
+    return {
+        inputSchema: z.object(shape).strict(),
+        outputSchema: moduleOutputSchema(hasList, parameters.some(param => param.role === 'body' && param.textType === 'html')),
+    };
 }
 
 /** Examples use typed placeholders, not real object IDs or ready-to-submit business data. */
@@ -117,7 +123,9 @@ function actionExample(mod: ModuleDefinition, action: ModuleAction, splitTools?:
                 : param.type === 'boolean' ? false : param.type === 'object' ? {} : `<${param.name}>`))]));
     return {
         name: brandText`zentao_${mod.name}${splitTools ? isReadAction(action) ? '_read' : '_write' : ''}`,
-        arguments: { action: action.name, ...(Object.keys(params).length ? { params } : {}) },
+        arguments: supportsFileUrl(mod.name, action.name)
+            ? { action: action.name, url: '/file-read-298.png' }
+            : { action: action.name, ...(Object.keys(params).length ? { params } : {}) },
         note: 'ID、文本等均为格式示例，请替换为实际值后调用。',
     };
 }
@@ -126,6 +134,7 @@ interface ToolInput {
     assistant?: string;
     action: string;
     id?: number;
+    url?: string;
     product?: number;
     project?: number;
     execution?: number;
@@ -146,26 +155,17 @@ interface ToolInput {
 async function handleProfileTool(auth: AuthProvider, signal?: AbortSignal, assistant?: string): Promise<CallToolResult> {
     if (assistant !== undefined) validateAssistant(assistant);
     const { client, identity: profile } = await auth.getContext(signal);
-    if (profile.account === undefined) {
-        return toolResult({
-            server: profile.server,
-            account: null,
-            user: null,
-            userFound: false,
-            note: brandText('无法仅凭禅道 Token 确定账号，未查询用户详情。'),
-        });
-    }
     const scopedClient = withRequestSignal(client, signal);
-    const { user } = await findRemoteUser(scopedClient, profile.account, assistant);
-    const identity = {
-        account: profile.account,
+    const { user } = await findCurrentUser(scopedClient, profile.account, assistant);
+    const account = user?.account ?? profile.account ?? null;
+    return toolResult({
+        account,
         server: profile.server,
         userFound: Boolean(user),
         user: user ? Object.fromEntries(['id', 'account', 'realname', 'dept', 'role']
-            .filter(key => user![key] !== undefined).map(key => [key, user![key]])) : null,
-    };
-
-    return toolResult(identity);
+            .filter(key => user[key] !== undefined).map(key => [key, user[key]])) : null,
+        ...(account === null ? { note: brandText('当前禅道版本不支持通过 Token 查询当前用户资料。') } : {}),
+    });
 }
 
 interface SwitchProfileInput {
@@ -192,8 +192,9 @@ async function handleModuleTool(
     if (!isActionAvailable(action, options)) {
         throw new ZentaoError('E2009', { option: `${mod.name}/${action.name}`, reason: LOCAL_FILE_UPLOAD_UNAVAILABLE });
     }
+    const readingFileContent = mod.name === 'file' && action.name === 'read';
     for (const option of ['filter', 'sort', 'search', 'searchFields', 'pick'] as const) {
-        if (input[option] !== undefined && action.type !== 'list' && !(option === 'pick' && action.type === 'get')) {
+        if (input[option] !== undefined && action.type !== 'list' && !(option === 'pick' && action.type === 'get' && !readingFileContent)) {
             throw new ZentaoError('E2009', { option, reason: `不适用于 ${mod.name}/${action.name}` });
         }
     }
@@ -204,7 +205,13 @@ async function handleModuleTool(
         if (!supportsBatch(action)) throw new ZentaoError('E2009', { option: 'ids', reason: `此操作不支持批量对象操作` });
         if (!input.ids.length) throw new ZentaoError('E2009', { option: 'ids', reason: '至少需要一个目标 ID' });
     }
-    const params = normalizeToolParams(mod, action, input);
+    let absoluteUrl: string | undefined;
+    let checkedSite: string | undefined;
+    const params = normalizeToolParams(mod, action, input, url => {
+        absoluteUrl = url;
+        checkedSite = auth.getSiteUrl?.();
+        if (checkedSite !== undefined) fileIdAtSite(url, checkedSite);
+    });
     if (action.requestBody?.mediaType === 'multipart/form-data' && options.allowLocalFiles === false && options.localUploadRoot !== undefined) {
         const flat = params.file;
         const nested = (params.data as Record<string, unknown> | undefined)?.file;
@@ -215,6 +222,10 @@ async function handleModuleTool(
         ensureUploadPathWithinRoot(filePath, options.localUploadRoot);
     }
     const { client, config } = await auth.getContext(signal);
+    // Bind to the actual client even when the provider switched sites or exposes no offline site.
+    if (absoluteUrl !== undefined && checkedSite !== client.siteUrl) {
+        fileIdAtSite(absoluteUrl, client.siteUrl);
+    }
     const actionName = input.action;
 
     const opts: ModuleActionOptions = {
@@ -269,10 +280,19 @@ async function handleModuleTool(
         });
     }
 
-    const execution = await executeModuleCommand(withRequestSignal(client, signal), mod, actionName, [], opts, config, params);
+    const execute = () => executeModuleCommand(withRequestSignal(client, signal), mod, actionName, [], opts, config, params);
+    // The fork's root-allowlist model wins: when localUploadRoot is configured, uploads inside the root are
+    // allowed even with allowLocalFiles=false; upstream's blanket withoutLocalUploads applies only without a root.
+    const guardUploads = options.localUploadRoot === undefined;
+    const execution = await (options.allowLocalFiles === false && guardUploads ? withoutLocalUploads(execute) : execute());
+    const metadata = {
+        ...(execution.fileWarnings?.length ? { fileWarnings: execution.fileWarnings } : {}),
+        ...(execution.resultObjectType ? { resultObjectType: execution.resultObjectType } : {}),
+    };
 
     if (execution.action.type === 'list') {
         return toolResult(execution.data, {
+            ...metadata,
             ...(execution.pager ? { pager: execution.pager } : {}),
             meta: {
                 processingScope: 'page',
@@ -283,11 +303,11 @@ async function handleModuleTool(
     }
 
     if (execution.action.type === 'get') {
-        return toolResult(execution.data);
+        return toolResult(readingFileContent ? { encoding: 'base64', content: execution.data } : execution.data, metadata);
     }
 
     // create / update / delete / action
-    return toolResult(execution.data ?? execution.rawResponse);
+    return toolResult(execution.data ?? execution.rawResponse, metadata);
 }
 
 function toolAnnotations(actions: readonly ModuleAction[]) {
@@ -324,6 +344,12 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider, optio
                 if (!definition) throw new ZentaoError('E2005', { module: mod.name });
                 return toolResult({
                     ...actionContract(mod, definition),
+                    ...(supportsFileUrl(mod.name, definition.name) ? {
+                        description: (definition.name === 'read'
+                            ? '读取附件内容。MCP 对两种 stream 取值均返回 { encoding: "base64", content: "…" }。'
+                            : '获取附件元数据，params.fileID 接受数字 ID 或 Base64 gid。')
+                            + '顶层 url 可代替文件 ID，接受当前站点的附件读取或下载链接。',
+                    } : {}),
                     available: selectedModules.some(selected => selected.name === mod.name) && isActionAvailable(definition, options),
                     ...(options.allowLocalFiles === false && options.localUploadRoot === undefined && definition.requestBody?.mediaType === 'multipart/form-data'
                         ? { unavailableReason: LOCAL_FILE_UPLOAD_UNAVAILABLE } : {}),
@@ -338,7 +364,7 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider, optio
     server.registerTool(
         brandText('zentao_profile'),
         {
-            description: '获取当前 MCP 绑定的账号和站点；已知账号时查询远端用户详情，仅 Token 认证时账号未知。userFound=false 表示无用户详情，服务端失败会报错',
+            description: '查询当前 Token 对应的账号、站点和用户资料。旧版禅道按已绑定的账号查询，未绑定时返回空账号。',
             inputSchema: z.object({ assistant: z.string().optional().describe('本次操作来源标记；省略继承服务设置，空字符串关闭') }).strict(),
             outputSchema,
             annotations: { readOnlyHint: true, destructiveHint: false, openWorldHint: true },
@@ -347,7 +373,7 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider, optio
             try {
                 return await handleProfileTool(auth, extra.signal, input.assistant ?? options.assistant);
             } catch (error) {
-                return toolError(error, { module: 'user', action: 'list' });
+                return toolError(error);
             }
         },
     );
@@ -379,10 +405,10 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider, optio
             const mod = { ...source, actions: group.actions };
             const name = brandText`zentao_${mod.name}${group.suffix}`;
             const description = buildToolDescription(mod);
-            const inputSchema = buildInputSchema(mod);
+            const schemas = buildToolSchemas(mod);
             const annotations = toolAnnotations(mod.actions);
 
-            server.registerTool(name, { description, inputSchema, outputSchema: mod.actions.some(action => action.type === 'list') ? listOutputSchema : outputSchema, annotations }, async (raw, extra) => {
+            server.registerTool(name, { description, ...schemas, annotations }, async (raw, extra) => {
                 const input = raw as unknown as ToolInput;
                 try {
                     // Keep full module metadata for autoFill, but enforce this tool's subset.

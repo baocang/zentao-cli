@@ -11,6 +11,10 @@ zentao bug list --product 12
 zentao bug get 123
 zentao bug resolve 123 --resolution fixed
 zentao db table zt_user
+zentao file read 42 --output ./attachment.pdf
+zentao file get '/file-read-298.png'
+zentao file read '/file-download-298-left.html' --output ./需求说明.pdf
+zentao link create bug view --var bugID=42
 zentao help bug create --format=json
 ```
 
@@ -20,6 +24,8 @@ zentao help bug create --format=json
 - 数字、布尔和数组按当前动作的 schema 校验；`--count` / `--no-count` 或 `--count=false` 明确设置布尔值。
 - 简单数组可重复选项（`--lib-ids 12 --lib-ids 18`），复杂数组使用 JSON。JSON 内保留 SDK 字段名和类型。
 - 请求体使用 `--data '{"title":"示例"}'`、`--data @body.json` 或显式 `--data @-`。没有 `@-` 就不读取 stdin；POST 查询也遵守同一规则。
+- 写入富文本时，`--markdown` 将本次提供的 HTML 字段从 Markdown 转为 HTML，`--markdown spec,verify` 只转换指定字段。可选字段见动作帮助或 JSON 帮助中的 `markdownFields`。
+- 本地图片用 `<img src="file:./截图.png" alt="复现截图">` 或 Markdown 内联图片指定位置。`file:./` 和 `file:../` 相对执行目录，`file:~/` 相对用户主目录。保存时自动上传并按对象关联，缺图位置显示说明，JSON 告警见 `meta.fileWarnings`。
 - 与全局或输出选项重名的业务字段加 `data-` 前缀，例如 `task update 123 --data-deadline 2026-10-30` 和工作流的 `--data-fields`；JSON 字段名保持原样。
 - 未知字段、非法值、重复来源冲突和多个范围会在认证之前失败。省略、空字符串与 null 不混同；null 仅在 schema 允许时有效。
 - `--ids 123,124` 仅用于支持批量的对象操作，与单个目标互斥，先校验全部 ID 再去重。创建多条记录请显式逐条调用 create，不将对象 ID 当成批量创建输入。
@@ -36,6 +42,8 @@ zentao profile use 'admin@https://zentao.example.com'
 zentao auth status --verify --format=json
 zentao --profile 'admin@https://zentao.example.com' product list --page-size 20
 zentao bug create --product 12 --title '登录失败' --opened-build trunk
+zentao bug create --product 12 --title '登录失败' --opened-build trunk --steps '<img src="file:~/imgs/login.png" alt="登录截图">'
+zentao bug update 329 --markdown --steps '![复现截图](file:./screenshot.png)'
 cat query.json | zentao db query --data @- --format=json
 zentao knowledge search --keywords 登录 --keywords 超时 --lib-ids 12 --page 2
 zentao bug resolve --ids 123,124 --resolution fixed --format=json
@@ -92,7 +100,7 @@ MCP 保留 structuredContent/outputSchema 与执行时策略检查。知识 POST
 
 ## 覆盖范围
 
-开发版本 CLI **0.5.1** / SDK **0.8.5**，14 个内置一级命令、42 个模块、410 个业务动作。数量、参数和实际 Commander 命令来自同一注册表。
+开发版本 CLI **0.5.0** / SDK **0.9.3**，15 个内置一级命令、43 个模块、365 个业务动作。数量、参数和实际 Commander 命令来自同一注册表。
 
 <a id="global-options"></a>
 
@@ -431,6 +439,52 @@ Options:
   -h, --help  显示命令帮助
 ```
 
+<a id="command-link"></a>
+
+## zentao link
+
+```text
+Usage: zentao link [options] [command]
+
+生成或解析站内页面链接
+
+Options:
+  --server <url>                      指定站点地址，可省略登录凭据
+  -h, --help                          显示命令帮助
+
+Commands:
+  create [options] <module> <method>  生成页面链接
+  parse <url>                         解析页面链接
+```
+
+<a id="command-link-create"></a>
+
+## zentao link create
+
+```text
+Usage: zentao link create [options] <module> <method>
+
+生成页面链接
+
+Options:
+  --var <name=value>  路由参数，可按页面参数顺序重复指定
+  --relative          输出站内路径
+  -h, --help          显示命令帮助
+```
+
+<a id="command-link-parse"></a>
+
+## zentao link parse
+
+```text
+Usage: zentao link parse [options] <url>
+
+解析页面链接
+
+Options:
+  -h, --help  显示命令帮助
+```
+
 <a id="command-version"></a>
 
 ## zentao version
@@ -676,12 +730,9 @@ Options:
 ## 用户 · user
 
 ```text
-Usage: zentao user [options] [command] [target]
+Usage: zentao user [options] [command]
 
 用户
-
-Arguments:
-  target                     对象 ID 简写，等价于 zentao user get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -881,25 +932,20 @@ Options:
 ## 项目集 · program
 
 ```text
-Usage: zentao program [options] [command] [target]
+Usage: zentao program [options] [command]
 
 项目集
 
-Arguments:
-  target                      对象 ID 简写，等价于 zentao program get <target>
-
 Options:
-  -h, --help                  显示命令帮助
+  -h, --help                 显示命令帮助
 
 Commands:
-  props                       返回对象字段定义（离线）
-  list [options]              获取项目集列表（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  create [options]            创建项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]      获取项目集详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]   修改项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]   删除项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]  获取项目集历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]  添加项目集备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                      返回对象字段定义（离线）
+  list [options]             获取项目集列表（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  create [options]           创建项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]     获取项目集详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]  修改项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]  删除项目集（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-program-list"></a>
@@ -960,8 +1006,12 @@ Options:
   --begin <value>         计划开始日期（必填）
   --end <value>           计划完成日期（必填）
   --pm <value>            计划完成日期
-  --desc <value>          项目集描述
+  --desc <value>          项目集描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -975,7 +1025,8 @@ Options:
 | --begin | begin | body | string | 是 | — | 计划开始日期<br>{} |
 | --end | end | body | string | 是 | — | 计划完成日期<br>{} |
 | --pm | PM | body | string | 否 | — | 计划完成日期<br>{} |
-| --desc | desc | body | string | 否 | — | 项目集描述<br>{} |
+| --desc | desc | body | string | 否 | — | 项目集描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-program-get"></a>
 
@@ -1024,8 +1075,12 @@ Options:
   --begin <value>         计划开始日期（必填）
   --end <value>           计划完成日期（必填）
   --pm <value>            计划完成日期
-  --desc <value>          项目集描述
+  --desc <value>          项目集描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -1044,7 +1099,8 @@ Options:
 | --begin | begin | body | string | 是 | — | 计划开始日期<br>{} |
 | --end | end | body | string | 是 | — | 计划完成日期<br>{} |
 | --pm | PM | body | string | 否 | — | 计划完成日期<br>{} |
-| --desc | desc | body | string | 否 | — | 项目集描述<br>{} |
+| --desc | desc | body | string | 否 | — | 项目集描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-program-delete"></a>
 
@@ -1074,80 +1130,14 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --program-id | programID | path | integer | 是 | — | 项目集ID<br>{} |
 
-<a id="action-program-history"></a>
-
-## zentao program history
-
-```text
-Usage: zentao program history [options] [target]
-
-获取项目集历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 programID；也可使用命名参数
-
-Options:
-  --program-id <value>      项目集 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --program-id | programID | path | integer | 是 | — | 项目集 ID<br>{} |
-
-<a id="action-program-comment"></a>
-
-## zentao program comment
-
-```text
-Usage: zentao program comment [options] [target]
-
-添加项目集备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 programID；也可使用命名参数
-
-Options:
-  --program-id <value>    项目集 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --program-id | programID | path | integer | 是 | — | 项目集 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-product"></a>
 
 ## 产品 · product
 
 ```text
-Usage: zentao product [options] [command] [target]
+Usage: zentao product [options] [command]
 
 产品
-
-Arguments:
-  target                                     对象 ID 简写，等价于 zentao product get <target>
 
 Options:
   -h, --help                                 显示命令帮助
@@ -1165,8 +1155,6 @@ Commands:
   update [options] [target]                  修改产品（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   delete [options] [target]                  删除产品（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   repos [options] [target]                   获取产品关联的代码库列表（最低版本：22.7 / biz13.7 / max8.7 / ipd5.7）
-  history [options] [target]                 获取产品历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]                 添加产品备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-product-list"></a>
@@ -1262,11 +1250,15 @@ Options:
   --type <value>          类型(normal 正常 | branch 多分支 | platform 多平台)
   --po <value>            产品负责人
   --reviewer <value>      评审人
-  --desc <value>          产品描述
+  --desc <value>          产品描述 (HTML)
   --qd <value>            测试负责人
   --rd <value>            发布负责人
   --acl <value>           访问控制(open 公开 | private 私有)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -1282,10 +1274,11 @@ Options:
 | --type | type | body | string | 否 | — | 类型(normal 正常 \| branch 多分支 \| platform 多平台)<br>{} |
 | --po | PO | body | string | 否 | — | 产品负责人<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人<br>{"items":{"type":"string"}} |
-| --desc | desc | body | string | 否 | — | 产品描述<br>{} |
+| --desc | desc | body | string | 否 | — | 产品描述 (HTML)<br>{} |
 | --qd | QD | body | string | 否 | — | 测试负责人<br>{} |
 | --rd | RD | body | string | 否 | — | 发布负责人<br>{} |
 | --acl | acl | body | string | 否 | "open" | 访问控制(open 公开 \| private 私有)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-product-close"></a>
 
@@ -1341,6 +1334,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -1372,6 +1367,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -1402,6 +1399,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `module`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -1461,12 +1460,16 @@ Options:
   --type <value>          类型(normal 正常 | branch 多分支 | platform 多平台)
   --po <value>            产品负责人
   --reviewer <value>      评审人
-  --desc <value>          产品描述
+  --desc <value>          产品描述 (HTML)
   --qd <value>            测试负责人
   --rd <value>            发布负责人
   --acl <value>           访问控制(open 公开 | private 私有)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -1487,10 +1490,11 @@ Options:
 | --type | type | body | string | 否 | — | 类型(normal 正常 \| branch 多分支 \| platform 多平台)<br>{} |
 | --po | PO | body | string | 否 | — | 产品负责人<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人<br>{"items":{"type":"string"}} |
-| --desc | desc | body | string | 否 | — | 产品描述<br>{} |
+| --desc | desc | body | string | 否 | — | 产品描述 (HTML)<br>{} |
 | --qd | QD | body | string | 否 | — | 测试负责人<br>{} |
 | --rd | RD | body | string | 否 | — | 发布负责人<br>{} |
 | --acl | acl | body | string | 否 | "open" | 访问控制(open 公开 \| private 私有)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-product-delete"></a>
 
@@ -1550,88 +1554,22 @@ Options:
 
 需部署代码库 API 2.0 实现，具备 repo.browse 权限及产品访问权限。仅返回未删除、非导入中且当前用户可访问的代码库，不分页、不保证排序；url.http、url.ssh 可能缺省。产品不存在、已删除或不可访问时为业务失败。
 
+返回对象类型为 `repo`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
 | --product-id | productID | path | integer | 是 | — | 产品 ID，正整数<br>{} |
 
-<a id="action-product-history"></a>
-
-## zentao product history
-
-```text
-Usage: zentao product history [options] [target]
-
-获取产品历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 productID；也可使用命名参数
-
-Options:
-  --product-id <value>      产品 ID（必填）
-  --product <id>            productID 或 scope/scopeID 别名
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --product-id | productID | path | integer | 是 | — | 产品 ID<br>{} |
-
-<a id="action-product-comment"></a>
-
-## zentao product comment
-
-```text
-Usage: zentao product comment [options] [target]
-
-添加产品备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 productID；也可使用命名参数
-
-Options:
-  --product-id <value>    产品 ID（必填）
-  --comment <value>       备注内容（必填）
-  --product <id>          productID 或 scope/scopeID 别名
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --product-id | productID | path | integer | 是 | — | 产品 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-project"></a>
 
 ## 项目 · project
 
 ```text
-Usage: zentao project [options] [command] [target]
+Usage: zentao project [options] [command]
 
 项目
-
-Arguments:
-  target                               对象 ID 简写，等价于 zentao project get <target>
 
 Options:
   -h, --help                           显示命令帮助
@@ -1666,10 +1604,6 @@ Commands:
                                        ipd5.0）
   members [options] [target]           维护项目成员（最低版本：22.5 / biz13.5 / max8.5 /
                                        ipd5.5）
-  history [options] [target]           获取项目历史记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                       ipd5.0）
-  comment [options] [target]           添加项目备注（最低版本：22.0 / biz13.0 / max8.0 /
-                                       ipd5.0）
 ```
 
 <a id="action-project-list"></a>
@@ -1784,6 +1718,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `team`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -1817,6 +1753,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `team`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -1842,7 +1780,6 @@ Options:
   --parent <value>          所属项目集
   --workflow-group <value>  项目流程，付费版功能，开源版可以不填（必填）
   --pm <value>              项目负责人
-  --desc <value>            项目描述（必填）
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
   -h, --help                显示命令帮助
 ```
@@ -1861,7 +1798,6 @@ Options:
 | --parent | parent | body | integer | 否 | — | 所属项目集<br>{"format":"int32"} |
 | --workflow-group | workflowGroup | body | integer | 是 | — | 项目流程，付费版功能，开源版可以不填<br>{"format":"int32"} |
 | --pm | PM | body | string | 否 | — | 项目负责人<br>{} |
-| --desc | desc | body | string | 是 | — | 项目描述<br>{} |
 
 <a id="action-project-close"></a>
 
@@ -1912,17 +1848,23 @@ Options:
   --project-id <value>    项目ID（必填）
   --product-id <value>    所属产品；项目型项目可不传，产品型项目必须传
   --title <value>         需求标题（必填）
-  --spec <value>          需求描述
+  --spec <value>          需求描述 (HTML)
   --pri <value>           优先级
   --category <value>      类别
   --reviewer <value>      评审人
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 spec，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `story`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -1931,10 +1873,11 @@ Options:
 | --project-id | projectID | path | integer | 是 | — | 项目ID<br>{} |
 | --product-id | productID | body | integer | 否 | — | 所属产品；项目型项目可不传，产品型项目必须传<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 需求标题<br>{} |
-| --spec | spec | body | string | 否 | — | 需求描述<br>{} |
+| --spec | spec | body | string | 否 | — | 需求描述 (HTML)<br>{} |
 | --pri | pri | body | integer | 否 | — | 优先级<br>{"format":"int32"} |
 | --category | category | body | string | 否 | — | 类别<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人<br>{"items":{"type":"string"}} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-project-create-bug"></a>
 
@@ -1956,14 +1899,20 @@ Options:
   --severity <value>      严重程度
   --pri <value>           优先级
   --type <value>          Bug类型
-  --steps <value>         重现步骤
+  --steps <value>         重现步骤 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 steps，多个字段用逗号分隔，省略时转换本次提供的全部
+                          HTML 字段
   -h, --help              显示命令帮助
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `bug`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -1976,7 +1925,8 @@ Options:
 | --severity | severity | body | integer | 否 | — | 严重程度<br>{"format":"int32"} |
 | --pri | pri | body | integer | 否 | — | 优先级<br>{"format":"int32"} |
 | --type | type | body | string | 否 | — | Bug类型<br>{} |
-| --steps | steps | body | string | 否 | — | 重现步骤<br>{} |
+| --steps | steps | body | string | 否 | — | 重现步骤 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-project-create-task"></a>
 
@@ -2002,14 +1952,20 @@ Options:
   --estimate <value>       预计工时
   --module <value>         所属模块
   --story <value>          相关需求
-  --desc <value>           任务描述
+  --desc <value>           任务描述 (HTML)
+  --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --project <id>           projectID 或 scope/scopeID 别名
   --execution <id>         executionID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
+                           HTML 字段
   -h, --help               显示命令帮助
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `task`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -2026,7 +1982,8 @@ Options:
 | --estimate | estimate | body | number | 否 | — | 预计工时<br>{"format":"float"} |
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --story | story | body | integer | 否 | — | 相关需求<br>{"format":"int32"} |
-| --desc | desc | body | string | 否 | — | 任务描述<br>{} |
+| --desc | desc | body | string | 否 | — | 任务描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-project-create-risk"></a>
 
@@ -2054,14 +2011,20 @@ Options:
   --identified-date <value>      识别日期。
   --planned-closed-date <value>  计划关闭日期。
   --assigned-to <value>          指派人账号。
-  --prevention <value>           应对措施。
-  --remedy <value>               响应措施。
+  --prevention <value>           应对措施。 (HTML)
+  --remedy <value>               响应措施。 (HTML)
+  --uid <value>                  预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需
+                                 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。
   --project <id>                 projectID 或 scope/scopeID 别名
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --markdown [fields]            将 Markdown 转为 HTML。可选 prevention,
+                                 remedy，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help                     显示命令帮助
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `risk`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -2080,8 +2043,9 @@ Options:
 | --identified-date | identifiedDate | body | string | 否 | — | 识别日期。<br>{} |
 | --planned-closed-date | plannedClosedDate | body | string | 否 | — | 计划关闭日期。<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派人账号。<br>{} |
-| --prevention | prevention | body | string | 否 | — | 应对措施。<br>{} |
-| --remedy | remedy | body | string | 否 | — | 响应措施。<br>{} |
+| --prevention | prevention | body | string | 否 | — | 应对措施。 (HTML)<br>{} |
+| --remedy | remedy | body | string | 否 | — | 响应措施。 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-project-link-stories"></a>
 
@@ -2231,82 +2195,14 @@ Options:
 | --hours | hours | body | array | 否 | — | 每日工时，与account顺序一一对应<br>{"items":{"type":"string"}} |
 | --limited | limited | body | array | 否 | — | 是否限制日期，与account顺序一一对应<br>{"items":{"type":"string"}} |
 
-<a id="action-project-history"></a>
-
-## zentao project history
-
-```text
-Usage: zentao project history [options] [target]
-
-获取项目历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 projectID；也可使用命名参数
-
-Options:
-  --project-id <value>      项目 ID（必填）
-  --project <id>            projectID 或 scope/scopeID 别名
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --project-id | projectID | path | integer | 是 | — | 项目 ID<br>{} |
-
-<a id="action-project-comment"></a>
-
-## zentao project comment
-
-```text
-Usage: zentao project comment [options] [target]
-
-添加项目备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 projectID；也可使用命名参数
-
-Options:
-  --project-id <value>    项目 ID（必填）
-  --comment <value>       备注内容（必填）
-  --project <id>          projectID 或 scope/scopeID 别名
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --project-id | projectID | path | integer | 是 | — | 项目 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-execution"></a>
 
 ## 执行 · execution
 
 ```text
-Usage: zentao execution [options] [command] [target]
+Usage: zentao execution [options] [command]
 
 执行
-
-Arguments:
-  target                                 对象 ID 简写，等价于 zentao execution get <target>
 
 Options:
   -h, --help                             显示命令帮助
@@ -2325,8 +2221,6 @@ Commands:
   update [options] [target]              修改执行（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   delete [options] [target]              删除执行（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   members [options] [target]             维护执行成员（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
-  history [options] [target]             获取执行历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]             添加执行备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-execution-list"></a>
@@ -2437,6 +2331,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `team`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -2469,6 +2365,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `team`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -2591,6 +2489,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `module`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -2789,96 +2689,26 @@ Options:
 | --hours | hours | body | array | 否 | — | 每日工时，与account顺序一一对应<br>{"items":{"type":"string"}} |
 | --limited | limited | body | array | 否 | — | 是否限制日期，与account顺序一一对应<br>{"items":{"type":"string"}} |
 
-<a id="action-execution-history"></a>
-
-## zentao execution history
-
-```text
-Usage: zentao execution history [options] [target]
-
-获取执行历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 executionID；也可使用命名参数
-
-Options:
-  --execution-id <value>    执行 ID（必填）
-  --execution <id>          executionID 或 scope/scopeID 别名
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --execution-id | executionID | path | integer | 是 | — | 执行 ID<br>{} |
-
-<a id="action-execution-comment"></a>
-
-## zentao execution comment
-
-```text
-Usage: zentao execution comment [options] [target]
-
-添加执行备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 executionID；也可使用命名参数
-
-Options:
-  --execution-id <value>  执行 ID（必填）
-  --comment <value>       备注内容（必填）
-  --execution <id>        executionID 或 scope/scopeID 别名
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --execution-id | executionID | path | integer | 是 | — | 执行 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-productplan"></a>
 
 ## 产品计划 · productplan
 
 ```text
-Usage: zentao productplan [options] [command] [target]
+Usage: zentao productplan [options] [command]
 
 产品计划
 
-Arguments:
-  target                      对象 ID 简写，等价于 zentao productplan get <target>
-
 Options:
-  -h, --help                  显示命令帮助
+  -h, --help                 显示命令帮助
 
 Commands:
-  props                       返回对象字段定义（离线）
-  list [options] [target]     获取产品计划列表，支持获取产品下的产品计划（最低版本：22.0 / biz13.0 / max8.0
-                              / ipd5.0）
-  create [options]            创建产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]      获取产品计划详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]   修改产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]   删除产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]  获取计划历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]  添加计划备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                      返回对象字段定义（离线）
+  list [options] [target]    获取产品计划列表，支持获取产品下的产品计划（最低版本：22.0 / biz13.0 / max8.0
+                             / ipd5.0）
+  create [options]           创建产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]     获取产品计划详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]  修改产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]  删除产品计划（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-productplan-list"></a>
@@ -2945,9 +2775,13 @@ Options:
   --begin <value>         开始日期
   --end <value>           结束日期
   --branch-id <value>     分支ID
-  --desc <value>          计划描述
+  --desc <value>          计划描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -2963,7 +2797,8 @@ Options:
 | --begin | begin | body | string | 否 | — | 开始日期<br>{} |
 | --end | end | body | string | 否 | — | 结束日期<br>{} |
 | --branch-id | branchID | body | integer | 否 | — | 分支ID<br>{"format":"int32"} |
-| --desc | desc | body | string | 否 | — | 计划描述<br>{} |
+| --desc | desc | body | string | 否 | — | 计划描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-productplan-get"></a>
 
@@ -3013,8 +2848,12 @@ Options:
   --begin <value>         开始日期
   --end <value>           结束日期
   --branch-id <value>     分支ID
-  --desc <value>          计划描述
+  --desc <value>          计划描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -3034,7 +2873,8 @@ Options:
 | --begin | begin | body | string | 否 | — | 开始日期<br>{} |
 | --end | end | body | string | 否 | — | 结束日期<br>{} |
 | --branch-id | branchID | body | integer | 否 | — | 分支ID<br>{"format":"int32"} |
-| --desc | desc | body | string | 否 | — | 计划描述<br>{} |
+| --desc | desc | body | string | 否 | — | 计划描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-productplan-delete"></a>
 
@@ -3064,80 +2904,14 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --plan-id | planID | path | integer | 是 | — | 产品计划ID<br>{} |
 
-<a id="action-productplan-history"></a>
-
-## zentao productplan history
-
-```text
-Usage: zentao productplan history [options] [target]
-
-获取计划历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 planID；也可使用命名参数
-
-Options:
-  --plan-id <value>         计划 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --plan-id | planID | path | integer | 是 | — | 计划 ID<br>{} |
-
-<a id="action-productplan-comment"></a>
-
-## zentao productplan comment
-
-```text
-Usage: zentao productplan comment [options] [target]
-
-添加计划备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 planID；也可使用命名参数
-
-Options:
-  --plan-id <value>       计划 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --plan-id | planID | path | integer | 是 | — | 计划 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-story"></a>
 
 ## 需求 · story
 
 ```text
-Usage: zentao story [options] [command] [target]
+Usage: zentao story [options] [command]
 
 需求
-
-Arguments:
-  target                            对象 ID 简写，等价于 zentao story get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -3162,11 +2936,6 @@ Commands:
   close [options] [target]          关闭需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   get-grades [options]              获取需求层级选项（最低版本：22.5 / biz13.5 / max8.5 /
                                     ipd5.5）
-  review [options] [target]         需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]        获取需求历史记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
-  comment [options] [target]        添加需求备注（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
 ```
 
 <a id="action-story-list"></a>
@@ -3267,6 +3036,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -3289,23 +3060,26 @@ Options:
   --module <value>        所属模块
   --parent <value>        父需求
   --estimate <value>      预计工时
-  --spec <value>          需求描述
+  --spec <value>          需求描述 (HTML)
   --category <value>      类别(feature 功能 | interface 接口 | performance 性能 | safe
                           安全 | experience 体验 | improve 改进 | other 其他)
   --source <value>        来源(customer 客户 | user 用户 | po 产品经理 | market 市场 |
                           service 客服 | operation 运营 | support 技术支持 | competitor
                           竞争对手 | partner 合作伙伴 | dev 开发人员 | tester 测试人员 | bug Bug
                           | forum 论坛 | other 其他)
-  --verify <value>        验收标准
+  --verify <value>        验收标准 (HTML)
   --assigned-to <value>   指派给
   --status <value>        无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。
   --reviewer <value>      评审人员，如果无需评审则不传
   --project <value>       所属项目
   --execution <value>     所属执行
   --grade <value>         需求层级，可用的需求层级可以通过 story-getGrades 操作获取
-  --plan <value>          所属计划 ID（可多个）
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
+                          verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
 ```
 
@@ -3321,17 +3095,17 @@ Options:
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --parent | parent | body | integer | 否 | — | 父需求<br>{"format":"int32"} |
 | --estimate | estimate | body | number | 否 | — | 预计工时<br>{"format":"float"} |
-| --spec | spec | body | string | 否 | — | 需求描述<br>{} |
+| --spec | spec | body | string | 否 | — | 需求描述 (HTML)<br>{} |
 | --category | category | body | integer | 否 | — | 类别(feature 功能 \| interface 接口 \| performance 性能 \| safe 安全 \| experience 体验 \| improve 改进 \| other 其他)<br>{"format":"int32"} |
 | --source | source | body | string | 否 | — | 来源(customer 客户 \| user 用户 \| po 产品经理 \| market 市场 \| service 客服 \| operation 运营 \| support 技术支持 \| competitor 竞争对手 \| partner 合作伙伴 \| dev 开发人员 \| tester 测试人员 \| bug Bug \| forum 论坛 \| other 其他)<br>{} |
-| --verify | verify | body | string | 否 | — | 验收标准<br>{} |
+| --verify | verify | body | string | 否 | — | 验收标准 (HTML)<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --status | status | body | string | 否 | — | 无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人员，如果无需评审则不传<br>{"items":{"type":"string"}} |
 | --project | project | body | integer | 否 | — | 所属项目<br>{"format":"int32"} |
 | --execution | execution | body | integer | 否 | — | 所属执行<br>{"format":"int32"} |
 | --grade | grade | body | integer | 否 | — | 需求层级，可用的需求层级可以通过 story-getGrades 操作获取<br>{} |
-| --plan | plan | body | array | 否 | — | 所属计划 ID（可多个）<br>{"items":{"type":"number"}} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-story-get"></a>
 
@@ -3550,9 +3324,13 @@ Options:
   --title <value>         需求名称
   --status <value>        无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。
   --reviewer <value>      评审人员，如果无需评审则不传
-  --spec <value>          需求描述
-  --verify <value>        验收标准
+  --spec <value>          需求描述 (HTML)
+  --verify <value>        验收标准 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
+                          verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -3568,8 +3346,9 @@ Options:
 | --title | title | body | string | 否 | — | 需求名称<br>{} |
 | --status | status | body | string | 否 | — | 无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人员，如果无需评审则不传<br>{"items":{"type":"string"}} |
-| --spec | spec | body | string | 否 | — | 需求描述<br>{} |
-| --verify | verify | body | string | 否 | — | 验收标准<br>{} |
+| --spec | spec | body | string | 否 | — | 需求描述 (HTML)<br>{} |
+| --verify | verify | body | string | 否 | — | 验收标准 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-story-close"></a>
 
@@ -3627,121 +3406,21 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-
-<a id="action-story-review"></a>
-
-## zentao story review
-
-```text
-Usage: zentao story review [options] [target]
-
-需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                   单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>       story ID（必填）
-  --assigned-to <value>    指派给
-  --result <value>         评审结果（必填）
-  --reviewed-date <value>  评审时间（必填）
-  --comment <value>        备注（必填）
-  --data <json|@file|@->   JSON 对象、文件或显式标准输入
-  --ids <ids>              批量目标 ID，逗号分隔并去重
-  --batch-fail-fast        失败后跳过剩余目标
-  -h, --help               显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | story ID<br>{} |
-| --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --result | result | body | string | 是 | — | 评审结果<br>{"options":[{"value":"pass","label":"通过"},{"value":"reject","label":"拒绝"},{"value":"clarify","label":"需澄清"}]} |
-| --reviewed-date | reviewedDate | body | string | 是 | — | 评审时间<br>{} |
-| --comment | comment | body | string | 是 | — | 备注<br>{} |
-
-<a id="action-story-history"></a>
-
-## zentao story history
-
-```text
-Usage: zentao story history [options] [target]
-
-获取需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>        需求 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
+返回对象类型为 `storygrade`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | 需求 ID<br>{} |
-
-<a id="action-story-comment"></a>
-
-## zentao story comment
-
-```text
-Usage: zentao story comment [options] [target]
-
-添加需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>      需求 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | 需求 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
 
 <a id="module-epic"></a>
 
 ## 业务需求 · epic
 
 ```text
-Usage: zentao epic [options] [command] [target]
+Usage: zentao epic [options] [command]
 
 业务需求
-
-Arguments:
-  target                       对象 ID 简写，等价于 zentao epic get <target>
 
 Options:
   -h, --help                   显示命令帮助
@@ -3757,9 +3436,6 @@ Commands:
   activate [options] [target]  激活业务需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   change [options] [target]    变更业务需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]     关闭业务需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  review [options] [target]    业务需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]   获取业务需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]   添加业务需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-epic-list"></a>
@@ -3848,19 +3524,23 @@ Options:
   --module <value>        所属模块
   --parent <value>        父业务需求
   --estimate <value>      预计工时
-  --spec <value>          业务需求描述
+  --spec <value>          业务需求描述 (HTML)
   --category <value>      类别(feature 功能 | interface 接口 | performance 性能 | safe
                           安全 | experience 体验 | improve 改进 | other 其他)
   --source <value>        来源(customer 客户 | user 用户 | po 产品经理 | market 市场 |
                           service 客服 | operation 运营 | support 技术支持 | competitor
                           竞争对手 | partner 合作伙伴 | dev 开发人员 | tester 测试人员 | bug Bug
                           | forum 论坛 | other 其他)
-  --verify <value>        验收标准
+  --verify <value>        验收标准 (HTML)
   --assigned-to <value>   指派给
   --status <value>        无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。
   --reviewer <value>      评审人员，如果无需评审则不传
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
+                          verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
 ```
 
@@ -3876,13 +3556,14 @@ Options:
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --parent | parent | body | integer | 否 | — | 父业务需求<br>{"format":"int32"} |
 | --estimate | estimate | body | number | 否 | — | 预计工时<br>{"format":"float"} |
-| --spec | spec | body | string | 否 | — | 业务需求描述<br>{} |
+| --spec | spec | body | string | 否 | — | 业务需求描述 (HTML)<br>{} |
 | --category | category | body | integer | 否 | — | 类别(feature 功能 \| interface 接口 \| performance 性能 \| safe 安全 \| experience 体验 \| improve 改进 \| other 其他)<br>{"format":"int32"} |
 | --source | source | body | string | 否 | — | 来源(customer 客户 \| user 用户 \| po 产品经理 \| market 市场 \| service 客服 \| operation 运营 \| support 技术支持 \| competitor 竞争对手 \| partner 合作伙伴 \| dev 开发人员 \| tester 测试人员 \| bug Bug \| forum 论坛 \| other 其他)<br>{} |
-| --verify | verify | body | string | 否 | — | 验收标准<br>{} |
+| --verify | verify | body | string | 否 | — | 验收标准 (HTML)<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --status | status | body | string | 否 | — | 无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人员，如果无需评审则不传<br>{"items":{"type":"string"}} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-epic-get"></a>
 
@@ -4040,9 +3721,13 @@ Options:
   --title <value>         需求名称
   --status <value>        无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。
   --reviewer <value>      评审人员，如果无需评审则不传
-  --spec <value>          需求描述
-  --verify <value>        验收标准
+  --spec <value>          需求描述 (HTML)
+  --verify <value>        验收标准 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
+                          verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -4058,8 +3743,9 @@ Options:
 | --title | title | body | string | 否 | — | 需求名称<br>{} |
 | --status | status | body | string | 否 | — | 无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人员，如果无需评审则不传<br>{"items":{"type":"string"}} |
-| --spec | spec | body | string | 否 | — | 需求描述<br>{} |
-| --verify | verify | body | string | 否 | — | 验收标准<br>{} |
+| --spec | spec | body | string | 否 | — | 需求描述 (HTML)<br>{} |
+| --verify | verify | body | string | 否 | — | 验收标准 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-epic-close"></a>
 
@@ -4095,116 +3781,14 @@ Options:
 | --closed-reason | closedReason | body | string | 是 | — | 关闭原因(done 已完成 \| subdivided 已拆分 \| duplicate 重复 \| postponed 延期 \| willnotdo 不做 \| cancel 已取消 \| bydesign 设计如此)<br>{} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 
-<a id="action-epic-review"></a>
-
-## zentao epic review
-
-```text
-Usage: zentao epic review [options] [target]
-
-业务需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                   单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>       epic ID（必填）
-  --assigned-to <value>    指派给
-  --result <value>         评审结果（必填）
-  --reviewed-date <value>  评审时间（必填）
-  --comment <value>        备注（必填）
-  --data <json|@file|@->   JSON 对象、文件或显式标准输入
-  --ids <ids>              批量目标 ID，逗号分隔并去重
-  --batch-fail-fast        失败后跳过剩余目标
-  -h, --help               显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | epic ID<br>{} |
-| --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --result | result | body | string | 是 | — | 评审结果<br>{"options":[{"value":"pass","label":"通过"},{"value":"reject","label":"拒绝"},{"value":"clarify","label":"需澄清"}]} |
-| --reviewed-date | reviewedDate | body | string | 是 | — | 评审时间<br>{} |
-| --comment | comment | body | string | 是 | — | 备注<br>{} |
-
-<a id="action-epic-history"></a>
-
-## zentao epic history
-
-```text
-Usage: zentao epic history [options] [target]
-
-获取业务需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>        业务需求 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | 业务需求 ID<br>{} |
-
-<a id="action-epic-comment"></a>
-
-## zentao epic comment
-
-```text
-Usage: zentao epic comment [options] [target]
-
-添加业务需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>      业务需求 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | 业务需求 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-requirement"></a>
 
 ## 用户需求 · requirement
 
 ```text
-Usage: zentao requirement [options] [command] [target]
+Usage: zentao requirement [options] [command]
 
 用户需求
-
-Arguments:
-  target                       对象 ID 简写，等价于 zentao requirement get <target>
 
 Options:
   -h, --help                   显示命令帮助
@@ -4220,9 +3804,6 @@ Commands:
   activate [options] [target]  激活用户需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   change [options] [target]    变更用户需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]     关闭用户需求（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  review [options] [target]    用户需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]   获取用户需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]   添加用户需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-requirement-list"></a>
@@ -4311,19 +3892,23 @@ Options:
   --module <value>        所属模块
   --parent <value>        父用户需求
   --estimate <value>      预计工时
-  --spec <value>          用户需求描述
+  --spec <value>          用户需求描述 (HTML)
   --category <value>      类别(feature 功能 | interface 接口 | performance 性能 | safe
                           安全 | experience 体验 | improve 改进 | other 其他)
   --source <value>        来源(customer 客户 | user 用户 | po 产品经理 | market 市场 |
                           service 客服 | operation 运营 | support 技术支持 | competitor
                           竞争对手 | partner 合作伙伴 | dev 开发人员 | tester 测试人员 | bug Bug
                           | forum 论坛 | other 其他)
-  --verify <value>        验收标准
+  --verify <value>        验收标准 (HTML)
   --assigned-to <value>   指派给
   --status <value>        无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。
   --reviewer <value>      评审人员，如果无需评审则不传
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
+                          verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
 ```
 
@@ -4339,13 +3924,14 @@ Options:
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --parent | parent | body | integer | 否 | — | 父用户需求<br>{"format":"int32"} |
 | --estimate | estimate | body | number | 否 | — | 预计工时<br>{"format":"float"} |
-| --spec | spec | body | string | 否 | — | 用户需求描述<br>{} |
+| --spec | spec | body | string | 否 | — | 用户需求描述 (HTML)<br>{} |
 | --category | category | body | integer | 否 | — | 类别(feature 功能 \| interface 接口 \| performance 性能 \| safe 安全 \| experience 体验 \| improve 改进 \| other 其他)<br>{"format":"int32"} |
 | --source | source | body | string | 否 | — | 来源(customer 客户 \| user 用户 \| po 产品经理 \| market 市场 \| service 客服 \| operation 运营 \| support 技术支持 \| competitor 竞争对手 \| partner 合作伙伴 \| dev 开发人员 \| tester 测试人员 \| bug Bug \| forum 论坛 \| other 其他)<br>{} |
-| --verify | verify | body | string | 否 | — | 验收标准<br>{} |
+| --verify | verify | body | string | 否 | — | 验收标准 (HTML)<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --status | status | body | string | 否 | — | 无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人员，如果无需评审则不传<br>{"items":{"type":"string"}} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-requirement-get"></a>
 
@@ -4501,11 +4087,15 @@ Arguments:
 Options:
   --story-id <value>      需求ID（必填）
   --title <value>         需求名称
-  --spec <value>          需求描述
-  --verify <value>        验收标准
+  --spec <value>          需求描述 (HTML)
+  --verify <value>        验收标准 (HTML)
   --status <value>        无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。
   --reviewer <value>      评审人员，如果无需评审则不传
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
+                          verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -4519,10 +4109,11 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --story-id | storyID | path | integer | 是 | — | 需求ID<br>{} |
 | --title | title | body | string | 否 | — | 需求名称<br>{} |
-| --spec | spec | body | string | 否 | — | 需求描述<br>{} |
-| --verify | verify | body | string | 否 | — | 验收标准<br>{} |
+| --spec | spec | body | string | 否 | — | 需求描述 (HTML)<br>{} |
+| --verify | verify | body | string | 否 | — | 验收标准 (HTML)<br>{} |
 | --status | status | body | string | 否 | — | 无有效评审人时默认 active，可显式指定状态；有有效评审人时固定为 reviewing。<br>{} |
 | --reviewer | reviewer | body | array | 否 | — | 评审人员，如果无需评审则不传<br>{"items":{"type":"string"}} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-requirement-close"></a>
 
@@ -4558,116 +4149,14 @@ Options:
 | --closed-reason | closedReason | body | string | 是 | — | 关闭原因(done 已完成 \| subdivided 已拆分 \| duplicate 重复 \| postponed 延期 \| willnotdo 不做 \| cancel 已取消 \| bydesign 设计如此)<br>{} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 
-<a id="action-requirement-review"></a>
-
-## zentao requirement review
-
-```text
-Usage: zentao requirement review [options] [target]
-
-用户需求评审（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                   单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>       requirement ID（必填）
-  --assigned-to <value>    指派给
-  --result <value>         评审结果（必填）
-  --reviewed-date <value>  评审时间（必填）
-  --comment <value>        备注（必填）
-  --data <json|@file|@->   JSON 对象、文件或显式标准输入
-  --ids <ids>              批量目标 ID，逗号分隔并去重
-  --batch-fail-fast        失败后跳过剩余目标
-  -h, --help               显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | requirement ID<br>{} |
-| --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --result | result | body | string | 是 | — | 评审结果<br>{"options":[{"value":"pass","label":"通过"},{"value":"reject","label":"拒绝"},{"value":"clarify","label":"需澄清"}]} |
-| --reviewed-date | reviewedDate | body | string | 是 | — | 评审时间<br>{} |
-| --comment | comment | body | string | 是 | — | 备注<br>{} |
-
-<a id="action-requirement-history"></a>
-
-## zentao requirement history
-
-```text
-Usage: zentao requirement history [options] [target]
-
-获取用户需求历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>        用户需求 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | 用户需求 ID<br>{} |
-
-<a id="action-requirement-comment"></a>
-
-## zentao requirement comment
-
-```text
-Usage: zentao requirement comment [options] [target]
-
-添加用户需求备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 storyID；也可使用命名参数
-
-Options:
-  --story-id <value>      用户需求 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --story-id | storyID | path | integer | 是 | — | 用户需求 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-bug"></a>
 
 ## Bug · bug
 
 ```text
-Usage: zentao bug [options] [command] [target]
+Usage: zentao bug [options] [command]
 
 Bug
-
-Arguments:
-  target                            对象 ID 简写，等价于 zentao bug get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -4691,11 +4180,6 @@ Commands:
   close [options] [target]          关闭Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   confirm [options] [target]        确认Bug（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
   resolve [options] [target]        解决Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  assignto [options] [target]       指派Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]        获取Bug历史记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
-  comment [options] [target]        添加Bug备注（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
 ```
 
 <a id="action-bug-list"></a>
@@ -4795,6 +4279,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -4811,24 +4297,26 @@ Usage: zentao bug create [options]
 创建Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 
 Options:
-  --product-id <value>     所属产品（必填）
-  --title <value>          Bug标题（必填）
-  --opened-build <value>   影响版本,主干是trunk，其他版本使用版本ID（必填）
-  --project <value>        所属项目
-  --execution <value>      所属执行
-  --severity <value>       严重程度，默认是3
-  --pri <value>            优先级，默认是3
-  --type <value>           Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
-                           security 安全相关 | performance 性能问题 | standard 标准规范 |
-                           automation 测试脚本 | designdefect 设计缺陷 | others 其他)
-  --steps <value>          重现步骤
-  --story <value>          相关需求
-  --assigned-to <value>    指派给
-  --data-deadline <value>  截止日期，格式 YYYY-MM-DD
-  --module <value>         所属模块 ID
-  --product <id>           productID 或 scope/scopeID 别名
-  --data <json|@file|@->   JSON 对象、文件或显式标准输入
-  -h, --help               显示命令帮助
+  --product-id <value>    所属产品（必填）
+  --title <value>         Bug标题（必填）
+  --opened-build <value>  影响版本,主干是trunk，其他版本使用版本ID（必填）
+  --project <value>       所属项目
+  --execution <value>     所属执行
+  --severity <value>      严重程度，默认是3
+  --pri <value>           优先级，默认是3
+  --type <value>          Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
+                          security 安全相关 | performance 性能问题 | standard 标准规范 |
+                          automation 测试脚本 | designdefect 设计缺陷 | others 其他)
+  --steps <value>         重现步骤 (HTML)
+  --story <value>         相关需求
+  --assigned-to <value>   指派给
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
+  --product <id>          productID 或 scope/scopeID 别名
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 steps，多个字段用逗号分隔，省略时转换本次提供的全部
+                          HTML 字段
+  -h, --help              显示命令帮助
 ```
 
 最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
@@ -4845,11 +4333,10 @@ Options:
 | --severity | severity | body | integer | 否 | — | 严重程度，默认是3<br>{"format":"int32"} |
 | --pri | pri | body | integer | 否 | — | 优先级，默认是3<br>{"format":"int32"} |
 | --type | type | body | string | 否 | — | Bug类型(codeerror 代码错误 \| config 配置相关 \| install 安装部署 \| security 安全相关 \| performance 性能问题 \| standard 标准规范 \| automation 测试脚本 \| designdefect 设计缺陷 \| others 其他)<br>{} |
-| --steps | steps | body | string | 否 | — | 重现步骤<br>{} |
+| --steps | steps | body | string | 否 | — | 重现步骤 (HTML)<br>{} |
 | --story | story | body | integer | 否 | — | 相关需求<br>{"format":"int32"} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --data-deadline | deadline | body | string | 否 | — | 截止日期，格式 YYYY-MM-DD<br>{} |
-| --module | module | body | number | 否 | — | 所属模块 ID<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-bug-get"></a>
 
@@ -4890,28 +4377,30 @@ Usage: zentao bug update [options] [target]
 修改Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 
 Arguments:
-  target                   单个 bugID；也可使用命名参数
+  target                  单个 bugID；也可使用命名参数
 
 Options:
-  --bug-id <value>         Bug ID（必填）
-  --title <value>          Bug标题
-  --severity <value>       严重程度，默认是3
-  --pri <value>            优先级，默认是3
-  --type <value>           Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
-                           security 安全相关 | performance 性能问题 | standard 标准规范 |
-                           automation 测试脚本 | designdefect 设计缺陷 | others 其他)
-  --opened-build <value>   影响版本,主干是trunk，其他版本使用版本ID
-  --steps <value>          重现步骤
-  --project <value>        所属项目
-  --execution <value>      所属执行
-  --story <value>          相关需求
-  --assigned-to <value>    指派给
-  --data-deadline <value>  截止日期，格式 YYYY-MM-DD
-  --module <value>         所属模块 ID
-  --data <json|@file|@->   JSON 对象、文件或显式标准输入
-  --ids <ids>              批量目标 ID，逗号分隔并去重
-  --batch-fail-fast        失败后跳过剩余目标
-  -h, --help               显示命令帮助
+  --bug-id <value>        Bug ID（必填）
+  --title <value>         Bug标题
+  --severity <value>      严重程度，默认是3
+  --pri <value>           优先级，默认是3
+  --type <value>          Bug类型(codeerror 代码错误 | config 配置相关 | install 安装部署 |
+                          security 安全相关 | performance 性能问题 | standard 标准规范 |
+                          automation 测试脚本 | designdefect 设计缺陷 | others 其他)
+  --opened-build <value>  影响版本,主干是trunk，其他版本使用版本ID
+  --steps <value>         重现步骤 (HTML)
+  --project <value>       所属项目
+  --execution <value>     所属执行
+  --story <value>         相关需求
+  --assigned-to <value>   指派给
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
+  --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 steps，多个字段用逗号分隔，省略时转换本次提供的全部
+                          HTML 字段
+  --ids <ids>             批量目标 ID，逗号分隔并去重
+  --batch-fail-fast       失败后跳过剩余目标
+  -h, --help              显示命令帮助
 ```
 
 最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
@@ -4928,13 +4417,12 @@ Options:
 | --pri | pri | body | integer | 否 | — | 优先级，默认是3<br>{"format":"int32"} |
 | --type | type | body | string | 否 | — | Bug类型(codeerror 代码错误 \| config 配置相关 \| install 安装部署 \| security 安全相关 \| performance 性能问题 \| standard 标准规范 \| automation 测试脚本 \| designdefect 设计缺陷 \| others 其他)<br>{} |
 | --opened-build | openedBuild | body | array | 否 | — | 影响版本,主干是trunk，其他版本使用版本ID<br>{"items":{"type":"string"}} |
-| --steps | steps | body | string | 否 | — | 重现步骤<br>{} |
+| --steps | steps | body | string | 否 | — | 重现步骤 (HTML)<br>{} |
 | --project | project | body | integer | 否 | — | 所属项目<br>{"format":"int32"} |
 | --execution | execution | body | integer | 否 | — | 所属执行<br>{"format":"int32"} |
 | --story | story | body | integer | 否 | — | 相关需求<br>{"format":"int32"} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --data-deadline | deadline | body | string | 否 | — | 截止日期，格式 YYYY-MM-DD<br>{} |
-| --module | module | body | number | 否 | — | 所属模块 ID<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-bug-update-module"></a>
 
@@ -5172,112 +4660,14 @@ Options:
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 
-<a id="action-bug-assignto"></a>
-
-## zentao bug assignto
-
-```text
-Usage: zentao bug assignto [options] [target]
-
-指派Bug（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 bugID；也可使用命名参数
-
-Options:
-  --bug-id <value>        bug ID（必填）
-  --assigned-to <value>   指派给（必填）
-  --comment <value>       备注
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --bug-id | bugID | path | integer | 是 | — | bug ID<br>{} |
-| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
-| --comment | comment | body | string | 否 | — | 备注<br>{} |
-
-<a id="action-bug-history"></a>
-
-## zentao bug history
-
-```text
-Usage: zentao bug history [options] [target]
-
-获取Bug历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 bugID；也可使用命名参数
-
-Options:
-  --bug-id <value>          Bug ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --bug-id | bugID | path | integer | 是 | — | Bug ID<br>{} |
-
-<a id="action-bug-comment"></a>
-
-## zentao bug comment
-
-```text
-Usage: zentao bug comment [options] [target]
-
-添加Bug备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 bugID；也可使用命名参数
-
-Options:
-  --bug-id <value>        Bug ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --bug-id | bugID | path | integer | 是 | — | Bug ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-testcase"></a>
 
 ## 测试用例 · testcase
 
 ```text
-Usage: zentao testcase [options] [command] [target]
+Usage: zentao testcase [options] [command]
 
 测试用例
-
-Arguments:
-  target                            对象 ID 简写，等价于 zentao testcase get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -5300,10 +4690,6 @@ Commands:
                                     ipd5.0）
   delete-module [options] [target]  删除用例模块（最低版本：22.5 / biz13.5 / max8.5 /
                                     ipd5.5）
-  history [options] [target]        获取用例历史记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
-  comment [options] [target]        添加用例备注（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
 ```
 
 <a id="action-testcase-list"></a>
@@ -5393,6 +4779,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `module`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -5621,119 +5009,37 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --module-id | moduleID | path | integer | 是 | — | 模块ID<br>{} |
 
-<a id="action-testcase-history"></a>
-
-## zentao testcase history
-
-```text
-Usage: zentao testcase history [options] [target]
-
-获取用例历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 caseID；也可使用命名参数
-
-Options:
-  --case-id <value>         用例 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --case-id | caseID | path | integer | 是 | — | 用例 ID<br>{} |
-
-<a id="action-testcase-comment"></a>
-
-## zentao testcase comment
-
-```text
-Usage: zentao testcase comment [options] [target]
-
-添加用例备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 caseID；也可使用命名参数
-
-Options:
-  --case-id <value>       用例 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --case-id | caseID | path | integer | 是 | — | 用例 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-task"></a>
 
 ## 任务 · task
 
 ```text
-Usage: zentao task [options] [command] [target]
+Usage: zentao task [options] [command]
 
 任务
 
-Arguments:
-  target                             对象 ID 简写，等价于 zentao task get <target>
-
 Options:
-  -h, --help                         显示命令帮助
+  -h, --help                        显示命令帮助
 
 Commands:
-  props                              返回对象字段定义（离线）
-  list [options] [target]            获取任务列表，支持获取执行下的任务（最低版本：22.0 / biz13.0 /
-                                     max8.0 / ipd5.0）
-  modules [options] [target]         执行的任务模块树（最低版本：22.5 / biz13.5 / max8.5 /
-                                     ipd5.5）
-  create [options]                   创建任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]             获取任务详情（最低版本：22.0 / biz13.0 / max8.0 /
-                                     ipd5.0）
-  update [options] [target]          修改任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update-module [options] [target]   修改任务模块（最低版本：22.5 / biz13.5 / max8.5 /
-                                     ipd5.5）
-  delete [options] [target]          删除任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete-module [options] [target]   删除任务模块（最低版本：22.5 / biz13.5 / max8.5 /
-                                     ipd5.5）
-  activate [options] [target]        激活任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  close [options] [target]           关闭任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  finish [options] [target]          完成任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  start [options] [target]           启动任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  pause [options] [target]           暂停任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  cancel [options] [target]          取消任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  restart [options] [target]         继续任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  assignto [options] [target]        指派任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  recordestimate [options] [target]  记录任务工时（最低版本：22.0 / biz13.0 / max8.0 /
-                                     ipd5.0）
-  effort [options] [target]          获取任务工时记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                     ipd5.0）
-  editeffort [options] [target]      编辑工时记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                     ipd5.0）
-  deleteeffort [options] [target]    删除工时记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                     ipd5.0）
-  history [options] [target]         获取任务历史记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                     ipd5.0）
-  comment [options] [target]         添加任务备注（最低版本：22.0 / biz13.0 / max8.0 /
-                                     ipd5.0）
+  props                             返回对象字段定义（离线）
+  list [options] [target]           获取任务列表，支持获取执行下的任务（最低版本：22.0 / biz13.0 /
+                                    max8.0 / ipd5.0）
+  modules [options] [target]        执行的任务模块树（最低版本：22.5 / biz13.5 / max8.5 /
+                                    ipd5.5）
+  create [options]                  创建任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]            获取任务详情（最低版本：22.0 / biz13.0 / max8.0 /
+                                    ipd5.0）
+  update [options] [target]         修改任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update-module [options] [target]  修改任务模块（最低版本：22.5 / biz13.5 / max8.5 /
+                                    ipd5.5）
+  delete [options] [target]         删除任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete-module [options] [target]  删除任务模块（最低版本：22.5 / biz13.5 / max8.5 /
+                                    ipd5.5）
+  activate [options] [target]       激活任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  close [options] [target]          关闭任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  finish [options] [target]         完成任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  start [options] [target]          启动任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-task-list"></a>
@@ -5805,6 +5111,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -5831,10 +5139,14 @@ Options:
   --estimate <value>       预计工时
   --module <value>         所属模块
   --story <value>          相关需求
-  --desc <value>           任务描述
+  --desc <value>           任务描述 (HTML)
   --parent <value>         父任务
+  --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --execution <id>         executionID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
+                           HTML 字段
   -h, --help               显示命令帮助
 ```
 
@@ -5854,8 +5166,9 @@ Options:
 | --estimate | estimate | body | number | 否 | — | 预计工时<br>{"format":"float"} |
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --story | story | body | integer | 否 | — | 相关需求<br>{"format":"int32"} |
-| --desc | desc | body | string | 否 | — | 任务描述<br>{} |
+| --desc | desc | body | string | 否 | — | 任务描述 (HTML)<br>{} |
 | --parent | parent | body | integer | 否 | — | 父任务<br>{"format":"int32"} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-task-get"></a>
 
@@ -5909,9 +5222,13 @@ Options:
   --estimate <value>       预计工时
   --module <value>         所属模块
   --story <value>          相关需求
-  --desc <value>           任务描述
+  --desc <value>           任务描述 (HTML)
   --parent <value>         父任务
+  --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
+                           HTML 字段
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -5935,8 +5252,9 @@ Options:
 | --estimate | estimate | body | number | 否 | — | 预计工时<br>{"format":"float"} |
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --story | story | body | integer | 否 | — | 相关需求<br>{"format":"int32"} |
-| --desc | desc | body | string | 否 | — | 任务描述<br>{} |
+| --desc | desc | body | string | 否 | — | 任务描述 (HTML)<br>{} |
 | --parent | parent | body | integer | 否 | — | 父任务<br>{"format":"int32"} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-task-update-module"></a>
 
@@ -6168,348 +5486,14 @@ Options:
 | --left | left | body | number | 否 | — | 预计剩余<br>{"format":"float"} |
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 
-<a id="action-task-pause"></a>
-
-## zentao task pause
-
-```text
-Usage: zentao task pause [options] [target]
-
-暂停任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>       task ID（必填）
-  --comment <value>       备注
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
-| --comment | comment | body | string | 否 | — | 备注<br>{} |
-
-<a id="action-task-cancel"></a>
-
-## zentao task cancel
-
-```text
-Usage: zentao task cancel [options] [target]
-
-取消任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>       task ID（必填）
-  --comment <value>       备注
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
-| --comment | comment | body | string | 否 | — | 备注<br>{} |
-
-<a id="action-task-restart"></a>
-
-## zentao task restart
-
-```text
-Usage: zentao task restart [options] [target]
-
-继续任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>       task ID（必填）
-  --real-started <value>  实际开始（必填）
-  --consumed <value>      总计消耗
-  --left <value>          预计剩余
-  --comment <value>       备注
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
-| --real-started | realStarted | body | string | 是 | — | 实际开始<br>{} |
-| --consumed | consumed | body | number | 否 | — | 总计消耗<br>{"format":"float"} |
-| --left | left | body | number | 否 | — | 预计剩余<br>{"format":"float"} |
-| --comment | comment | body | string | 否 | — | 备注<br>{} |
-
-<a id="action-task-assignto"></a>
-
-## zentao task assignto
-
-```text
-Usage: zentao task assignto [options] [target]
-
-指派任务（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>       task ID（必填）
-  --execution-id <value>  执行ID（必填）
-  --assigned-to <value>   指派给（必填）
-  --left <value>          预计剩余（必填）
-  --comment <value>       备注
-  --execution <id>        executionID 或 scope/scopeID 别名
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | task ID<br>{} |
-| --execution-id | executionID | query | number | 是 | — | 执行ID<br>{} |
-| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
-| --left | left | body | number | 是 | — | 预计剩余<br>{"format":"float"} |
-| --comment | comment | body | string | 否 | — | 备注<br>{} |
-
-<a id="action-task-recordestimate"></a>
-
-## zentao task recordestimate
-
-```text
-Usage: zentao task recordestimate [options] [target]
-
-记录任务工时（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>       任务 ID（必填）
-  --date <value>          日期，格式 YYYY-MM-DD，默认今天（必填）
-  --work <value>          工作内容
-  --consumed <value>      本次耗时（小时，累加到总计）（必填）
-  --left <value>          更新后的剩余工时（小时，覆盖之前值）（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
-| --date | date | body | array | 是 | — | 日期，格式 YYYY-MM-DD，默认今天<br>{"items":{"type":"string"}} |
-| --work | work | body | array | 否 | — | 工作内容<br>{"items":{"type":"string"}} |
-| --consumed | consumed | body | array | 是 | — | 本次耗时（小时，累加到总计）<br>{"items":{"type":"number"}} |
-| --left | left | body | array | 是 | — | 更新后的剩余工时（小时，覆盖之前值）<br>{"items":{"type":"number"}} |
-
-<a id="action-task-effort"></a>
-
-## zentao task effort
-
-```text
-Usage: zentao task effort [options] [target]
-
-获取任务工时记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>         任务 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
-| --task-id | taskID | query | number | 是 | — | 任务 ID<br>{} |
-
-<a id="action-task-editeffort"></a>
-
-## zentao task editeffort
-
-```text
-Usage: zentao task editeffort [options] [target]
-
-编辑工时记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 effortID；也可使用命名参数
-
-Options:
-  --effort-id <value>     工时记录 ID（必填）
-  --date <value>          日期，格式 YYYY-MM-DD
-  --work <value>          工作内容
-  --consumed <value>      本次耗时（小时，累加到总计）（必填）
-  --left <value>          更新后的剩余工时（小时，覆盖之前值）（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --effort-id | effortID | path | integer | 是 | — | 工时记录 ID<br>{} |
-| --effort-id | effortID | query | number | 是 | — | 工时记录 ID<br>{} |
-| --date | date | body | string | 否 | — | 日期，格式 YYYY-MM-DD<br>{} |
-| --work | work | body | string | 否 | — | 工作内容<br>{} |
-| --consumed | consumed | body | number | 是 | — | 本次耗时（小时，累加到总计）<br>{"format":"float"} |
-| --left | left | body | number | 是 | — | 更新后的剩余工时（小时，覆盖之前值）<br>{"format":"float"} |
-
-<a id="action-task-deleteeffort"></a>
-
-## zentao task deleteeffort
-
-```text
-Usage: zentao task deleteeffort [options] [target]
-
-删除工时记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target               单个 effortID；也可使用命名参数
-
-Options:
-  --effort-id <value>  工时记录 ID（必填）
-  --ids <ids>          批量目标 ID，逗号分隔并去重
-  --batch-fail-fast    失败后跳过剩余目标
-  --yes                确认删除
-  -h, --help           显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --effort-id | effortID | path | integer | 是 | — | 工时记录 ID<br>{} |
-| --effort-id | effortID | query | number | 是 | — | 工时记录 ID<br>{} |
-
-<a id="action-task-history"></a>
-
-## zentao task history
-
-```text
-Usage: zentao task history [options] [target]
-
-获取任务历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>         任务 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
-
-<a id="action-task-comment"></a>
-
-## zentao task comment
-
-```text
-Usage: zentao task comment [options] [target]
-
-添加任务备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 taskID；也可使用命名参数
-
-Options:
-  --task-id <value>       任务 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --task-id | taskID | path | integer | 是 | — | 任务 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-issue"></a>
 
 ## 问题 · issue
 
 ```text
-Usage: zentao issue [options] [command] [target]
+Usage: zentao issue [options] [command]
 
 问题
-
-Arguments:
-  target                               对象 ID 简写，等价于 zentao issue get <target>
 
 Options:
   -h, --help                           显示命令帮助
@@ -6688,8 +5672,12 @@ Options:
   --assigned-to <value>    指派给
   --owner <value>          提出人
   --data-deadline <value>  计划解决日期
-  --desc <value>           描述
+  --desc <value>           描述 (HTML)
+  --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
+                           HTML 字段
   -h, --help               显示命令帮助
 ```
 
@@ -6709,7 +5697,8 @@ Options:
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --owner | owner | body | string | 否 | — | 提出人<br>{} |
 | --data-deadline | deadline | body | string | 否 | — | 计划解决日期<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-issue-get"></a>
 
@@ -6745,12 +5734,9 @@ Options:
 ## 风险 · risk
 
 ```text
-Usage: zentao risk [options] [command] [target]
+Usage: zentao risk [options] [command]
 
 风险
-
-Arguments:
-  target                              对象 ID 简写，等价于 zentao risk get <target>
 
 Options:
   -h, --help                          显示命令帮助
@@ -6936,9 +5922,13 @@ Options:
   --identified-date <value>      识别日期
   --planned-closed-date <value>  计划关闭日期
   --assigned-to <value>          指派给
-  --prevention <value>           应对措施
-  --remedy <value>               响应措施
+  --prevention <value>           应对措施 (HTML)
+  --remedy <value>               响应措施 (HTML)
+  --uid <value>                  预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需
+                                 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --markdown [fields]            将 Markdown 转为 HTML。可选 prevention,
+                                 remedy，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help                     显示命令帮助
 ```
 
@@ -6961,8 +5951,9 @@ Options:
 | --identified-date | identifiedDate | body | string | 否 | — | 识别日期<br>{} |
 | --planned-closed-date | plannedClosedDate | body | string | 否 | — | 计划关闭日期<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --prevention | prevention | body | string | 否 | — | 应对措施<br>{} |
-| --remedy | remedy | body | string | 否 | — | 响应措施<br>{} |
+| --prevention | prevention | body | string | 否 | — | 应对措施 (HTML)<br>{} |
+| --remedy | remedy | body | string | 否 | — | 响应措施 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-risk-get"></a>
 
@@ -7022,10 +6013,14 @@ Options:
   --identified-date <value>      识别日期
   --planned-closed-date <value>  计划关闭日期
   --assigned-to <value>          指派给
-  --prevention <value>           应对措施
-  --remedy <value>               响应措施
-  --resolution <value>           解决措施
+  --prevention <value>           应对措施 (HTML)
+  --remedy <value>               响应措施 (HTML)
+  --resolution <value>           解决措施 (HTML)
+  --uid <value>                  预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需
+                                 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --markdown [fields]            将 Markdown 转为 HTML。可选 prevention, remedy,
+                                 resolution，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>                    批量目标 ID，逗号分隔并去重
   --batch-fail-fast              失败后跳过剩余目标
   -h, --help                     显示命令帮助
@@ -7051,21 +6046,19 @@ Options:
 | --identified-date | identifiedDate | body | string | 否 | — | 识别日期<br>{} |
 | --planned-closed-date | plannedClosedDate | body | string | 否 | — | 计划关闭日期<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --prevention | prevention | body | string | 否 | — | 应对措施<br>{} |
-| --remedy | remedy | body | string | 否 | — | 响应措施<br>{} |
-| --resolution | resolution | body | string | 否 | — | 解决措施<br>{} |
+| --prevention | prevention | body | string | 否 | — | 应对措施 (HTML)<br>{} |
+| --remedy | remedy | body | string | 否 | — | 响应措施 (HTML)<br>{} |
+| --resolution | resolution | body | string | 否 | — | 解决措施 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="module-meeting"></a>
 
 ## 会议 · meeting
 
 ```text
-Usage: zentao meeting [options] [command] [target]
+Usage: zentao meeting [options] [command]
 
 会议
-
-Arguments:
-  target                                 对象 ID 简写，等价于 zentao meeting get <target>
 
 Options:
   -h, --help                             显示命令帮助
@@ -7386,8 +6379,12 @@ Arguments:
 
 Options:
   --meeting-id <value>    会议ID（必填）
-  --minutes <value>       会议纪要
+  --minutes <value>       会议纪要 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 minutes，多个字段用逗号分隔，省略时转换本次提供的全部
+                          HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -7400,19 +6397,17 @@ Options:
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
 | --meeting-id | meetingID | path | integer | 是 | — | 会议ID<br>{} |
-| --minutes | minutes | body | string | 否 | — | 会议纪要<br>{} |
+| --minutes | minutes | body | string | 否 | — | 会议纪要 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="module-feedback"></a>
 
 ## 反馈 · feedback
 
 ```text
-Usage: zentao feedback [options] [command] [target]
+Usage: zentao feedback [options] [command]
 
 反馈
-
-Arguments:
-  target                            对象 ID 简写，等价于 zentao feedback get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -7434,11 +6429,6 @@ Commands:
   delete [options] [target]         删除反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   activate [options] [target]       激活反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]          关闭反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  assignto [options] [target]       指派反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]        获取反馈历史记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
-  comment [options] [target]        添加反馈备注（最低版本：22.0 / biz13.0 / max8.0 /
-                                    ipd5.0）
 ```
 
 <a id="action-feedback-list"></a>
@@ -7504,10 +6494,14 @@ Options:
   --module <value>        所属模块
   --type <value>          类型(story 需求 | task 任务 | bug Bug | todo 待办 | advice 建议
                           | issue 问题 | risk 风险 | opportunity 机会)
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
   --feedback-by <value>   反馈者
   --source <value>        来源
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -7521,9 +6515,10 @@ Options:
 | --title | title | body | string | 是 | — | 标题<br>{} |
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --type | type | body | string | 否 | — | 类型(story 需求 \| task 任务 \| bug Bug \| todo 待办 \| advice 建议 \| issue 问题 \| risk 风险 \| opportunity 机会)<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
 | --feedback-by | feedbackBy | body | string | 否 | — | 反馈者<br>{} |
 | --source | source | body | string | 否 | — | 来源<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-feedback-create-bug"></a>
 
@@ -7554,6 +6549,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `bug`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -7587,12 +6584,18 @@ Options:
   --title <value>         工单标题（必填）
   --type <value>          类型(code 程序报错 | data 数据错误 | stuck 流程卡断 | security 安全问题
                           | affair 事务)
-  --desc <value>          工单描述
+  --desc <value>          工单描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `ticket`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -7603,7 +6606,8 @@ Options:
 | --module | module | body | integer | 是 | — | 所属模块<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 工单标题<br>{} |
 | --type | type | body | string | 否 | — | 类型(code 程序报错 \| data 数据错误 \| stuck 流程卡断 \| security 安全问题 \| affair 事务)<br>{} |
-| --desc | desc | body | string | 否 | — | 工单描述<br>{} |
+| --desc | desc | body | string | 否 | — | 工单描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-feedback-create-todo"></a>
 
@@ -7661,6 +6665,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `story`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -7692,13 +6698,19 @@ Options:
   --assigned-to <value>    指派给
   --est-started <value>    预计开始
   --data-deadline <value>  截止日期
-  --desc <value>           任务描述
+  --desc <value>           任务描述 (HTML)
+  --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --execution <id>         executionID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
+                           HTML 字段
   -h, --help               显示命令帮助
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `task`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -7711,7 +6723,8 @@ Options:
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --est-started | estStarted | body | string | 否 | — | 预计开始<br>{} |
 | --data-deadline | deadline | body | string | 否 | — | 截止日期<br>{} |
-| --desc | desc | body | string | 否 | — | 任务描述<br>{} |
+| --desc | desc | body | string | 否 | — | 任务描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-feedback-get"></a>
 
@@ -7761,10 +6774,14 @@ Options:
   --title <value>         标题（必填）
   --type <value>          类型(story 需求 | task 任务 | bug Bug | todo 待办 | advice 建议
                           | issue 问题 | risk 风险 | opportunity 机会)
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
   --feedback-by <value>   反馈者
   --source <value>        来源
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -7783,9 +6800,10 @@ Options:
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 标题<br>{} |
 | --type | type | body | string | 否 | — | 类型(story 需求 \| task 任务 \| bug Bug \| todo 待办 \| advice 建议 \| issue 问题 \| risk 风险 \| opportunity 机会)<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
 | --feedback-by | feedbackBy | body | string | 否 | — | 反馈者<br>{} |
 | --source | source | body | string | 否 | — | 来源<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-feedback-delete"></a>
 
@@ -7881,112 +6899,14 @@ Options:
 | --comment | comment | body | string | 否 | — | 备注<br>{} |
 | --confirm-close | confirmClose | body | string | 否 | — | 存在未关闭转化对象时是否强制关闭<br>{} |
 
-<a id="action-feedback-assignto"></a>
-
-## zentao feedback assignto
-
-```text
-Usage: zentao feedback assignto [options] [target]
-
-指派反馈（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 feedbackID；也可使用命名参数
-
-Options:
-  --feedback-id <value>   feedback ID（必填）
-  --assigned-to <value>   指派给（必填）
-  --comment <value>       备注
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --feedback-id | feedbackID | path | integer | 是 | — | feedback ID<br>{} |
-| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
-| --comment | comment | body | string | 否 | — | 备注<br>{} |
-
-<a id="action-feedback-history"></a>
-
-## zentao feedback history
-
-```text
-Usage: zentao feedback history [options] [target]
-
-获取反馈历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 feedbackID；也可使用命名参数
-
-Options:
-  --feedback-id <value>     反馈 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --feedback-id | feedbackID | path | integer | 是 | — | 反馈 ID<br>{} |
-
-<a id="action-feedback-comment"></a>
-
-## zentao feedback comment
-
-```text
-Usage: zentao feedback comment [options] [target]
-
-添加反馈备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 feedbackID；也可使用命名参数
-
-Options:
-  --feedback-id <value>   反馈 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --feedback-id | feedbackID | path | integer | 是 | — | 反馈 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-ticket"></a>
 
 ## 工单 · ticket
 
 ```text
-Usage: zentao ticket [options] [command] [target]
+Usage: zentao ticket [options] [command]
 
 工单
-
-Arguments:
-  target                           对象 ID 简写，等价于 zentao ticket get <target>
 
 Options:
   -h, --help                       显示命令帮助
@@ -8003,10 +6923,6 @@ Commands:
   delete [options] [target]        删除工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   activate [options] [target]      激活工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
   close [options] [target]         关闭工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  assignto [options] [target]      指派工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]       获取工单历史记录（最低版本：22.0 / biz13.0 / max8.0 /
-                                   ipd5.0）
-  comment [options] [target]       添加工单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-ticket-list"></a>
@@ -8072,11 +6988,15 @@ Options:
   --title <value>          标题（必填）
   --type <value>           类型(code 程序报错 | data 数据错误 | stuck 流程卡断 | security 安全问题
                            | affair 事务)
-  --desc <value>           描述
+  --desc <value>           描述 (HTML)
   --assigned-to <value>    指派给
   --data-deadline <value>  截止日期
   --opened-build <value>   影响版本
+  --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
+                           HTML 字段
   -h, --help               显示命令帮助
 ```
 
@@ -8090,10 +7010,11 @@ Options:
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 标题<br>{} |
 | --type | type | body | string | 否 | — | 类型(code 程序报错 \| data 数据错误 \| stuck 流程卡断 \| security 安全问题 \| affair 事务)<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --data-deadline | deadline | body | string | 否 | — | 截止日期<br>{} |
 | --opened-build | openedBuild | body | array | 否 | — | 影响版本<br>{"items":{"type":"string"}} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-ticket-create-story"></a>
 
@@ -8120,6 +7041,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `story`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -8161,6 +7084,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `bug`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -8223,11 +7148,15 @@ Options:
   --title <value>          标题
   --type <value>           类型(code 程序报错 | data 数据错误 | stuck 流程卡断 | security 安全问题
                            | affair 事务)
-  --desc <value>           描述
+  --desc <value>           描述 (HTML)
   --assigned-to <value>    指派给
   --data-deadline <value>  截止日期
   --opened-build <value>   影响版本
+  --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
+                           HTML 字段
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -8246,10 +7175,11 @@ Options:
 | --module | module | body | integer | 否 | — | 所属模块<br>{"format":"int32"} |
 | --title | title | body | string | 否 | — | 标题<br>{} |
 | --type | type | body | string | 否 | — | 类型(code 程序报错 \| data 数据错误 \| stuck 流程卡断 \| security 安全问题 \| affair 事务)<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
 | --data-deadline | deadline | body | string | 否 | — | 截止日期<br>{} |
 | --opened-build | openedBuild | body | array | 否 | — | 影响版本<br>{"items":{"type":"string"}} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-ticket-delete"></a>
 
@@ -8343,112 +7273,14 @@ Options:
 | --closed-reason | closedReason | body | string | 是 | — | 关闭原因(commented 已处理 \| repeat 重复 \| refuse 不予处理)<br>{} |
 | --comment | comment | body | string | 是 | — | 备注<br>{} |
 
-<a id="action-ticket-assignto"></a>
-
-## zentao ticket assignto
-
-```text
-Usage: zentao ticket assignto [options] [target]
-
-指派工单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 ticketID；也可使用命名参数
-
-Options:
-  --ticket-id <value>     ticket ID（必填）
-  --assigned-to <value>   指派给（必填）
-  --comment <value>       备注
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --ticket-id | ticketID | path | integer | 是 | — | ticket ID<br>{} |
-| --assigned-to | assignedTo | body | string | 是 | — | 指派给<br>{} |
-| --comment | comment | body | string | 否 | — | 备注<br>{} |
-
-<a id="action-ticket-history"></a>
-
-## zentao ticket history
-
-```text
-Usage: zentao ticket history [options] [target]
-
-获取工单历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 ticketID；也可使用命名参数
-
-Options:
-  --ticket-id <value>       工单 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --ticket-id | ticketID | path | integer | 是 | — | 工单 ID<br>{} |
-
-<a id="action-ticket-comment"></a>
-
-## zentao ticket comment
-
-```text
-Usage: zentao ticket comment [options] [target]
-
-添加工单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 ticketID；也可使用命名参数
-
-Options:
-  --ticket-id <value>     工单 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --ticket-id | ticketID | path | integer | 是 | — | 工单 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-system"></a>
 
 ## 应用 · system
 
 ```text
-Usage: zentao system [options] [command] [target]
+Usage: zentao system [options] [command]
 
 应用
-
-Arguments:
-  target                     对象 ID 简写，等价于 zentao system get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -8572,26 +7404,20 @@ Options:
 ## 版本 · build
 
 ```text
-Usage: zentao build [options] [command] [target]
+Usage: zentao build [options] [command]
 
 版本
 
-Arguments:
-  target                      对象 ID 简写，等价于 zentao build get <target>
-
 Options:
-  -h, --help                  显示命令帮助
+  -h, --help                 显示命令帮助
 
 Commands:
-  props                       返回对象字段定义（离线）
-  list [options]              获取版本列表，支持获取项目/执行下的版本（最低版本：22.0 / biz13.0 / max8.0
-                              / ipd5.0）
-  create [options]            创建版本/构建（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]   修改版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]   删除版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]      获取版本详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]  获取版本历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]  添加版本备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                      返回对象字段定义（离线）
+  list [options]             获取版本列表，支持获取项目/执行下的版本（最低版本：22.0 / biz13.0 / max8.0 /
+                             ipd5.0）
+  create [options]           创建版本/构建（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]  修改版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]  删除版本（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-build-list"></a>
@@ -8660,9 +7486,13 @@ Options:
   --date <value>          打包日期（必填）
   --scm-path <value>      源代码地址
   --file-path <value>     下载地址
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -8680,7 +7510,8 @@ Options:
 | --date | date | body | string | 是 | — | 打包日期<br>{} |
 | --scm-path | scmPath | body | string | 否 | — | 源代码地址<br>{} |
 | --file-path | filePath | body | string | 否 | — | 下载地址<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-build-update"></a>
 
@@ -8704,8 +7535,12 @@ Options:
   --date <value>          打包日期（必填）
   --scm-path <value>      源代码地址
   --file-path <value>     下载地址
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -8714,8 +7549,6 @@ Options:
 最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-未提供的请求体字段可由匹配的详情操作自动补全。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -8728,7 +7561,8 @@ Options:
 | --date | date | body | string | 是 | — | 打包日期<br>{} |
 | --scm-path | scmPath | body | string | 否 | — | 源代码地址<br>{} |
 | --file-path | filePath | body | string | 否 | — | 下载地址<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-build-delete"></a>
 
@@ -8758,123 +7592,25 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --build-id | buildID | path | integer | 是 | — | 版本ID<br>{} |
 
-<a id="action-build-get"></a>
-
-## zentao build get
-
-```text
-Usage: zentao build get [options] [target]
-
-获取版本详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target              单个 buildID；也可使用命名参数
-
-Options:
-  --build-id <value>  build ID（必填）
-  --ids <ids>         批量目标 ID，逗号分隔并去重
-  --batch-fail-fast   失败后跳过剩余目标
-  --fields <fields>   返回字段，逗号分隔
-  --html-to-markdown  显式将富文本字段转换为 Markdown
-  -h, --help          显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --build-id | buildID | path | integer | 是 | — | build ID<br>{} |
-
-<a id="action-build-history"></a>
-
-## zentao build history
-
-```text
-Usage: zentao build history [options] [target]
-
-获取版本历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 buildID；也可使用命名参数
-
-Options:
-  --build-id <value>        版本 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --build-id | buildID | path | integer | 是 | — | 版本 ID<br>{} |
-
-<a id="action-build-comment"></a>
-
-## zentao build comment
-
-```text
-Usage: zentao build comment [options] [target]
-
-添加版本备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 buildID；也可使用命名参数
-
-Options:
-  --build-id <value>      版本 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --build-id | buildID | path | integer | 是 | — | 版本 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-testtask"></a>
 
 ## 测试单 · testtask
 
 ```text
-Usage: zentao testtask [options] [command] [target]
+Usage: zentao testtask [options] [command]
 
 测试单
 
-Arguments:
-  target                      对象 ID 简写，等价于 zentao testtask get <target>
-
 Options:
-  -h, --help                  显示命令帮助
+  -h, --help                 显示命令帮助
 
 Commands:
-  props                       返回对象字段定义（离线）
-  list [options]              获取测试单列表，支持获取产品/项目/执行下的测试单（最低版本：22.0 / biz13.0 /
-                              max8.0 / ipd5.0）
-  create [options]            创建测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]   修改测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]   删除测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]      获取测试单详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]  获取测试单历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]  添加测试单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                      返回对象字段定义（离线）
+  list [options]             获取测试单列表，支持获取产品/项目/执行下的测试单（最低版本：22.0 / biz13.0 /
+                             max8.0 / ipd5.0）
+  create [options]           创建测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]  修改测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]  删除测试单（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-testtask-list"></a>
@@ -8940,9 +7676,13 @@ Options:
   --status <value>        状态(wait 未开始 | doing 进行中 | done 已关闭 | blocked 被阻塞)
   --begin <value>         开始日期（必填）
   --end <value>           结束日期（必填）
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -8961,7 +7701,8 @@ Options:
 | --status | status | body | string | 否 | — | 状态(wait 未开始 \| doing 进行中 \| done 已关闭 \| blocked 被阻塞)<br>{} |
 | --begin | begin | body | string | 是 | — | 开始日期<br>{} |
 | --end | end | body | string | 是 | — | 结束日期<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-testtask-update"></a>
 
@@ -8986,8 +7727,12 @@ Options:
   --status <value>        状态(wait 未开始 | doing 进行中 | done 已关闭 | blocked 被阻塞)
   --begin <value>         开始日期（必填）
   --end <value>           结束日期（必填）
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -8996,8 +7741,6 @@ Options:
 最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-未提供的请求体字段可由匹配的详情操作自动补全。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
@@ -9010,7 +7753,8 @@ Options:
 | --status | status | body | string | 否 | — | 状态(wait 未开始 \| doing 进行中 \| done 已关闭 \| blocked 被阻塞)<br>{} |
 | --begin | begin | body | string | 是 | — | 开始日期<br>{} |
 | --end | end | body | string | 是 | — | 结束日期<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-testtask-delete"></a>
 
@@ -9040,123 +7784,25 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --testtask-id | testtaskID | path | integer | 是 | — | 测试单ID<br>{} |
 
-<a id="action-testtask-get"></a>
-
-## zentao testtask get
-
-```text
-Usage: zentao testtask get [options] [target]
-
-获取测试单详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                 单个 testtaskID；也可使用命名参数
-
-Options:
-  --testtask-id <value>  testtask ID（必填）
-  --ids <ids>            批量目标 ID，逗号分隔并去重
-  --batch-fail-fast      失败后跳过剩余目标
-  --fields <fields>      返回字段，逗号分隔
-  --html-to-markdown     显式将富文本字段转换为 Markdown
-  -h, --help             显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --testtask-id | testtaskID | path | integer | 是 | — | testtask ID<br>{} |
-
-<a id="action-testtask-history"></a>
-
-## zentao testtask history
-
-```text
-Usage: zentao testtask history [options] [target]
-
-获取测试单历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 testtaskID；也可使用命名参数
-
-Options:
-  --testtask-id <value>     测试单 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --testtask-id | testtaskID | path | integer | 是 | — | 测试单 ID<br>{} |
-
-<a id="action-testtask-comment"></a>
-
-## zentao testtask comment
-
-```text
-Usage: zentao testtask comment [options] [target]
-
-添加测试单备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 testtaskID；也可使用命名参数
-
-Options:
-  --testtask-id <value>   测试单 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --testtask-id | testtaskID | path | integer | 是 | — | 测试单 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-release"></a>
 
 ## 发布 · release
 
 ```text
-Usage: zentao release [options] [command] [target]
+Usage: zentao release [options] [command]
 
 发布
 
-Arguments:
-  target                      对象 ID 简写，等价于 zentao release get <target>
-
 Options:
-  -h, --help                  显示命令帮助
+  -h, --help                 显示命令帮助
 
 Commands:
-  props                       返回对象字段定义（离线）
-  list [options] [target]     获取发布列表，支持获取产品下的发布（最低版本：22.0 / biz13.0 / max8.0 /
-                              ipd5.0）
-  create [options]            创建发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]   修改发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  delete [options] [target]   删除发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  get [options] [target]      获取发布详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  history [options] [target]  获取发布历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-  comment [options] [target]  添加发布备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                      返回对象字段定义（离线）
+  list [options] [target]    获取发布列表，支持获取产品下的发布（最低版本：22.0 / biz13.0 / max8.0 /
+                             ipd5.0）
+  create [options]           创建发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  update [options] [target]  修改发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  delete [options] [target]  删除发布（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 ```
 
 <a id="action-release-list"></a>
@@ -9226,9 +7872,13 @@ Options:
   --build <value>         包含构建（必填）
   --status <value>        状态(wait 未开始 | normal 已发布 | fail 发布失败 | terminate 停止维护)
   --date <value>          计划发布日期（必填）
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -9244,7 +7894,8 @@ Options:
 | --build | build | body | array | 是 | — | 包含构建<br>{"items":{"type":"string"}} |
 | --status | status | body | string | 否 | — | 状态(wait 未开始 \| normal 已发布 \| fail 发布失败 \| terminate 停止维护)<br>{} |
 | --date | date | body | string | 是 | — | 计划发布日期<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-release-update"></a>
 
@@ -9265,8 +7916,12 @@ Options:
   --build <value>         包含构建（必填）
   --status <value>        状态(wait 未开始 | normal 已发布 | fail 发布失败 | terminate 停止维护)
   --date <value>          计划发布日期（必填）
-  --desc <value>          描述
+  --desc <value>          描述 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -9276,8 +7931,6 @@ Options:
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
-未提供的请求体字段可由匹配的详情操作自动补全。
-
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
 | --release-id | releaseID | path | integer | 是 | — | 发布ID<br>{} |
@@ -9286,7 +7939,8 @@ Options:
 | --build | build | body | array | 是 | — | 包含构建<br>{"items":{"type":"string"}} |
 | --status | status | body | string | 否 | — | 状态(wait 未开始 \| normal 已发布 \| fail 发布失败 \| terminate 停止维护)<br>{} |
 | --date | date | body | string | 是 | — | 计划发布日期<br>{} |
-| --desc | desc | body | string | 否 | — | 描述<br>{} |
+| --desc | desc | body | string | 否 | — | 描述 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-release-delete"></a>
 
@@ -9316,121 +7970,26 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --release-id | releaseID | path | integer | 是 | — | 发布ID<br>{} |
 
-<a id="action-release-get"></a>
-
-## zentao release get
-
-```text
-Usage: zentao release get [options] [target]
-
-获取发布详情（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                单个 releaseID；也可使用命名参数
-
-Options:
-  --release-id <value>  release ID（必填）
-  --ids <ids>           批量目标 ID，逗号分隔并去重
-  --batch-fail-fast     失败后跳过剩余目标
-  --fields <fields>     返回字段，逗号分隔
-  --html-to-markdown    显式将富文本字段转换为 Markdown
-  -h, --help            显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --release-id | releaseID | path | integer | 是 | — | release ID<br>{} |
-
-<a id="action-release-history"></a>
-
-## zentao release history
-
-```text
-Usage: zentao release history [options] [target]
-
-获取发布历史记录（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                    单个 releaseID；也可使用命名参数
-
-Options:
-  --release-id <value>      发布 ID（必填）
-  --fields <fields>         返回字段，逗号分隔
-  --html-to-markdown        显式将富文本字段转换为 Markdown
-  --max-items <number>      整次命令最多返回条数
-  --filter <expr>           当前获取范围内过滤；组内 AND，多次指定为 OR
-  --search <keywords>       当前获取范围内搜索
-  --search-fields <fields>  本地搜索字段
-  --sort <expr>             当前获取范围内排序，如 id:asc
-  -h, --help                显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：只读；批量：不支持；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --release-id | releaseID | path | integer | 是 | — | 发布 ID<br>{} |
-
-<a id="action-release-comment"></a>
-
-## zentao release comment
-
-```text
-Usage: zentao release comment [options] [target]
-
-添加发布备注（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
-
-Arguments:
-  target                  单个 releaseID；也可使用命名参数
-
-Options:
-  --release-id <value>    发布 ID（必填）
-  --comment <value>       备注内容（必填）
-  --data <json|@file|@->  JSON 对象、文件或显式标准输入
-  --ids <ids>             批量目标 ID，逗号分隔并去重
-  --batch-fail-fast       失败后跳过剩余目标
-  --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
-  -h, --help              显示命令帮助
-```
-
-最低版本：22.0 / biz13.0 / max8.0 / ipd5.0。
-
-能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
-
-| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
-| --- | --- | --- | --- | --- | --- | --- |
-| --release-id | releaseID | path | integer | 是 | — | 发布 ID<br>{} |
-| --comment | comment | body | string | 是 | — | 备注内容<br>{} |
-
 <a id="module-file"></a>
 
 ## 附件 · file
 
 ```text
-Usage: zentao file [options] [command] [target]
+Usage: zentao file [options] [command]
 
 附件
 
-Arguments:
-  target                       对象 ID 简写，等价于 zentao file get <target>
-
 Options:
-  -h, --help                   显示命令帮助
+  -h, --help                 显示命令帮助
 
 Commands:
-  props                        返回对象字段定义（离线）
-  download [options] <fileID>  下载附件到本地文件（原始字节流，支持 Content-Disposition 命名）
-  create [options]             上传附件，使用【表单formdata】方式提交，不支持json（最低版本：22.0 /
-                               biz13.0 / max8.0 / ipd5.0）
-  update [options] [target]    编辑附件，修改附件的名称（最低版本：22.5 / biz13.5 / max8.5 /
-                               ipd5.5）
-  delete [options] [target]    删除附件（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  props                      返回对象字段定义（离线）
+  create [options]           上传附件，使用【表单formdata】方式提交，不支持json（最低版本：22.0 / biz13.0
+                             / max8.0 / ipd5.0）
+  update [options] [target]  编辑附件，修改附件的名称（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
+  delete [options] [target]  删除附件（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
+  get [options] [target]     获取附件信息（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
+  read [options] [target]    读取附件内容（最低版本：23.0 / biz14.0 / max9.0 / ipd6.0）
 ```
 
 <a id="action-file-create"></a>
@@ -9443,9 +8002,13 @@ Usage: zentao file create [options]
 上传附件，使用【表单formdata】方式提交，不支持json（最低版本：22.0 / biz13.0 / max8.0 / ipd5.0）
 
 Options:
+  --uid <value>           本次对象保存的唯一上传批次，以同一 Token 和 uid 保存对象时绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本并支持客户端 uid。
   --file <value>          本地文件路径，将按 multipart/form-data 上传（必填）
-  --object-type <value>   关联对象类型(bug 缺陷 | story 需求 | task 任务 | testcase 用例)（必填）
-  --object-id <value>     关联对象ID（必填）
+  --object-type <value>   关联对象类型(bug 缺陷 | story 需求 | task 任务 | testcase 用例)
+  --object-id <value>     关联对象ID
+  --extra <value>         附件标记，默认 editor（文档编辑器图片），23.0 / biz14.0 / max9.0 /
+                          ipd6.0 起支持；显式空字符串用于普通附件，其他值由服务端按空字符串处理
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
   -h, --help              显示命令帮助
 ```
@@ -9456,9 +8019,11 @@ Options:
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
 | --- | --- | --- | --- | --- | --- | --- |
+| --uid | uid | query | string | 否 | — | 本次对象保存的唯一上传批次，以同一 Token 和 uid 保存对象时绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本并支持客户端 uid。<br>{} |
 | --file | file | body | string | 是 | — | 本地文件路径，将按 multipart/form-data 上传<br>{"format":"binary"} |
-| --object-type | objectType | body | string | 是 | — | 关联对象类型(bug 缺陷 \| story 需求 \| task 任务 \| testcase 用例)<br>{} |
-| --object-id | objectID | body | integer | 是 | — | 关联对象ID<br>{"format":"int32"} |
+| --object-type | objectType | body | string | 否 | — | 关联对象类型(bug 缺陷 \| story 需求 \| task 任务 \| testcase 用例)<br>{} |
+| --object-id | objectID | body | integer | 否 | — | 关联对象ID<br>{"format":"int32"} |
+| --extra | extra | body | string | 否 | "editor" | 附件标记，默认 editor（文档编辑器图片），23.0 / biz14.0 / max9.0 / ipd6.0 起支持；显式空字符串用于普通附件，其他值由服务端按空字符串处理<br>{"options":[{"value":"","label":"普通附件"},{"value":"editor","label":"文档编辑器图片"}]} |
 
 <a id="action-file-update"></a>
 
@@ -9518,17 +8083,77 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --file-id | fileID | path | integer | 是 | — | 附件ID<br>{} |
 
+<a id="action-file-get"></a>
+
+## zentao file get
+
+```text
+Usage: zentao file get [options] [target]
+
+获取附件信息（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
+
+Arguments:
+  target              单个附件标识或当前站点的附件 URL，--file-id 可单独指定标识
+
+Options:
+  --file-id <value>   附件 ID 或 Base64 编码 gid
+  --ids <ids>         批量目标 ID，逗号分隔并去重
+  --batch-fail-fast   失败后跳过剩余目标
+  --fields <fields>   返回字段，逗号分隔
+  --html-to-markdown  显式将富文本字段转换为 Markdown
+  -h, --help          显示命令帮助
+```
+
+最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+查询附件元数据。位置参数接受数字 ID、Base64 gid 或当前站点的附件 URL。
+
+能力：只读；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --file-id | fileID | path | integer 或 string | 是 | — | 附件 ID 或 Base64 编码 gid<br>{} |
+
+<a id="action-file-read"></a>
+
+## zentao file read
+
+```text
+Usage: zentao file read [options] [target]
+
+读取附件内容（最低版本：23.0 / biz14.0 / max9.0 / ipd6.0）
+
+Arguments:
+  target             单个附件标识或当前站点的附件 URL，--file-id 可单独指定标识
+
+Options:
+  --file-id <value>  附件数字 ID
+  --stream <value>   返回格式
+  --output <path>    流式保存附件，下载完成后替换目标文件
+  --ids <ids>        批量目标 ID，逗号分隔并去重
+  --batch-fail-fast  失败后跳过剩余目标
+  -h, --help         显示命令帮助
+```
+
+最低版本：23.0 / biz14.0 / max9.0 / ipd6.0。
+
+读取附件内容。位置参数接受数字 ID 或当前站点的附件 URL。CLI 默认输出 Base64，--format=raw 保留服务端字节或文本。使用 --output <path> 将原始附件流式保存到文件。
+
+能力：只读；批量：--ids；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+| --file-id | fileID | path | integer | 是 | — | 附件数字 ID<br>{} |
+| --stream | stream | query | number | 否 | 0 | 返回格式<br>{"options":[{"value":0,"label":"原始文件内容"},{"value":1,"label":"Base64 文本"}]} |
+
 <a id="module-workflow"></a>
 
 ## 工作流 · workflow
 
 ```text
-Usage: zentao workflow [options] [command] [target]
+Usage: zentao workflow [options] [command]
 
 工作流
-
-Arguments:
-  target                                      对象 ID 简写，等价于 zentao workflow get <target>
 
 Options:
   -h, --help                                  显示命令帮助
@@ -9614,6 +8239,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `workflow_contract`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -9635,6 +8262,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `workflow_contract`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -9713,6 +8342,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowfield`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -9745,6 +8376,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowaction`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -9776,6 +8409,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowlabel`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -9837,6 +8472,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowdatasource`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -9864,6 +8501,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowrule`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -9885,6 +8524,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `workflow_contract`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -9981,6 +8622,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowfield`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10014,6 +8657,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowaction`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -10051,6 +8696,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowlabel`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -10118,6 +8765,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowdatasource`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10147,6 +8796,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowrule`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -10208,6 +8859,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowfield`。
+
 能力：只读；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10237,6 +8890,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowaction`。
+
 能力：只读；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10265,6 +8920,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowlabel`。
 
 能力：只读；批量：--ids；分页：不支持；本地文件：否。
 
@@ -10324,6 +8981,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowdatasource`。
+
 能力：只读；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10353,6 +9012,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowrule`。
+
 能力：只读；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10381,6 +9042,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `workflow_contract`。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
@@ -10451,6 +9114,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowfield`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 未提供的请求体字段可由匹配的详情操作自动补全。
@@ -10484,6 +9149,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowaction`。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
@@ -10521,6 +9188,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowlabel`。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
@@ -10595,6 +9264,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowdatasource`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 未提供的请求体字段可由匹配的详情操作自动补全。
@@ -10633,6 +9304,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowrule`。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
@@ -10723,6 +9396,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowfield`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10751,6 +9426,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowaction`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10778,6 +9455,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowlabel`。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
@@ -10835,6 +9514,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowdatasource`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -10862,6 +9543,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowrule`。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
@@ -11008,6 +9691,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowaction`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11128,6 +9813,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowaction`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11187,6 +9874,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `workflowaction`。
 
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
@@ -11280,6 +9969,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `workflowaction`。
+
 能力：写入或需服务端确认；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11294,12 +9985,9 @@ Options:
 ## 文档 · doc
 
 ```text
-Usage: zentao doc [options] [command] [target]
+Usage: zentao doc [options] [command]
 
 文档
-
-Arguments:
-  target                                    对象 ID 简写，等价于 zentao doc get <target>
 
 Options:
   -h, --help                                显示命令帮助
@@ -11371,6 +10059,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `docspace`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11397,6 +10087,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `docspace`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11425,6 +10117,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `docspace`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11451,6 +10145,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `docspace`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11483,6 +10179,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `doclib`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11514,6 +10212,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `doclib`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11548,6 +10248,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `doclib`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11580,6 +10282,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `doclib`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11752,6 +10456,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11785,6 +10491,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `module`。
 
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11821,6 +10529,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11856,6 +10566,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：只读；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11880,6 +10592,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `docspace`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -11902,6 +10616,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `docspace`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11929,6 +10645,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `doclib`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11960,6 +10678,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `doclib`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -11996,6 +10716,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `doclib`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -12031,6 +10753,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `doclib`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -12058,10 +10782,14 @@ Options:
   --lib-id <value>        文档库ID（必填）
   --module-id <value>     所属目录
   --title <value>         文档标题（必填）
-  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照（必填）
+  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)（必填）
   --content-type <value>  文档格式(doc 按Markdown处理，支持团队协同编辑 | html
                           旧格式，直接保存HTML，不支持团队协同编辑)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
+                          --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
 ```
 
@@ -12075,8 +10803,9 @@ Options:
 | --lib-id | libID | path | integer | 是 | — | 文档库ID<br>{} |
 | --module-id | moduleID | body | integer | 否 | — | 所属目录<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 文档标题<br>{} |
-| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照<br>{} |
+| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)<br>{} |
 | --content-type | contentType | body | string | 否 | — | 文档格式(doc 按Markdown处理，支持团队协同编辑 \| html 旧格式，直接保存HTML，不支持团队协同编辑)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-doc-create-team-doc"></a>
 
@@ -12095,10 +10824,14 @@ Options:
   --lib-id <value>        文档库ID（必填）
   --module-id <value>     所属目录
   --title <value>         文档标题（必填）
-  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照（必填）
+  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)（必填）
   --content-type <value>  文档格式(doc 按Markdown处理，支持团队协同编辑 | html
                           旧格式，直接保存HTML，不支持团队协同编辑)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
+                          --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
 ```
 
@@ -12112,8 +10845,9 @@ Options:
 | --lib-id | libID | path | integer | 是 | — | 文档库ID<br>{} |
 | --module-id | moduleID | body | integer | 否 | — | 所属目录<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 文档标题<br>{} |
-| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照<br>{} |
+| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)<br>{} |
 | --content-type | contentType | body | string | 否 | — | 文档格式(doc 按Markdown处理，支持团队协同编辑 \| html 旧格式，直接保存HTML，不支持团队协同编辑)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-doc-create-product-doc"></a>
 
@@ -12132,11 +10866,15 @@ Options:
   --lib-id <value>        文档库ID（必填）
   --module-id <value>     所属目录
   --title <value>         文档标题（必填）
-  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照（必填）
+  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)（必填）
   --content-type <value>  文档格式(doc 按Markdown处理，支持团队协同编辑 | html
                           旧格式，直接保存HTML，不支持团队协同编辑)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
+                          --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
 ```
 
@@ -12150,8 +10888,9 @@ Options:
 | --lib-id | libID | path | integer | 是 | — | 文档库ID<br>{} |
 | --module-id | moduleID | body | integer | 否 | — | 所属目录<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 文档标题<br>{} |
-| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照<br>{} |
+| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)<br>{} |
 | --content-type | contentType | body | string | 否 | — | 文档格式(doc 按Markdown处理，支持团队协同编辑 \| html 旧格式，直接保存HTML，不支持团队协同编辑)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-doc-create-project-doc"></a>
 
@@ -12170,11 +10909,15 @@ Options:
   --lib-id <value>        文档库ID（必填）
   --module-id <value>     所属目录
   --title <value>         文档标题（必填）
-  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照（必填）
+  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)（必填）
   --content-type <value>  文档格式(doc 按Markdown处理，支持团队协同编辑 | html
                           旧格式，直接保存HTML，不支持团队协同编辑)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
+                          --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
 ```
 
@@ -12188,8 +10931,9 @@ Options:
 | --lib-id | libID | path | integer | 是 | — | 文档库ID<br>{} |
 | --module-id | moduleID | body | integer | 否 | — | 所属目录<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 文档标题<br>{} |
-| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照<br>{} |
+| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)<br>{} |
 | --content-type | contentType | body | string | 否 | — | 文档格式(doc 按Markdown处理，支持团队协同编辑 \| html 旧格式，直接保存HTML，不支持团队协同编辑)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-doc-create-my-module"></a>
 
@@ -12213,6 +10957,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `module`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -12245,6 +10991,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `module`。
 
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
@@ -12279,6 +11027,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -12312,6 +11062,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `module`。
+
 能力：写入或需服务端确认；批量：不支持；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -12344,6 +11096,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `docspace`。
+
 能力：只读；批量：--ids；分页：不支持；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -12372,6 +11126,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `doclib`。
 
 能力：只读；批量：--ids；分页：不支持；本地文件：否。
 
@@ -12495,10 +11251,14 @@ Options:
   --doc-id <value>        文档ID（必填）
   --module-id <value>     所属目录
   --title <value>         文档标题（必填）
-  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照（必填）
+  --content <value>       文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)（必填）
   --content-type <value>  文档格式(doc 按Markdown处理，支持团队协同编辑 | html
                           旧格式，直接保存HTML，不支持团队协同编辑)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
+                          --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -12515,8 +11275,9 @@ Options:
 | --doc-id | docID | path | integer | 是 | — | 文档ID<br>{} |
 | --module-id | moduleID | body | integer | 否 | — | 所属目录<br>{"format":"int32"} |
 | --title | title | body | string | 是 | — | 文档标题<br>{} |
-| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照<br>{} |
+| --content | content | body | string | 是 | — | 文档正文，使用Markdown格式；系统会转换为块编辑器内容并生成HTML快照 (HTML)<br>{} |
 | --content-type | contentType | body | string | 否 | — | 文档格式(doc 按Markdown处理，支持团队协同编辑 \| html 旧格式，直接保存HTML，不支持团队协同编辑)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-doc-update-module"></a>
 
@@ -12665,12 +11426,9 @@ Options:
 ## 待办 · todo
 
 ```text
-Usage: zentao todo [options] [command] [target]
+Usage: zentao todo [options] [command]
 
 待办
-
-Arguments:
-  target                     对象 ID 简写，等价于 zentao todo get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -12701,8 +11459,12 @@ Options:
   --begin <value>         开始时间，使用小时+分钟拼接
   --end <value>           结束时间，使用小时+分钟拼接
   --assigned-to <value>   指派给
-  --desc <value>          待办详情
+  --desc <value>          待办详情 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   -h, --help              显示命令帮助
 ```
 
@@ -12719,7 +11481,8 @@ Options:
 | --begin | begin | body | string | 否 | — | 开始时间，使用小时+分钟拼接<br>{} |
 | --end | end | body | string | 否 | — | 结束时间，使用小时+分钟拼接<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --desc | desc | body | string | 否 | — | 待办详情<br>{} |
+| --desc | desc | body | string | 否 | — | 待办详情 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-todo-get"></a>
 
@@ -12772,8 +11535,12 @@ Options:
   --begin <value>         开始时间，使用小时+分钟拼接
   --end <value>           结束时间，使用小时+分钟拼接
   --assigned-to <value>   指派给
-  --desc <value>          待办详情
+  --desc <value>          待办详情 (HTML)
+  --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
+                          biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
+                          字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -12795,7 +11562,8 @@ Options:
 | --begin | begin | body | string | 否 | — | 开始时间，使用小时+分钟拼接<br>{} |
 | --end | end | body | string | 否 | — | 结束时间，使用小时+分钟拼接<br>{} |
 | --assigned-to | assignedTo | body | string | 否 | — | 指派给<br>{} |
-| --desc | desc | body | string | 否 | — | 待办详情<br>{} |
+| --desc | desc | body | string | 否 | — | 待办详情 (HTML)<br>{} |
+| --uid | uid | body | string | 否 | — | 预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。<br>{} |
 
 <a id="action-todo-delete"></a>
 
@@ -12830,12 +11598,9 @@ Options:
 ## 地盘 · my
 
 ```text
-Usage: zentao my [options] [command] [target]
+Usage: zentao my [options] [command]
 
 地盘
-
-Arguments:
-  target                            对象 ID 简写，等价于 zentao my get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -12904,6 +11669,8 @@ Commands:
                                     ipd5.7）
   create-ssh [options]              添加我的 SSH 公钥（最低版本：22.7 / biz13.7 / max8.7 /
                                     ipd5.7）
+  profile [options]                 获取当前用户基础资料（最低版本：23.0 / biz14.0 / max9.0 /
+                                    ipd6.0）
 ```
 
 <a id="action-my-todos"></a>
@@ -12933,6 +11700,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `todo`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -12987,6 +11756,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `task`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13052,6 +11823,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `bug`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13119,6 +11892,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `story`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -13184,6 +11959,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `epic`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13251,6 +12028,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `requirement`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -13291,6 +12070,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `testtask`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -13327,6 +12108,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `project`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13367,6 +12150,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `feedback`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13409,6 +12194,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `ticket`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13465,6 +12252,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `testcase`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -13504,6 +12293,8 @@ Options:
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
 
+返回对象类型为 `meeting`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -13540,6 +12331,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `issue`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13582,6 +12375,8 @@ Options:
 ```
 
 最低版本：22.5 / biz13.5 / max8.5 / ipd5.5。
+
+返回对象类型为 `risk`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13637,6 +12432,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `task`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13700,6 +12497,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `bug`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13765,6 +12564,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `story`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -13828,6 +12629,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `epic`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13893,6 +12696,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `requirement`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -13930,6 +12735,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `testtask`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -13983,6 +12790,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `testcase`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -14021,6 +12830,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `doc`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -14056,6 +12867,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `issue`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -14096,6 +12909,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `risk`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -14139,6 +12954,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `reviewissue`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -14181,6 +12998,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `feedback`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -14218,6 +13037,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `audit`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -14260,6 +13081,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `reviewissue`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -14299,6 +13122,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `audit`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -14335,6 +13160,8 @@ Options:
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
 
+返回对象类型为 `auditplan`。
+
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
 | 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
@@ -14370,6 +13197,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型为 `nc`。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -14409,17 +13238,40 @@ Options:
 | --name | name | body | string | 是 | — | 密钥名称，去除首尾空白后仅允许英文字母、数字、连字符、下划线、点和 $<br>{"minLength":1} |
 | --public-key | publicKey | body | string | 是 | — | 完整单行 SSH 公钥文本，去除首尾空白；支持 ssh-rsa、ecdsa-sha2-nistp256/384/521、ssh-ed25519、sk-ecdsa-sha2-nistp256@openssh.com、sk-ssh-ed25519@openssh.com 前缀，完整性及重复检查由 GitFox 处理<br>{"minLength":1} |
 
+<a id="action-my-profile"></a>
+
+## zentao my profile
+
+```text
+Usage: zentao my profile [options]
+
+获取当前用户基础资料（最低版本：23.0 / biz14.0 / max9.0 / ipd6.0）
+
+Options:
+  --fields <fields>   返回字段，逗号分隔
+  --html-to-markdown  显式将富文本字段转换为 Markdown
+  -h, --help          显示命令帮助
+```
+
+最低版本：23.0 / biz14.0 / max9.0 / ipd6.0。
+
+返回当前 Token 用户的 id、dept、account、realname、nickname、avatar、role、type；avatar 可为空字符串或 null。
+
+返回对象类型为 `user`。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+
 <a id="module-process"></a>
 
 ## 过程裁剪 · process
 
 ```text
-Usage: zentao process [options] [command] [target]
+Usage: zentao process [options] [command]
 
 过程裁剪
-
-Arguments:
-  target                            对象 ID 简写，等价于 zentao process get <target>
 
 Options:
   -h, --help                        显示命令帮助
@@ -14540,12 +13392,9 @@ Options:
 ## 质量保证计划 · auditplan
 
 ```text
-Usage: zentao auditplan [options] [command] [target]
+Usage: zentao auditplan [options] [command]
 
 质量保证计划
-
-Arguments:
-  target                           对象 ID 简写，等价于 zentao auditplan get <target>
 
 Options:
   -h, --help                       显示命令帮助
@@ -14842,12 +13691,9 @@ Options:
 ## 不符合项 · nc
 
 ```text
-Usage: zentao nc [options] [command] [target]
+Usage: zentao nc [options] [command]
 
 不符合项
-
-Arguments:
-  target                               对象 ID 简写，等价于 zentao nc get <target>
 
 Options:
   -h, --help                           显示命令帮助
@@ -15102,12 +13948,9 @@ Options:
 ## 机会 · opportunity
 
 ```text
-Usage: zentao opportunity [options] [command] [target]
+Usage: zentao opportunity [options] [command]
 
 机会
-
-Arguments:
-  target                           对象 ID 简写，等价于 zentao opportunity get <target>
 
 Options:
   -h, --help                       显示命令帮助
@@ -15389,12 +14232,9 @@ Options:
 ## 交付物 · deliverable
 
 ```text
-Usage: zentao deliverable [options] [command] [target]
+Usage: zentao deliverable [options] [command]
 
 交付物
-
-Arguments:
-  target                      对象 ID 简写，等价于 zentao deliverable get <target>
 
 Options:
   -h, --help                  显示命令帮助
@@ -15583,12 +14423,9 @@ Options:
 ## 基线 · baseline
 
 ```text
-Usage: zentao baseline [options] [command] [target]
+Usage: zentao baseline [options] [command]
 
 基线
-
-Arguments:
-  target                     对象 ID 简写，等价于 zentao baseline get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -15782,12 +14619,9 @@ Options:
 ## 项目变更 · change
 
 ```text
-Usage: zentao change [options] [command] [target]
+Usage: zentao change [options] [command]
 
 项目变更
-
-Arguments:
-  target                     对象 ID 简写，等价于 zentao change get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -15987,12 +14821,9 @@ Options:
 ## 对象关联 · relation
 
 ```text
-Usage: zentao relation [options] [command] [target]
+Usage: zentao relation [options] [command]
 
 对象关联
-
-Arguments:
-  target                         对象 ID 简写，等价于 zentao relation get <target>
 
 Options:
   -h, --help                     显示命令帮助
@@ -16072,6 +14903,8 @@ Options:
 ```
 
 最低版本：22.7 / biz13.7 / max8.7 / ipd5.7。
+
+返回对象类型由参数 `relatedObjectType` 决定。
 
 能力：只读；批量：不支持；分页：--page / --page-size / --all；本地文件：否。
 
@@ -16154,12 +14987,9 @@ Options:
 ## 项目流程 · workflowgroup
 
 ```text
-Usage: zentao workflowgroup [options] [command] [target]
+Usage: zentao workflowgroup [options] [command]
 
 项目流程
-
-Arguments:
-  target          对象 ID 简写，等价于 zentao workflowgroup get <target>
 
 Options:
   -h, --help      显示命令帮助
@@ -16210,12 +15040,9 @@ Options:
 ## 人力资源日历 · resourcecalendar
 
 ```text
-Usage: zentao resourcecalendar [options] [command] [target]
+Usage: zentao resourcecalendar [options] [command]
 
 人力资源日历
-
-Arguments:
-  target         对象 ID 简写，等价于 zentao resourcecalendar get <target>
 
 Options:
   -h, --help     显示命令帮助
@@ -16263,12 +15090,9 @@ Options:
 ## 项目周报 · weekly
 
 ```text
-Usage: zentao weekly [options] [command] [target]
+Usage: zentao weekly [options] [command]
 
 项目周报
-
-Arguments:
-  target                     对象 ID 简写，等价于 zentao weekly get <target>
 
 Options:
   -h, --help                 显示命令帮助
@@ -16411,6 +15235,8 @@ Options:
   --raw-content <value>   周报原始内容。
   --comment <value>       编辑备注。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --markdown [fields]     将 Markdown 转为 HTML。可选 content，多个字段用逗号分隔，省略时转换本次提供的全部
+                          HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -16466,12 +15292,9 @@ Options:
 ## 数据库 · db
 
 ```text
-Usage: zentao db [options] [command] [target]
+Usage: zentao db [options] [command]
 
 数据库
-
-Arguments:
-  target                    对象 ID 简写，等价于 zentao db get <target>
 
 Options:
   -h, --help                显示命令帮助
@@ -16586,12 +15409,9 @@ meta 返回表信息、主键和列定义；sql 返回包含表信息、dialect 
 ## 知识库 · knowledgelib
 
 ```text
-Usage: zentao knowledgelib [options] [command] [target]
+Usage: zentao knowledgelib [options] [command]
 
 知识库
-
-Arguments:
-  target          对象 ID 简写，等价于 zentao knowledgelib get <target>
 
 Options:
   -h, --help      显示命令帮助
@@ -16642,12 +15462,9 @@ Options:
 ## 知识 · knowledge
 
 ```text
-Usage: zentao knowledge [options] [command] [target]
+Usage: zentao knowledge [options] [command]
 
 知识
-
-Arguments:
-  target                       对象 ID 简写，等价于 zentao knowledge get <target>
 
 Options:
   -h, --help                   显示命令帮助
@@ -16827,17 +15644,55 @@ Options:
 | --- | --- | --- | --- | --- | --- | --- |
 | --knowledge-id | knowledgeID | path | integer | 是 | — | 本地知识条目 ID，正整数；不可使用 chunkID 或来源对象 objectID<br>{} |
 
+<a id="module-setting"></a>
+
+## 系统设置 · setting
+
+```text
+Usage: zentao setting [options] [command]
+
+系统设置
+
+Options:
+  -h, --help            显示命令帮助
+
+Commands:
+  props                 返回对象字段定义（离线）
+  work-hours [options]  获取工时设置（最低版本：23.0 / biz14.0 / max9.0 / ipd6.0）
+```
+
+<a id="action-setting-work-hours"></a>
+
+## zentao setting work-hours
+
+```text
+Usage: zentao setting work-hours [options]
+
+获取工时设置（最低版本：23.0 / biz14.0 / max9.0 / ipd6.0）
+
+Options:
+  --fields <fields>   返回字段，逗号分隔
+  --html-to-markdown  显式将富文本字段转换为 Markdown
+  -h, --help          显示命令帮助
+```
+
+最低版本：23.0 / biz14.0 / max9.0 / ipd6.0。
+
+dailyWorkHours 是每日可用工时，单位为小时。effortUnit 是工时展示单位，day 表示日，hour 表示小时。
+
+能力：只读；批量：不支持；分页：不支持；本地文件：否。
+
+| 参数 | JSON 字段 | 位置 | 类型 | 必填 | 默认值 | 说明与约束 |
+| --- | --- | --- | --- | --- | --- | --- |
+
 <a id="module-space"></a>
 
 ## 代码库空间 · space
 
 ```text
-Usage: zentao space [options] [command] [target]
+Usage: zentao space [options] [command]
 
 代码库空间
-
-Arguments:
-  target          对象 ID 简写，等价于 zentao space get <target>
 
 Options:
   -h, --help      显示命令帮助
@@ -16886,12 +15741,9 @@ Options:
 ## 代码库 · repo
 
 ```text
-Usage: zentao repo [options] [command] [target]
+Usage: zentao repo [options] [command]
 
 代码库
-
-Arguments:
-  target                   对象 ID 简写，等价于 zentao repo get <target>
 
 Options:
   -h, --help               显示命令帮助
