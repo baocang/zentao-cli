@@ -93,6 +93,10 @@ function readBody(req: IncomingMessage, limit = MAX_BODY_BYTES): Promise<{ body?
 export async function startMcpHttpServer(options: McpHttpOptions): Promise<McpHttpServer> {
     const actionAssistant = resolveAssistant(options.assistant, true, 'http');
     options = { ...options, allowLocalFiles: false };
+    if (options.localUploadRoot === undefined) {
+        const root = process.env[brandText('ZENTAO_MCP_UPLOAD_ROOT')];
+        if (root?.trim()) options = { ...options, localUploadRoot: root.trim() };
+    }
     if (!process.versions.bun) {
         const [major, minor, patch] = process.versions.node.split('.').map(Number);
         if (major < 18 || (major === 18 && (minor < 14 || (minor === 14 && patch < 1)))) {
