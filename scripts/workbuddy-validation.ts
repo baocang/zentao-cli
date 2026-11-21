@@ -19,7 +19,7 @@ export function verifyWorkbuddyConfiguration(configuration = mcp): void {
     const server = Object.values(configuration.mcpServers)[0];
     assert.equal(server.type, 'stdio');
     assert.equal(server.command, 'npx');
-    assert.deepEqual(server.args.slice(0, 2), ['--yes', `zentao-cli@${pkg.version}`]);
+    assert.deepEqual(server.args.slice(0, 2), ['--yes', `${pkg.name}@${pkg.version}`]);
     assert.deepEqual(server.runtime, { type: 'node', version: '22' });
     assert.ok(server.args.includes('--no-input'));
     assert.ok(server.args.includes('--config'));
