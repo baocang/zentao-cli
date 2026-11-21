@@ -69,6 +69,9 @@ export interface ModuleActionOptions extends GlobalOptions {
     /** 用于提交的 JSON 数据，适用于 actionType 为 create、update 和 action 操作 */
     data?: string;
 
+    /** CLI 调用选项（JSON 对象），与显式命令行参数合并；显式参数优先 */
+    options?: string;
+
     /** 通过 JSON 对象来指定多个 API 调用参数，不包括 DataOptions 上的选项 */
     params?: string;
 

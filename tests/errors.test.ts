@@ -101,6 +101,21 @@ describe('mapSdkError', () => {
         expect((mapped as ZentaoError).code).toBe('1004');
     });
 
+    test('maps the Bug history "Access not allowed" response to E2006', () => {
+        // Observed live: Bug detail succeeds, while /actions/bug/{id} returns 403
+        // "Access not allowed" for a user without the Bug-history privilege.
+        // This must map to permission denied, not token expiry (no re-auth).
+        const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 403, statusText: 'Forbidden' },
+            {
+                status: 403,
+                url: '/api.php/v2/actions/bug/23563',
+                body: '{"status":"error","message":"Access not allowed"}',
+            });
+        const mapped = mapSdkError(sdk) as ZentaoError;
+        expect(mapped.code).toBe('2006');
+        expect(mapped.details).toMatchObject({ url: '/api.php/v2/actions/bug/23563' });
+    });
+
     test('maps HTTP 404 to E2002', () => {
         const sdk = new SdkZentaoError('E_HTTP_ERROR', { status: 404, statusText: 'Not Found' }, { status: 404, url: '/x' });
         expect((mapSdkError(sdk) as ZentaoError).code).toBe('2002');

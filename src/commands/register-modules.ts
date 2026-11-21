@@ -14,6 +14,7 @@ import { downloadFileAttachment, embedCommentImages, handleModuleCommand, showMo
 import type { ModuleActionOptions } from '../types/index.js';
 import { normalizeIdLike } from '../modules/targets.js';
 import { emitResult } from '../utils/output.js';
+import { applyOptionsJson } from '../utils/cli-options.js';
 
 /** Commander 的 `collect` 回调：将多次出现的选项累积为数组 */
 function collect(value: string, previous: string[] = []): string[] {
@@ -132,6 +133,7 @@ export function registerModuleCommands(program: Command): void {
                 mappings.push({ name: scope, attribute: option.attributeName() });
             }
             if (action.requestBody) cmd.option('--data <json|@file|@->', 'JSON 对象、文件或显式标准输入');
+            cmd.option('--options <json>', 'CLI 调用选项（JSON 对象；显式命令行参数优先）');
             if (contract.markdownFields.length) {
                 const fields = contract.markdownFields.join(', ');
                 const condition = name === 'doc' ? '（content 需显式指定 --content-type html）' : '';
@@ -154,7 +156,7 @@ export function registerModuleCommands(program: Command): void {
             cmd.action(async (...args: unknown[]) => {
                 const command = args.at(-1) as Command;
                 const parsed = command.optsWithGlobals();
-                const options: ModuleActionOptions = { ...parsed, pick: parsed.fields, recPerPage: parsed.pageSize };
+                const options: ModuleActionOptions = applyOptionsJson({ ...parsed, pick: parsed.fields, recPerPage: parsed.pageSize });
                 const values = Object.fromEntries(mappings.map(item => [item.name, parsed[item.attribute]]));
                 let source: ReturnType<typeof resolveAuthSource> | undefined;
                 const params = await prepareCliParams(mod, action, contract.target ? args[0] as string | undefined : undefined, options, values, url => {

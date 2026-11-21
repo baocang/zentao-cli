@@ -772,6 +772,7 @@ Options:
                             男 | f
                             女)；qq(QQ，示例：关键字)；skype(Skype，示例：关键字)；dingding(钉钉，示例：关键字)；weixin(微信，示例：关键字)；slack(Slack，示例：关键字)；whatsapp(WhatsApp，示例：关键字)；address(通讯地址，示例：关键字)；zipcode(邮编，示例：关键字)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -812,6 +813,7 @@ Options:
   --realname <value>      姓名（必填）
   --password <value>      密码（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -839,6 +841,7 @@ Arguments:
 
 Options:
   --user-id <value>   用户ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -878,6 +881,7 @@ Options:
   --weixin <value>        微信
   --password <value>      密码
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -916,6 +920,7 @@ Arguments:
 
 Options:
   --user-id <value>  用户ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -974,6 +979,7 @@ Options:
                             未开始 | doing 进行中 | suspended 已挂起 | closed
                             已关闭)；openedBy(创建者，用户，示例：admin)；begin(计划开始，示例：2026-01-01)；end(计划完成，示例：2026-01-01)；realBegan(实际开始，示例：2026-01-01)；realEnd(实际完成，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后编辑日期，示例：2026-01-01)；desc(项目集描述，示例：关键字)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1018,6 +1024,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -1050,6 +1057,7 @@ Arguments:
 
 Options:
   --program-id <value>  项目集ID（必填）
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --fields <fields>     返回字段，逗号分隔
@@ -1087,6 +1095,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -1124,6 +1133,7 @@ Arguments:
 
 Options:
   --program-id <value>  项目集ID（必填）
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --yes                 确认删除
@@ -1152,6 +1162,7 @@ Arguments:
 
 Options:
   --program-id <value>      项目集 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1186,6 +1197,7 @@ Options:
   --program-id <value>    项目集 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -1245,6 +1257,7 @@ Usage: zentao product list [options]
 Options:
   --browse-type <value>     浏览类型
   --order-by <value>        排序
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1285,6 +1298,7 @@ Options:
   --program-id <value>      项目集ID（必填）
   --browse-type <value>     状态，默认是noclosed
   --order-by <value>        排序
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1333,6 +1347,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -1373,6 +1388,7 @@ Options:
   --comment <value>       备注
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -1405,6 +1421,7 @@ Options:
   --parent-id <value>     父模块
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -1438,6 +1455,7 @@ Options:
   --parent-id <value>     父模块
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -1471,6 +1489,7 @@ Options:
   --parent-id <value>     父模块
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -1501,6 +1520,7 @@ Arguments:
 Options:
   --product-id <value>  产品ID（必填）
   --product <id>        productID 或 scope/scopeID 别名
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --fields <fields>     返回字段，逗号分隔
@@ -1544,6 +1564,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -1587,6 +1608,7 @@ Arguments:
 Options:
   --product-id <value>  产品ID（必填）
   --product <id>        productID 或 scope/scopeID 别名
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --yes                 确认删除
@@ -1616,6 +1638,7 @@ Arguments:
 Options:
   --product-id <value>      产品 ID，正整数（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1653,6 +1676,7 @@ Arguments:
 Options:
   --product-id <value>      产品 ID（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1688,6 +1712,7 @@ Options:
   --comment <value>       备注内容（必填）
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -1775,6 +1800,7 @@ Options:
                             doing 进行中 | suspended 已挂起 | closed 已关闭 | delay
                             已延期)；desc(项目描述，示例：关键字)；PM(负责人，用户，示例：admin)；teamCount(人数，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；begin(计划开始，示例：2026-01-01)；end(计划完成，示例：2026-01-01)；realBegan(实际开始，示例：2026-01-01)；realEnd(实际完成，示例：2026-01-01)；openedBy(由谁创建，用户，示例：admin)；closedBy(由谁关闭，用户，示例：admin)；lastEditedDate(最后编辑日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1817,6 +1843,7 @@ Options:
   --program-id <value>      项目集ID（必填）
   --browse-type <value>     项目状态，默认是undone
   --order-by <value>        排序
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1854,6 +1881,7 @@ Usage: zentao project team [options]
 Options:
   --project-id <value>      项目ID（必填）
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1889,6 +1917,7 @@ Arguments:
 Options:
   --project-id <value>      项目ID（必填）
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -1930,6 +1959,7 @@ Options:
   --pm <value>              项目负责人
   --desc <value>            项目描述（必填）
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help                显示命令帮助
 ```
 
@@ -1967,6 +1997,7 @@ Options:
   --comment <value>       备注
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -2007,6 +2038,7 @@ Options:
   --product <id>          productID 或 scope/scopeID 别名
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 spec，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -2055,6 +2087,7 @@ Options:
   --product <id>          productID 或 scope/scopeID 别名
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 steps，多个字段用逗号分隔，省略时转换本次提供的全部
                           HTML 字段
   -h, --help              显示命令帮助
@@ -2108,6 +2141,7 @@ Options:
   --project <id>           projectID 或 scope/scopeID 别名
   --execution <id>         executionID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   -h, --help               显示命令帮助
@@ -2167,6 +2201,7 @@ Options:
                                  23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。
   --project <id>                 projectID 或 scope/scopeID 别名
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --options <json>               CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]            将 Markdown 转为 HTML。可选 prevention,
                                  remedy，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help                     显示命令帮助
@@ -2215,6 +2250,7 @@ Options:
   --story-type <value>    需求类型，默认 story；可按项目需求类型传 requirement、epic 等。
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -2255,6 +2291,7 @@ Options:
   --pm <value>              项目负责人
   --project <id>            projectID 或 scope/scopeID 别名
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>               批量目标 ID，逗号分隔并去重
   --batch-fail-fast         失败后跳过剩余目标
   -h, --help                显示命令帮助
@@ -2291,6 +2328,7 @@ Arguments:
 Options:
   --project-id <value>  项目ID（必填）
   --project <id>        projectID 或 scope/scopeID 别名
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --yes                 确认删除
@@ -2327,6 +2365,7 @@ Options:
   --limited <value>       是否限制日期，与account顺序一一对应
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -2360,6 +2399,7 @@ Arguments:
 Options:
   --project-id <value>      项目 ID（必填）
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -2395,6 +2435,7 @@ Options:
   --comment <value>       备注内容（必填）
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -2459,6 +2500,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：activatedDate,assignedDate,assignedTo,canceledBy,canceledDate,closedBy,closedDate,closedReason,consumed,deadline,desc,estStarted,estimate,execution,finishedBy,finishedDate,fromBug,id,keywords,lastEditedBy,lastEditedDate,left,mailto,module,name,openedBy,openedDate,pri,project,realStarted,status,story,type
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -2502,6 +2544,7 @@ Options:
   --browse-type <value>     执行状态，默认是undone
   --order-by <value>        排序
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -2539,6 +2582,7 @@ Usage: zentao execution team [options]
 Options:
   --execution-id <value>    执行ID（必填）
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -2574,6 +2618,7 @@ Arguments:
 Options:
   --execution-id <value>    执行ID（必填）
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -2627,6 +2672,7 @@ Options:
   --acl <value>           访问控制(open 公开 | private 私有)
   --milestone <value>     是否里程碑(0 否| 1 是)
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -2672,6 +2718,7 @@ Options:
   --comment <value>       备注
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -2705,6 +2752,7 @@ Options:
   --parent-id <value>     父模块
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -2738,6 +2786,7 @@ Options:
   --story-type <value>    需求类型，默认 story。
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -2768,6 +2817,7 @@ Arguments:
 Options:
   --execution-id <value>  执行ID（必填）
   --execution <id>        executionID 或 scope/scopeID 别名
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --fields <fields>       返回字段，逗号分隔
@@ -2812,6 +2862,7 @@ Options:
   --acl <value>           访问控制(open 公开 | private 私有)
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -2855,6 +2906,7 @@ Arguments:
 Options:
   --execution-id <value>  执行ID（必填）
   --execution <id>        executionID 或 scope/scopeID 别名
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --yes                   确认删除
@@ -2891,6 +2943,7 @@ Options:
   --limited <value>       是否限制日期，与account顺序一一对应
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -2924,6 +2977,7 @@ Arguments:
 Options:
   --execution-id <value>    执行 ID（必填）
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -2959,6 +3013,7 @@ Options:
   --comment <value>       备注内容（必填）
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -3022,6 +3077,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：begin,branch,end,id,status,title
   --group-join <value>      条件组之间的连接方式
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -3070,6 +3126,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -3104,6 +3161,7 @@ Arguments:
 
 Options:
   --plan-id <value>   产品计划ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -3142,6 +3200,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -3180,6 +3239,7 @@ Arguments:
 
 Options:
   --plan-id <value>  产品计划ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -3208,6 +3268,7 @@ Arguments:
 
 Options:
   --plan-id <value>         计划 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -3242,6 +3303,7 @@ Options:
   --plan-id <value>       计划 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -3342,6 +3404,7 @@ Options:
   --product <id>            productID 或 scope/scopeID 别名
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -3385,6 +3448,7 @@ Arguments:
 Options:
   --product-id <value>      产品ID（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -3440,6 +3504,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
                           verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
@@ -3484,6 +3549,7 @@ Arguments:
 
 Options:
   --story-id <value>  需求ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -3526,6 +3592,7 @@ Options:
   --assigned-to <value>   指派给
   --plan <value>          所属计划
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -3567,6 +3634,7 @@ Options:
   --name <value>          模块名称
   --parent <value>        父模块
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -3596,6 +3664,7 @@ Arguments:
 
 Options:
   --story-id <value>  需求ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -3624,6 +3693,7 @@ Arguments:
 
 Options:
   --module-id <value>  模块ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -3655,6 +3725,7 @@ Options:
   --assigned-to <value>   指派给
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -3692,6 +3763,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
                           verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -3732,6 +3804,7 @@ Options:
                            设计如此)（必填）
   --comment <value>        备注
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -3757,6 +3830,7 @@ Usage: zentao story get-grades [options]
 获取需求层级选项（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -3795,6 +3869,7 @@ Options:
   --reviewed-date <value>  评审时间（必填）
   --comment <value>        备注（必填）
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -3826,6 +3901,7 @@ Arguments:
 
 Options:
   --story-id <value>        需求 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -3860,6 +3936,7 @@ Options:
   --story-id <value>      需求 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -3949,6 +4026,7 @@ Options:
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -4007,6 +4085,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
                           verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
@@ -4047,6 +4126,7 @@ Arguments:
 
 Options:
   --story-id <value>  需求ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -4089,6 +4169,7 @@ Options:
                           | forum 论坛 | other 其他)
   --assigned-to <value>   指派给
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -4126,6 +4207,7 @@ Arguments:
 
 Options:
   --story-id <value>  需求ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -4157,6 +4239,7 @@ Options:
   --assigned-to <value>   指派给
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -4194,6 +4277,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
                           verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -4234,6 +4318,7 @@ Options:
                            设计如此)（必填）
   --comment <value>        备注
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -4268,6 +4353,7 @@ Options:
   --reviewed-date <value>  评审时间（必填）
   --comment <value>        备注（必填）
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -4299,6 +4385,7 @@ Arguments:
 
 Options:
   --story-id <value>        业务需求 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -4333,6 +4420,7 @@ Options:
   --story-id <value>      业务需求 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -4422,6 +4510,7 @@ Options:
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -4480,6 +4569,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
                           verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
@@ -4520,6 +4610,7 @@ Arguments:
 
 Options:
   --story-id <value>  需求ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -4562,6 +4653,7 @@ Options:
                           | forum 论坛 | other 其他)
   --assigned-to <value>   指派给
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -4599,6 +4691,7 @@ Arguments:
 
 Options:
   --story-id <value>  需求ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -4630,6 +4723,7 @@ Options:
   --assigned-to <value>   指派给
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -4667,6 +4761,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 spec,
                           verify，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -4707,6 +4802,7 @@ Options:
                            设计如此)（必填）
   --comment <value>        备注
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -4741,6 +4837,7 @@ Options:
   --reviewed-date <value>  评审时间（必填）
   --comment <value>        备注（必填）
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -4772,6 +4869,7 @@ Arguments:
 
 Options:
   --story-id <value>        用户需求 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -4806,6 +4904,7 @@ Options:
   --story-id <value>      用户需求 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -4904,6 +5003,7 @@ Options:
   --product <id>            productID 或 scope/scopeID 别名
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -4947,6 +5047,7 @@ Arguments:
 Options:
   --product-id <value>      产品ID（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -4996,6 +5097,7 @@ Options:
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>           productID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 steps，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   -h, --help               显示命令帮助
@@ -5036,6 +5138,7 @@ Arguments:
 
 Options:
   --bug-id <value>    Bug ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -5082,6 +5185,7 @@ Options:
   --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 steps，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   --ids <ids>              批量目标 ID，逗号分隔并去重
@@ -5129,6 +5233,7 @@ Options:
   --name <value>          模块名称
   --parent <value>        父模块
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -5158,6 +5263,7 @@ Arguments:
 
 Options:
   --bug-id <value>   Bug ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -5186,6 +5292,7 @@ Arguments:
 
 Options:
   --module-id <value>  模块ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -5218,6 +5325,7 @@ Options:
   --assigned-to <value>   指派给
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -5250,6 +5358,7 @@ Options:
   --bug-id <value>        Bug ID（必填）
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -5288,6 +5397,7 @@ Options:
   --mailto <value>         抄送给
   --comment <value>        备注
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -5330,6 +5440,7 @@ Options:
   --assigned-to <value>     指派给
   --comment <value>         备注
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>               批量目标 ID，逗号分隔并去重
   --batch-fail-fast         失败后跳过剩余目标
   -h, --help                显示命令帮助
@@ -5365,6 +5476,7 @@ Options:
   --assigned-to <value>   指派给（必填）
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -5394,6 +5506,7 @@ Arguments:
 
 Options:
   --bug-id <value>          Bug ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -5428,6 +5541,7 @@ Options:
   --bug-id <value>        Bug ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -5515,6 +5629,7 @@ Options:
   --product <id>            productID 或 scope/scopeID 别名
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -5558,6 +5673,7 @@ Arguments:
 Options:
   --product-id <value>      产品ID（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -5607,6 +5723,7 @@ Options:
   --execution <value>     所属执行
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -5643,6 +5760,7 @@ Arguments:
 
 Options:
   --case-id <value>   测试用例ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -5687,6 +5805,7 @@ Options:
   --step-type <value>     用例步骤类型(step 步骤 | group 父级步骤), 如果是嵌套用例步骤，可以通过key表示嵌套关系
                           {"1": "group", "1.1": "group", "1.1.1": "step"}
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -5728,6 +5847,7 @@ Options:
   --name <value>          模块名称
   --parent <value>        父模块
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -5757,6 +5877,7 @@ Arguments:
 
 Options:
   --case-id <value>  测试用例ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -5785,6 +5906,7 @@ Arguments:
 
 Options:
   --module-id <value>  模块ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -5813,6 +5935,7 @@ Arguments:
 
 Options:
   --case-id <value>         用例 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -5847,6 +5970,7 @@ Options:
   --case-id <value>       用例 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -5931,6 +6055,7 @@ Options:
   --browse-type <value>     状态，默认是unclosed
   --order-by <value>        排序
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -5971,6 +6096,7 @@ Arguments:
 Options:
   --execution-id <value>    执行ID（必填）
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -6017,6 +6143,7 @@ Options:
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --execution <id>         executionID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   -h, --help               显示命令帮助
@@ -6056,6 +6183,7 @@ Arguments:
 
 Options:
   --task-id <value>   任务ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -6099,6 +6227,7 @@ Options:
   --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   --ids <ids>              批量目标 ID，逗号分隔并去重
@@ -6145,6 +6274,7 @@ Options:
   --name <value>          模块名称
   --parent <value>        父模块
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6174,6 +6304,7 @@ Arguments:
 
 Options:
   --task-id <value>  任务ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -6202,6 +6333,7 @@ Arguments:
 
 Options:
   --module-id <value>  模块ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -6234,6 +6366,7 @@ Options:
   --assigned-to <value>   指派给
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6266,6 +6399,7 @@ Options:
   --task-id <value>       任务ID（必填）
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6301,6 +6435,7 @@ Options:
   --finished-date <value>     实际完成，精确到秒（必填）
   --comment <value>           备注
   --data <json|@file|@->      JSON 对象、文件或显式标准输入
+  --options <json>            CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>                 批量目标 ID，逗号分隔并去重
   --batch-fail-fast           失败后跳过剩余目标
   -h, --help                  显示命令帮助
@@ -6340,6 +6475,7 @@ Options:
   --left <value>          预计剩余
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6374,6 +6510,7 @@ Options:
   --task-id <value>       task ID（必填）
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6404,6 +6541,7 @@ Options:
   --task-id <value>       task ID（必填）
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6437,6 +6575,7 @@ Options:
   --left <value>          预计剩余
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6474,6 +6613,7 @@ Options:
   --comment <value>       备注
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6510,6 +6650,7 @@ Options:
   --consumed <value>      本次耗时（小时，累加到总计）（必填）
   --left <value>          更新后的剩余工时（小时，覆盖之前值）（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6541,6 +6682,7 @@ Arguments:
 
 Options:
   --task-id <value>         任务 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -6579,6 +6721,7 @@ Options:
   --consumed <value>      本次耗时（小时，累加到总计）（必填）
   --left <value>          更新后的剩余工时（小时，覆盖之前值）（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -6611,6 +6754,7 @@ Arguments:
 
 Options:
   --effort-id <value>  工时记录 ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -6640,6 +6784,7 @@ Arguments:
 
 Options:
   --task-id <value>         任务 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -6674,6 +6819,7 @@ Options:
   --task-id <value>       任务 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -6734,6 +6880,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：assignedDate,assignedTo,closedBy,closedDate,createdBy,createdDate,editedBy,editedDate,execution,id,pri,project,severity,status,title,type
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -6781,6 +6928,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：assignedDate,assignedTo,closedBy,closedDate,createdBy,createdDate,editedBy,editedDate,execution,id,pri,project,severity,status,title,type
   --group-join <value>      条件组之间的连接方式
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -6829,6 +6977,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：assignedDate,assignedTo,closedBy,closedDate,createdBy,createdDate,editedBy,editedDate,execution,id,pri,project,severity,status,title,type
   --group-join <value>      条件组之间的连接方式
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -6882,6 +7031,7 @@ Options:
   --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   -h, --help               显示命令帮助
@@ -6920,6 +7070,7 @@ Arguments:
 
 Options:
   --issue-id <value>  问题ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -6982,6 +7133,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：activateBy,actualClosedDate,assignedTo,cancelBy,category,createdBy,createdDate,editedBy,editedDate,hangupBy,id,identifiedDate,impact,name,plannedClosedDate,prevention,pri,probability,project,rate,remedy,resolution,resolvedBy,source,status,strategy,trackedBy
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -7029,6 +7181,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：activateBy,actualClosedDate,assignedTo,cancelBy,category,createdBy,createdDate,editedBy,editedDate,hangupBy,id,identifiedDate,impact,name,plannedClosedDate,prevention,pri,probability,project,rate,remedy,resolution,resolvedBy,source,status,strategy,trackedBy
   --group-join <value>      条件组之间的连接方式
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -7077,6 +7230,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：activateBy,actualClosedDate,assignedTo,cancelBy,category,createdBy,createdDate,editedBy,editedDate,hangupBy,id,identifiedDate,impact,name,plannedClosedDate,prevention,pri,probability,project,rate,remedy,resolution,resolvedBy,source,status,strategy,trackedBy
   --group-join <value>      条件组之间的连接方式
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -7136,6 +7290,7 @@ Options:
   --uid <value>                  预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需
                                  23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --options <json>               CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]            将 Markdown 转为 HTML。可选 prevention,
                                  remedy，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help                     显示命令帮助
@@ -7178,6 +7333,7 @@ Arguments:
 
 Options:
   --risk-id <value>   风险ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -7228,6 +7384,7 @@ Options:
   --uid <value>                  预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需
                                  23.0 / biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --options <json>               CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]            将 Markdown 转为 HTML。可选 prevention, remedy,
                                  resolution，多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>                    批量目标 ID，逗号分隔并去重
@@ -7303,6 +7460,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：begin,createdBy,createdDate,date,dept,editedBy,editedDate,end,execution,host,id,minutedBy,minutedDate,mode,name,project,room
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -7350,6 +7508,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：begin,createdBy,createdDate,date,dept,editedBy,editedDate,end,execution,host,id,minutedBy,minutedDate,mode,name,project,room
   --group-join <value>      条件组之间的连接方式
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -7398,6 +7557,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：begin,createdBy,createdDate,date,dept,editedBy,editedDate,end,execution,host,id,minutedBy,minutedDate,mode,name,project,room
   --group-join <value>      条件组之间的连接方式
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -7448,6 +7608,7 @@ Options:
   --object-type <value>   关联类型(story | task | bug | issue | risk | opportunity)
   --object-id <value>     关联对象
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -7484,6 +7645,7 @@ Arguments:
 
 Options:
   --meeting-id <value>  会议ID（必填）
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --fields <fields>     返回字段，逗号分隔
@@ -7524,6 +7686,7 @@ Options:
   --object-type <value>   关联类型(story | task | bug | issue | risk | opportunity)
   --object-id <value>     关联对象
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -7563,6 +7726,7 @@ Arguments:
 
 Options:
   --meeting-id <value>  会议ID（必填）
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --yes                 确认删除
@@ -7595,6 +7759,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 minutes，多个字段用逗号分隔，省略时转换本次提供的全部
                           HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -7672,6 +7837,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：activatedBy,activatedDate,assignedTo,closedBy,closedDate,closedReason,desc,feedbackBy,id,keywords,mailto,module,notifyEmail,openedBy,openedDate,pri,processedBy,processedDate,product,public,reviewedBy,solution,source,status,title,type
   --group-join <value>      条件组之间的连接方式
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -7720,6 +7886,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -7765,6 +7932,7 @@ Options:
   --steps <value>         重现步骤
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -7808,6 +7976,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -7846,6 +8015,7 @@ Options:
   --date <value>          日期（必填）
   --name <value>          待办名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -7880,6 +8050,7 @@ Options:
   --category <value>      类别
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -7923,6 +8094,7 @@ Options:
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --execution <id>         executionID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   -h, --help               显示命令帮助
@@ -7960,6 +8132,7 @@ Arguments:
 
 Options:
   --feedback-id <value>  反馈ID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --fields <fields>      返回字段，逗号分隔
@@ -8000,6 +8173,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -8039,6 +8213,7 @@ Arguments:
 
 Options:
   --feedback-id <value>  反馈ID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --yes                  确认删除
@@ -8070,6 +8245,7 @@ Options:
   --assigned-to <value>   指派给
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -8103,6 +8279,7 @@ Options:
   --comment <value>        备注
   --confirm-close <value>  存在未关闭转化对象时是否强制关闭
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -8136,6 +8313,7 @@ Options:
   --assigned-to <value>   指派给（必填）
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -8165,6 +8343,7 @@ Arguments:
 
 Options:
   --feedback-id <value>     反馈 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -8199,6 +8378,7 @@ Options:
   --feedback-id <value>   反馈 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -8268,6 +8448,7 @@ Options:
                             使用该接口搜索配置支持的操作符。支持搜索字段：activatedBy,activatedCount,activatedDate,assignedTo,closedBy,closedDate,closedReason,contact,customer,deadline,desc,editedBy,editedDate,feedback,id,keywords,mailto,module,notifyEmail,openedBuild,openedBy,openedDate,pri,product,resolution,resolvedBy,resolvedDate,startedBy,startedDate,status,title,type
   --group-join <value>      条件组之间的连接方式
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -8317,6 +8498,7 @@ Options:
   --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   -h, --help               显示命令帮助
@@ -8359,6 +8541,7 @@ Options:
   --category <value>      类别
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -8402,6 +8585,7 @@ Options:
   --steps <value>         重现步骤
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -8436,6 +8620,7 @@ Arguments:
 
 Options:
   --ticket-id <value>  工单ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --fields <fields>    返回字段，逗号分隔
@@ -8477,6 +8662,7 @@ Options:
   --uid <value>            预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                            biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]      将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部
                            HTML 字段
   --ids <ids>              批量目标 ID，逗号分隔并去重
@@ -8517,6 +8703,7 @@ Arguments:
 
 Options:
   --ticket-id <value>  工单ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -8548,6 +8735,7 @@ Options:
   --assigned-to <value>   指派给
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -8580,6 +8768,7 @@ Options:
   --closed-reason <value>  关闭原因(commented 已处理 | repeat 重复 | refuse 不予处理)（必填）
   --comment <value>        备注（必填）
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -8612,6 +8801,7 @@ Options:
   --assigned-to <value>   指派给（必填）
   --comment <value>       备注
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -8641,6 +8831,7 @@ Arguments:
 
 Options:
   --ticket-id <value>       工单 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -8675,6 +8866,7 @@ Options:
   --ticket-id <value>     工单 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -8729,6 +8921,7 @@ Options:
   --product-id <value>      所属产品ID（必填）
   --order-by <value>        排序
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -8770,6 +8963,7 @@ Options:
   --desc <value>          描述
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -8803,6 +8997,7 @@ Options:
   --children <value>      集成应用需要包含其他应用，非集成应用传空数组[]（必填）
   --desc <value>          描述
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -8866,6 +9061,7 @@ Options:
   --group-join <value>      条件组之间的连接方式
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -8917,6 +9113,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -8965,6 +9162,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -9006,6 +9204,7 @@ Arguments:
 
 Options:
   --build-id <value>  版本ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -9034,6 +9233,7 @@ Arguments:
 
 Options:
   --build-id <value>  build ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -9063,6 +9263,7 @@ Arguments:
 
 Options:
   --build-id <value>        版本 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -9097,6 +9298,7 @@ Options:
   --build-id <value>      版本 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -9156,6 +9358,7 @@ Options:
   --product <id>            productID 或 scope/scopeID 别名
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -9207,6 +9410,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -9257,6 +9461,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -9298,6 +9503,7 @@ Arguments:
 
 Options:
   --testtask-id <value>  测试单ID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --yes                  确认删除
@@ -9326,6 +9532,7 @@ Arguments:
 
 Options:
   --testtask-id <value>  testtask ID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --fields <fields>      返回字段，逗号分隔
@@ -9355,6 +9562,7 @@ Arguments:
 
 Options:
   --testtask-id <value>     测试单 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -9389,6 +9597,7 @@ Options:
   --testtask-id <value>   测试单 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -9455,6 +9664,7 @@ Options:
                             0 否)
   --group-join <value>      条件组之间的连接方式
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -9503,6 +9713,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -9546,6 +9757,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -9584,6 +9796,7 @@ Arguments:
 
 Options:
   --release-id <value>  发布ID（必填）
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --yes                 确认删除
@@ -9612,6 +9825,7 @@ Arguments:
 
 Options:
   --release-id <value>  release ID（必填）
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --fields <fields>     返回字段，逗号分隔
@@ -9641,6 +9855,7 @@ Arguments:
 
 Options:
   --release-id <value>      发布 ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -9675,6 +9890,7 @@ Options:
   --release-id <value>    发布 ID（必填）
   --comment <value>       备注内容（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --image <path>          随备注上传并内嵌到正文的图片路径（可多次）
@@ -9735,6 +9951,7 @@ Options:
   --extra <value>         附件标记，默认 editor（文档编辑器图片），23.0 / biz14.0 / max9.0 /
                           ipd6.0 起支持；显式空字符串用于普通附件，其他值由服务端按空字符串处理
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -9766,6 +9983,7 @@ Options:
   --file-id <value>       附件ID（必填）
   --file-name <value>     附件名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -9794,6 +10012,7 @@ Arguments:
 
 Options:
   --file-id <value>  附件ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -9822,6 +10041,7 @@ Arguments:
 
 Options:
   --file-id <value>   附件 ID 或 Base64 编码 gid
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -9854,6 +10074,7 @@ Arguments:
 Options:
   --file-id <value>  附件数字 ID
   --stream <value>   返回格式
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --output <path>    流式保存附件，下载完成后替换目标文件
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
@@ -9955,6 +10176,7 @@ Usage: zentao workflow list [options]
 获取工作流数据列表(以合同为例)（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -9984,6 +10206,7 @@ Usage: zentao workflow get-contract [options]
 获取工作流数据详情(以合同为例)（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
 
 Options:
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>   返回字段，逗号分隔
   --html-to-markdown  显式将富文本字段转换为 Markdown
   -h, --help          显示命令帮助
@@ -10016,6 +10239,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：app,createdBy,createdDate,desc,id,name
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -10058,6 +10282,7 @@ Arguments:
 
 Options:
   --module <value>          module（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -10092,6 +10317,7 @@ Arguments:
 
 Options:
   --module <value>          module（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -10126,6 +10352,7 @@ Arguments:
 
 Options:
   --module <value>          module（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -10160,6 +10387,7 @@ Arguments:
 
 Options:
   --module <value>          module（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -10188,6 +10416,7 @@ Usage: zentao workflow datasources [options]
 获取数据源列表（最低版本：22.7 / biz13.7 / max8.7 / ipd5.7）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -10217,6 +10446,7 @@ Usage: zentao workflow rules [options]
 获取规则列表（最低版本：22.7 / biz13.7 / max8.7 / ipd5.7）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -10248,6 +10478,7 @@ Usage: zentao workflow create [options]
 Options:
   --name <value>          合同名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10275,6 +10506,7 @@ Options:
   --name <value>          工作流名称。（必填）
   --navigator <value>     所属导航(primary 主导航 | secondary 二级导航)。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10307,6 +10539,7 @@ Options:
   --navigator <value>     所属导航(primary 主导航 | secondary 二级导航)。
   --position <value>      菜单位置。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10345,6 +10578,7 @@ Options:
                           datetime 日期时间 | text 文本)。
   --length <value>        字段长度。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10381,6 +10615,7 @@ Options:
   --name <value>          动作名称。（必填）
   --type <value>          动作类型(single 单条操作 | batch 批量操作)。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10420,6 +10655,7 @@ Options:
   --operators <value>     数据标签的运算符列表。
   --values <value>        数据标签的条件值列表。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10457,6 +10693,7 @@ Options:
   --module <value>        module（必填）
   --name <value>          数据表名称。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10488,6 +10725,7 @@ Options:
   --key-field <value>     键字段，type=sql 时必填。
   --value-field <value>   值字段，type=sql 时必填。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10520,6 +10758,7 @@ Options:
   --name <value>          规则名称。（必填）
   --rule <value>          规则内容，正则表达式需要包含定界符。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -10549,6 +10788,7 @@ Arguments:
 
 Options:
   --flow-id <value>   flowID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -10578,6 +10818,7 @@ Arguments:
 
 Options:
   --field-id <value>  fieldID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -10609,6 +10850,7 @@ Arguments:
 
 Options:
   --action-id <value>  actionID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --fields <fields>    返回字段，逗号分隔
@@ -10640,6 +10882,7 @@ Arguments:
 
 Options:
   --label-id <value>  labelID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -10671,6 +10914,7 @@ Arguments:
 
 Options:
   --table-id <value>  tableID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -10700,6 +10944,7 @@ Arguments:
 
 Options:
   --datasource-id <value>  datasourceID（必填）
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   --fields <fields>        返回字段，逗号分隔
@@ -10731,6 +10976,7 @@ Arguments:
 
 Options:
   --rule-id <value>   ruleID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -10764,6 +11010,7 @@ Options:
   --contract-id <value>   合同ID（必填）
   --name <value>          合同名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -10799,6 +11046,7 @@ Options:
   --position <value>         菜单位置(before 之前 | after 之后 | 空 直接放在模块下)。
   --position-module <value>  位置模块，主导航下通常传 main；工作流发布后不能为空。
   --data <json|@file|@->     JSON 对象、文件或显式标准输入
+  --options <json>           CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>                批量目标 ID，逗号分隔并去重
   --batch-fail-fast          失败后跳过剩余目标
   -h, --help                 显示命令帮助
@@ -10835,6 +11083,7 @@ Options:
   --name <value>          字段名称。（必填）
   --control <value>       控件类型。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -10871,6 +11120,7 @@ Options:
   --action <value>        动作代号。（必填）
   --name <value>          动作名称。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -10910,6 +11160,7 @@ Options:
   --operators <value>     数据标签的运算符列表。
   --values <value>        数据标签的条件值列表。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -10948,6 +11199,7 @@ Options:
   --table-id <value>      tableID（必填）
   --name <value>          数据表名称。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -10985,6 +11237,7 @@ Options:
   --key-field <value>      键字段。
   --value-field <value>    值字段。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -11026,6 +11279,7 @@ Options:
   --name <value>          规则名称。（必填）
   --rule <value>          规则内容。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -11060,6 +11314,7 @@ Arguments:
 
 Options:
   --contract-id <value>  合同ID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --yes                  确认删除
@@ -11088,6 +11343,7 @@ Arguments:
 
 Options:
   --flow-id <value>  flowID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -11116,6 +11372,7 @@ Arguments:
 
 Options:
   --field-id <value>  fieldID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -11146,6 +11403,7 @@ Arguments:
 
 Options:
   --action-id <value>  actionID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -11176,6 +11434,7 @@ Arguments:
 
 Options:
   --label-id <value>  labelID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -11206,6 +11465,7 @@ Arguments:
 
 Options:
   --table-id <value>  tableID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -11234,6 +11494,7 @@ Arguments:
 
 Options:
   --datasource-id <value>  datasourceID（必填）
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   --yes                    确认删除
@@ -11264,6 +11525,7 @@ Arguments:
 
 Options:
   --rule-id <value>  ruleID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -11294,6 +11556,7 @@ Arguments:
 
 Options:
   --flow-id <value>  flowID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   -h, --help         显示命令帮助
@@ -11321,6 +11584,7 @@ Arguments:
 
 Options:
   --flow-id <value>  flowID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   -h, --help         显示命令帮助
@@ -11352,6 +11616,7 @@ Options:
   --position <value>         菜单位置(before 之前 | after 之后 | 空 直接放在模块下)。
   --position-module <value>  位置模块，主导航下通常传 main。（必填）
   --data <json|@file|@->     JSON 对象、文件或显式标准输入
+  --options <json>           CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>                批量目标 ID，逗号分隔并去重
   --batch-fail-fast          失败后跳过剩余目标
   -h, --help                 显示命令帮助
@@ -11384,6 +11649,7 @@ Options:
   --module <value>        module（必填）
   --approval <value>      是否启用审批(enabled 启用 | disabled 停用)。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -11412,6 +11678,7 @@ Options:
   --action-id <value>     actionID（必填）
   --css <value>           动作自定义CSS。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -11444,6 +11711,7 @@ Options:
   --flow-id <value>       flowID（必填）
   --css <value>           工作流自定义CSS。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -11475,6 +11743,7 @@ Options:
   --modules <value>       要设置的模块列表。（必填）
   --data-fields <value>   导出字段，键为模块、值为字段代号列表。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -11504,6 +11773,7 @@ Options:
   --flow-id <value>        flowID（必填）
   --content-field <value>  参与全文检索的字段列表。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -11534,6 +11804,7 @@ Options:
   --action-id <value>     actionID（必填）
   --js <value>            动作自定义JS。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -11566,6 +11837,7 @@ Options:
   --flow-id <value>       flowID（必填）
   --js <value>            工作流自定义JS。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -11596,6 +11868,7 @@ Options:
   --action-id <value>     actionID（必填）
   --to-list <value>       通知人账号列表。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -11629,6 +11902,7 @@ Options:
   --modules <value>       要设置的模块列表。（必填）
   --data-fields <value>   搜索字段，键为模块、值为字段代号列表（按数组顺序作为搜索排序）。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -11659,6 +11933,7 @@ Options:
   --modules <value>       要设置的模块列表。（必填）
   --data-fields <value>   取值字段，键为模块、值为字段代号列表。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -11690,6 +11965,7 @@ Options:
   --message <value>        验证失败提示。
   --verifications <value>  验证规则，包含 field(字段)、paramType(参数类型)、param(参数) 三个数组。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -11778,6 +12054,7 @@ Usage: zentao doc my-spaces [options]
 获取我的文档空间列表（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -11807,6 +12084,7 @@ Usage: zentao doc team-spaces [options]
 获取团队文档空间列表（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -11836,6 +12114,7 @@ Usage: zentao doc product-spaces [options]
 获取产品文档空间列表（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -11865,6 +12144,7 @@ Usage: zentao doc project-spaces [options]
 获取项目文档空间列表（最低版本：22.5 / biz13.5 / max8.5 / ipd5.5）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -11898,6 +12178,7 @@ Arguments:
 
 Options:
   --space-id <value>        空间ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -11932,6 +12213,7 @@ Arguments:
 
 Options:
   --space-id <value>        空间ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -11967,6 +12249,7 @@ Arguments:
 Options:
   --product-id <value>      产品ID（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12002,6 +12285,7 @@ Arguments:
 Options:
   --project-id <value>      项目ID（必填）
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12037,6 +12321,7 @@ Arguments:
 Options:
   --space-id <value>        空间ID（必填）
   --lib-id <value>          文档库ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12071,6 +12356,7 @@ Arguments:
 Options:
   --space-id <value>        空间ID（必填）
   --lib-id <value>          文档库ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12106,6 +12392,7 @@ Options:
   --product-id <value>      产品ID（必填）
   --lib-id <value>          文档库ID（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12141,6 +12428,7 @@ Options:
   --project-id <value>      项目ID（必填）
   --lib-id <value>          文档库ID（必填）
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12175,6 +12463,7 @@ Arguments:
 Options:
   --space-id <value>        空间ID（必填）
   --lib-id <value>          文档库ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12211,6 +12500,7 @@ Arguments:
 Options:
   --space-id <value>        空间ID（必填）
   --lib-id <value>          文档库ID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12248,6 +12538,7 @@ Options:
   --product-id <value>      产品ID（必填）
   --lib-id <value>          文档库ID（必填）
   --product <id>            productID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12285,6 +12576,7 @@ Options:
   --project-id <value>      项目ID（必填）
   --lib-id <value>          文档库ID（必填）
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -12318,6 +12610,7 @@ Usage: zentao doc create-my-space [options]
 Options:
   --name <value>          文档空间名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12343,6 +12636,7 @@ Usage: zentao doc create-team-space [options]
 Options:
   --name <value>          文档空间名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12372,6 +12666,7 @@ Options:
   --space-id <value>      空间ID（必填）
   --name <value>          文档库名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12405,6 +12700,7 @@ Options:
   --groups <value>        如果acl=private,可以设置哪些权限分组可以访问
   --users <value>         如果acl=private,可以设置哪些用户可以访问
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12442,6 +12738,7 @@ Options:
   --users <value>         如果acl=private,可以设置哪些用户可以访问
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12479,6 +12776,7 @@ Options:
   --users <value>         如果acl=private,可以设置哪些用户可以访问
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12519,6 +12817,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
                           --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
@@ -12561,6 +12860,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
                           --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
@@ -12604,6 +12904,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
                           --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
@@ -12647,6 +12948,7 @@ Options:
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
                           --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   -h, --help              显示命令帮助
@@ -12684,6 +12986,7 @@ Options:
   --name <value>          文档库目录（必填）
   --parent-id <value>     父目录ID，必须属于当前文档库
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12718,6 +13021,7 @@ Options:
   --name <value>          文档库目录（必填）
   --parent-id <value>     父目录ID，必须属于当前文档库
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12753,6 +13057,7 @@ Options:
   --parent-id <value>     父目录ID，必须属于当前文档库
   --product <id>          productID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12788,6 +13093,7 @@ Options:
   --parent-id <value>     父目录ID，必须属于当前文档库
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -12818,6 +13124,7 @@ Arguments:
 
 Options:
   --space-id <value>  空间ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -12849,6 +13156,7 @@ Arguments:
 
 Options:
   --lib-id <value>    文档库ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -12880,6 +13188,7 @@ Arguments:
 
 Options:
   --doc-id <value>    文档ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -12911,6 +13220,7 @@ Options:
   --space-id <value>      空间ID（必填）
   --name <value>          文档空间名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -12947,6 +13257,7 @@ Options:
   --groups <value>        如果acl=private,可以设置哪些权限分组可以访问
   --users <value>         如果acl=private,可以设置哪些用户可以访问
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -12988,6 +13299,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 content（content 需显式指定
                           --content-type html），多个字段用逗号分隔，省略时转换本次提供的全部 HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -13026,6 +13338,7 @@ Options:
   --module-id <value>     模块ID（必填）
   --name <value>          文档库目录名称（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -13054,6 +13367,7 @@ Arguments:
 
 Options:
   --space-id <value>  空间ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --yes               确认删除
@@ -13082,6 +13396,7 @@ Arguments:
 
 Options:
   --lib-id <value>   文档库ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -13110,6 +13425,7 @@ Arguments:
 
 Options:
   --doc-id <value>   文档ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -13138,6 +13454,7 @@ Arguments:
 
 Options:
   --module-id <value>  模块ID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -13197,6 +13514,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   -h, --help              显示命令帮助
@@ -13232,6 +13550,7 @@ Arguments:
 
 Options:
   --todo-id <value>   待办ID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -13273,6 +13592,7 @@ Options:
   --uid <value>           预上传图片的批次标识。使用上传时的 Token 和 uid 保存单个对象以绑定图片。需 23.0 /
                           biz14.0 / max9.0 / ipd6.0 或更新版本。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 desc，多个字段用逗号分隔，省略时转换本次提供的全部 HTML
                           字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -13313,6 +13633,7 @@ Arguments:
 
 Options:
   --todo-id <value>  待办ID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -13423,6 +13744,7 @@ Options:
   --status <value>          待办状态；browseType=undone 时传 undone。
   --browse-type <value>     状态，默认是all
   --order-by <value>        排序(date_desc,status,begin 日期/状态/开始时间)
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13479,6 +13801,7 @@ Options:
                             其他)；closedReason(关闭原因，枚举：done 已完成 | cancel
                             已取消)；openedBy(由谁创建，用户，示例：admin)；finishedBy(由谁完成，用户，示例：admin)；closedBy(由谁关闭，用户，示例：admin)；canceledBy(由谁取消，用户，示例：admin)；lastEditedBy(最后修改，用户，示例：admin)；mailto(抄送给，用户，示例：admin)；openedDate(创建日期，示例：2026-01-01)；deadline(截止日期，示例：2026-01-01)；estStarted(预计开始，示例：2026-01-01)；realStarted(实际开始，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；finishedDate(实际完成，示例：2026-01-01)；closedDate(关闭时间，示例：2026-01-01)；canceledDate(取消时间，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13546,6 +13869,7 @@ Options:
                             postponed 延期处理 | willnotfix 不予解决 | tostory
                             转为用户故事)；activatedCount(激活次数，示例：关键字)；toTask(转任务，示例：关键字)；toStory(转用户故事，示例：关键字)；openedBy(由谁创建，用户，示例：admin)；closedBy(由谁关闭，用户，示例：admin)；lastEditedBy(修改者，用户，示例：admin)；mailto(抄送给，用户，示例：admin)；openedBuild(影响版本，示例：builds)；resolvedBuild(解决版本，示例：builds)；openedDate(创建日期，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；resolvedDate(解决日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(修改日期，示例：2026-01-01)；deadline(截止日期，示例：2026-01-01)；activatedDate(激活时间，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13614,6 +13938,7 @@ Options:
                             willnotdo 不做 | cancel 已取消 | bydesign
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13682,6 +14007,7 @@ Options:
                             willnotdo 不做 | cancel 已取消 | bydesign
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13750,6 +14076,7 @@ Options:
                             willnotdo 不做 | cancel 已取消 | bydesign
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13792,6 +14119,7 @@ Options:
   --param <value>           搜索参数；browseType=bysearch 或 bySearch 时必填。
   --browse-type <value>     状态，默认是assignedTo，接口固定返回“我参与的未完成测试单”
   --order-by <value>        排序
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13831,6 +14159,7 @@ Usage: zentao my projects [options]
 Options:
   --browse-type <value>     状态，默认是doing
   --order-by <value>        排序
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13873,6 +14202,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：activatedBy,activatedDate,assignedTo,closedBy,closedDate,closedReason,desc,feedbackBy,id,keywords,mailto,module,notifyEmail,openedBy,openedDate,pri,processedBy,processedDate,product,public,reviewedBy,solution,source,status,title,type
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13917,6 +14247,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：activatedBy,activatedCount,activatedDate,assignedTo,closedBy,closedDate,closedReason,contact,customer,deadline,desc,editedBy,editedDate,feedback,id,keywords,mailto,module,notifyEmail,openedBuild,openedBy,openedDate,pri,product,resolution,resolvedBy,resolvedDate,startedBy,startedDate,status,title,type
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -13974,6 +14305,7 @@ Options:
                             通过 | fail 失败 | blocked 阻塞 | null
                             未执行)；lastRunDate(执行时间，示例：2026-01-01)；openedDate(创建日期，示例：2026-01-01)；lastEditedDate(修改日期，示例：2026-01-01)；scene(所属场景，示例：all)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14015,6 +14347,7 @@ Usage: zentao my meetings [options]
 Options:
   --browse-type <value>     状态，默认是futureMeeting
   --order-by <value>        排序
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14054,6 +14387,7 @@ Options:
   --param <value>           搜索参数；browseType=bysearch 或 bySearch 时必填。
   --browse-type <value>     状态，默认是assignedTo，取值取自 zt_issue 的字段名
   --order-by <value>        排序
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14098,6 +14432,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：activateBy,actualClosedDate,assignedTo,cancelBy,category,createdBy,createdDate,editedBy,editedDate,hangupBy,id,identifiedDate,impact,name,plannedClosedDate,prevention,pri,probability,project,rate,remedy,resolution,resolvedBy,source,status,strategy,trackedBy
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14155,6 +14490,7 @@ Options:
                             其他)；closedReason(关闭原因，枚举：done 已完成 | cancel
                             已取消)；openedBy(由谁创建，用户，示例：admin)；finishedBy(由谁完成，用户，示例：admin)；closedBy(由谁关闭，用户，示例：admin)；canceledBy(由谁取消，用户，示例：admin)；lastEditedBy(最后修改，用户，示例：admin)；mailto(抄送给，用户，示例：admin)；openedDate(创建日期，示例：2026-01-01)；deadline(截止日期，示例：2026-01-01)；estStarted(预计开始，示例：2026-01-01)；realStarted(实际开始，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；finishedDate(实际完成，示例：2026-01-01)；closedDate(关闭时间，示例：2026-01-01)；canceledDate(取消时间，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14220,6 +14556,7 @@ Options:
                             postponed 延期处理 | willnotfix 不予解决 | tostory
                             转为用户故事)；activatedCount(激活次数，示例：关键字)；toTask(转任务，示例：关键字)；toStory(转用户故事，示例：关键字)；openedBy(由谁创建，用户，示例：admin)；closedBy(由谁关闭，用户，示例：admin)；lastEditedBy(修改者，用户，示例：admin)；mailto(抄送给，用户，示例：admin)；openedBuild(影响版本，示例：builds)；resolvedBuild(解决版本，示例：builds)；openedDate(创建日期，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；resolvedDate(解决日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(修改日期，示例：2026-01-01)；deadline(截止日期，示例：2026-01-01)；activatedDate(激活时间，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14286,6 +14623,7 @@ Options:
                             willnotdo 不做 | cancel 已取消 | bydesign
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14352,6 +14690,7 @@ Options:
                             willnotdo 不做 | cancel 已取消 | bydesign
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14418,6 +14757,7 @@ Options:
                             willnotdo 不做 | cancel 已取消 | bydesign
                             设计如此)；version(版本号，示例：关键字)；openedDate(创建日期，示例：2026-01-01)；reviewedDate(评审时间，示例：2026-01-01)；assignedDate(指派日期，示例：2026-01-01)；closedDate(关闭日期，示例：2026-01-01)；lastEditedDate(最后修改日期，示例：2026-01-01)；activatedDate(激活日期，示例：2026-01-01)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14458,6 +14798,7 @@ Usage: zentao my activity-test-tasks [options]
 Options:
   --browse-type <value>     贡献筛选类型，不传时使用禅道页面默认值。
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14512,6 +14853,7 @@ Options:
                             通过 | fail 失败 | blocked 阻塞 | null
                             未执行)；lastRunDate(执行时间，示例：2026-01-01)；openedDate(创建日期，示例：2026-01-01)；lastEditedDate(修改日期，示例：2026-01-01)；scene(所属场景，示例：all)
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14552,6 +14894,7 @@ Usage: zentao my activity-docs [options]
 Options:
   --browse-type <value>     贡献筛选类型，不传时使用禅道页面默认值。
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14590,6 +14933,7 @@ Usage: zentao my activity-issues [options]
 Options:
   --browse-type <value>     贡献筛选类型，不传时使用禅道页面默认值。
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14632,6 +14976,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：activateBy,actualClosedDate,assignedTo,cancelBy,category,createdBy,createdDate,editedBy,editedDate,hangupBy,id,identifiedDate,impact,name,plannedClosedDate,prevention,pri,probability,project,rate,remedy,resolution,resolvedBy,source,status,strategy,trackedBy
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14676,6 +15021,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：assignedDate,assignedTo,createdBy,createdDate,id,opinion,resolution,review,status,title,type
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14720,6 +15066,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：activatedBy,activatedDate,assignedTo,closedBy,closedDate,closedReason,desc,feedbackBy,id,keywords,mailto,module,notifyEmail,openedBy,openedDate,pri,processedBy,processedDate,product,public,reviewedBy,solution,source,status,title,type
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14760,6 +15107,7 @@ Usage: zentao my activity-audits [options]
 Options:
   --browse-type <value>     贡献筛选类型，不传时使用禅道页面默认值。
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14803,6 +15151,7 @@ Options:
                             必须是该接口支持的搜索字段，operator
                             使用该接口搜索配置支持的操作符。支持搜索字段：assignedDate,assignedTo,createdBy,createdDate,id,opinion,resolution,review,status,title,type
   --group-join <value>      条件组之间的连接方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14844,6 +15193,7 @@ Usage: zentao my audits [options]
 Options:
   --browse-type <value>     待处理审批类型，默认 all
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14882,6 +15232,7 @@ Usage: zentao my audit-plans [options]
 Options:
   --browse-type <value>     待处理筛选类型，默认 mychecking，取值不区分大小写
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14920,6 +15271,7 @@ Usage: zentao my ncs [options]
 Options:
   --browse-type <value>     待处理筛选类型，默认 assignedToMe
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -14961,6 +15313,7 @@ Options:
                           ssh-rsa、ecdsa-sha2-nistp256/384/521、ssh-ed25519、sk-ecdsa-sha2-nistp256@openssh.com、sk-ssh-ed25519@openssh.com
                           前缀，完整性及重复检查由 GitFox 处理（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -14985,6 +15338,7 @@ Usage: zentao my profile [options]
 获取当前用户基础资料（最低版本：23.0 / biz14.0 / max9.0 / ipd6.0）
 
 Options:
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>   返回字段，逗号分隔
   --html-to-markdown  显式将富文本字段转换为 Markdown
   -h, --help          显示命令帮助
@@ -15042,6 +15396,7 @@ Options:
   --module-id <value>       过程 ID，用于只查询指定过程下的活动和交付物；默认 0。
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -15081,6 +15436,7 @@ Options:
                           交付物)、id(对象ID)、result(yes 适用 | no 不适用)（必填）
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -15113,6 +15469,7 @@ Options:
                           交付物)、id(对象ID)、result(yes 适用 | no 不适用)（必填）
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -15182,6 +15539,7 @@ Options:
   --group-join <value>      条件组之间的连接方式
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -15232,6 +15590,7 @@ Options:
   --assigned-to-list <value>  检查人账号列表
   --project <id>              projectID 或 scope/scopeID 别名
   --data <json|@file|@->      JSON 对象、文件或显式标准输入
+  --options <json>            CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help                  显示命令帮助
 ```
 
@@ -15269,6 +15628,7 @@ Options:
   --result <value>        检查结果列表(pass 通过 | fail 不通过)（必填）
   --status <value>        结果状态列表(normal 正式提交 | draft 草稿)
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -15308,6 +15668,7 @@ Options:
   --status <value>        状态列表(wait 待检查 | checking 检查中 | checked 已检查)
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -15342,6 +15703,7 @@ Arguments:
 
 Options:
   --auditplan-id <value>  auditplanID（必填）
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --fields <fields>       返回字段，逗号分隔
@@ -15379,6 +15741,7 @@ Options:
   --assigned-to <value>   指派人账号。
   --comment <value>       编辑备注。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -15415,6 +15778,7 @@ Arguments:
 
 Options:
   --auditplan-id <value>  auditplanID（必填）
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --yes                   确认删除
@@ -15477,6 +15841,7 @@ Options:
   --order-by <value>        排序字段，默认 id_desc。
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -15527,6 +15892,7 @@ Options:
   --type <value>          不符合项分类
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -15567,6 +15933,7 @@ Options:
   --type <value>          不符合项分类
   --execution <id>        executionID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -15598,6 +15965,7 @@ Arguments:
 
 Options:
   --nc-id <value>     ncID（必填）
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>         批量目标 ID，逗号分隔并去重
   --batch-fail-fast   失败后跳过剩余目标
   --fields <fields>   返回字段，逗号分隔
@@ -15637,6 +16005,7 @@ Options:
   --data-deadline <value>  计划解决日期。
   --desc <value>           完成情况说明。
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>              批量目标 ID，逗号分隔并去重
   --batch-fail-fast        失败后跳过剩余目标
   -h, --help               显示命令帮助
@@ -15675,6 +16044,7 @@ Arguments:
 
 Options:
   --nc-id <value>    ncID（必填）
+  --options <json>   CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>        批量目标 ID，逗号分隔并去重
   --batch-fail-fast  失败后跳过剩余目标
   --yes              确认删除
@@ -15737,6 +16107,7 @@ Options:
   --group-join <value>      条件组之间的连接方式
   --project <id>            projectID 或 scope/scopeID 别名
   --execution <id>          executionID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -15796,6 +16167,7 @@ Options:
   --prevention <value>           应对措施。
   --project <id>                 projectID 或 scope/scopeID 别名
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --options <json>               CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help                     显示命令帮助
 ```
 
@@ -15844,6 +16216,7 @@ Options:
   --desc <value>          机会描述列表
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -15878,6 +16251,7 @@ Arguments:
 
 Options:
   --opportunity-id <value>  opportunityID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>               批量目标 ID，逗号分隔并去重
   --batch-fail-fast         失败后跳过剩余目标
   --fields <fields>         返回字段，逗号分隔
@@ -15921,6 +16295,7 @@ Options:
   --desc <value>            机会描述。
   --prevention <value>      应对措施。
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>               批量目标 ID，逗号分隔并去重
   --batch-fail-fast         失败后跳过剩余目标
   -h, --help                显示命令帮助
@@ -15962,6 +16337,7 @@ Arguments:
 
 Options:
   --opportunity-id <value>  opportunityID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>               批量目标 ID，逗号分隔并去重
   --batch-fail-fast         失败后跳过剩余目标
   --yes                     确认删除
@@ -16019,6 +16395,7 @@ Options:
   --param <value>           browseType 为 bymodule 时传模块 ID，为 bysearch 时传已保存查询 ID。
   --order-by <value>        排序字段，默认 id_desc。
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -16060,6 +16437,7 @@ Arguments:
 Options:
   --project-id <value>  项目ID（必填）
   --project <id>        projectID 或 scope/scopeID 别名
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>           批量目标 ID，逗号分隔并去重
   --batch-fail-fast     失败后跳过剩余目标
   --fields <fields>     返回字段，逗号分隔
@@ -16098,6 +16476,7 @@ Options:
                           列表)、docVersion(版本列表)、name(名称列表)。（必填）
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -16127,6 +16506,7 @@ Arguments:
 
 Options:
   --deliverable-id <value>  deliverableID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>               批量目标 ID，逗号分隔并去重
   --batch-fail-fast         失败后跳过剩余目标
   --fields <fields>         返回字段，逗号分隔
@@ -16156,6 +16536,7 @@ Arguments:
 
 Options:
   --deliverable-id <value>  deliverableID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>               批量目标 ID，逗号分隔并去重
   --batch-fail-fast         失败后跳过剩余目标
   --yes                     确认删除
@@ -16212,6 +16593,7 @@ Options:
   --browse-type <value>     基线状态筛选，默认 all
   --order-by <value>        排序字段，默认 id_desc。
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -16258,6 +16640,7 @@ Options:
   --status <value>        基线状态。
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -16288,6 +16671,7 @@ Arguments:
 
 Options:
   --baseline-id <value>  baselineID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --fields <fields>      返回字段，逗号分隔
@@ -16322,6 +16706,7 @@ Options:
   --category <value>      纳入基线的交付物 ID 列表。（必填）
   --comment <value>       编辑备注。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -16355,6 +16740,7 @@ Arguments:
 
 Options:
   --baseline-id <value>  baselineID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --yes                  确认删除
@@ -16411,6 +16797,7 @@ Options:
   --browse-type <value>     变更状态筛选，默认 all
   --order-by <value>        排序字段，默认 id_desc。
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -16458,6 +16845,7 @@ Options:
   --desc <value>          变更描述。（必填）
   --project <id>          projectID 或 scope/scopeID 别名
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 
@@ -16489,6 +16877,7 @@ Arguments:
 
 Options:
   --change-id <value>  changeID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --fields <fields>    返回字段，逗号分隔
@@ -16525,6 +16914,7 @@ Options:
   --reason <value>        变更原因。（必填）
   --desc <value>          变更描述。（必填）
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   -h, --help              显示命令帮助
@@ -16560,6 +16950,7 @@ Arguments:
 
 Options:
   --change-id <value>  changeID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -16616,6 +17007,7 @@ Options:
   --relation <value>             被关联对象 ID 与关系 key 的映射，键为候选接口返回的 objects[].id，值为
                                  relationPairs 返回的 key。（必填）
   --data <json|@file|@->         JSON 对象、文件或显式标准输入
+  --options <json>               CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>                    批量目标 ID，逗号分隔并去重
   --batch-fail-fast              失败后跳过剩余目标
   -h, --help                     显示命令帮助
@@ -16650,6 +17042,7 @@ Options:
   --related-object-type <value>  relatedObjectType（必填）
   --browse-type <value>          候选对象筛选类型。
   --order-by <value>             排序字段。
+  --options <json>               CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>              返回字段，逗号分隔
   --html-to-markdown             显式将富文本字段转换为 Markdown
   --max-items <number>           整次命令最多返回条数
@@ -16694,6 +17087,7 @@ Arguments:
 Options:
   --object-type <value>     objectType（必填）
   --object-id <value>       objectID（必填）
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -16727,6 +17121,7 @@ Arguments:
 
 Options:
   --relation-id <value>  relationID（必填）
+  --options <json>       CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>            批量目标 ID，逗号分隔并去重
   --batch-fail-fast      失败后跳过剩余目标
   --yes                  确认删除
@@ -16775,6 +17170,7 @@ Usage: zentao workflowgroup list [options]
 Options:
   --browse-type <value>     项目流程状态筛选，默认 all
   --order-by <value>        排序字段。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -16835,6 +17231,7 @@ Options:
   --project-id <value>  项目 ID；传入后仅查询该项目成员的日历数据。
   --depts <value>       逗号分隔的部门 ID；仅拥有查看所有人权限时生效。
   --project <id>        projectID 或 scope/scopeID 别名
+  --options <json>      CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>     返回字段，逗号分隔
   --html-to-markdown    显式将富文本字段转换为 Markdown
   -h, --help            显示命令帮助
@@ -16892,6 +17289,7 @@ Options:
                             ID。
   --order-by <value>        排序字段。
   --project <id>            projectID 或 scope/scopeID 别名
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -16937,6 +17335,7 @@ Options:
   --status <value>         周报状态(draft 草稿 | normal 正常)。
   --project <id>           projectID 或 scope/scopeID 别名
   --data <json|@file|@->   JSON 对象、文件或显式标准输入
+  --options <json>         CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help               显示命令帮助
 ```
 
@@ -16968,6 +17367,7 @@ Arguments:
 
 Options:
   --report-id <value>  reportID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --fields <fields>    返回字段，逗号分隔
@@ -17005,6 +17405,7 @@ Options:
   --raw-content <value>   周报原始内容。
   --comment <value>       编辑备注。
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --markdown [fields]     将 Markdown 转为 HTML。可选 content，多个字段用逗号分隔，省略时转换本次提供的全部
                           HTML 字段
   --ids <ids>             批量目标 ID，逗号分隔并去重
@@ -17043,6 +17444,7 @@ Arguments:
 
 Options:
   --report-id <value>  reportID（必填）
+  --options <json>     CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>          批量目标 ID，逗号分隔并去重
   --batch-fail-fast    失败后跳过剩余目标
   --yes                确认删除
@@ -17089,6 +17491,7 @@ Usage: zentao db tables [options]
 获取数据库表列表（最低版本：22.7 / biz13.7 / max8.7 / ipd5.7）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17120,6 +17523,7 @@ Options:
   --count [boolean]         是否统计总条数，默认 true。 (preset: true)
   --no-count                将 count 设为 false
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17161,6 +17565,7 @@ Arguments:
 Options:
   --table <value>     数据库表名，例如 zt_config（必填）
   --type <value>      表结构返回格式
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>   返回字段，逗号分隔
   --html-to-markdown  显式将富文本字段转换为 Markdown
   -h, --help          显示命令帮助
@@ -17209,6 +17614,7 @@ Usage: zentao knowledgelib list [options]
 Options:
   --type <value>            库类型，省略或空字符串时合并两类可见库
   --keyword <value>         知识库名称或描述关键词，首尾空白会被移除
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17275,6 +17681,7 @@ Options:
   --lib-id <value>          本地知识库 ID，正整数（必填）
   --type <value>            知识类型，省略或空字符串表示不限；text/file 不可与非空 objectType 同时使用。
   --object-type <value>     来源对象类型；单独指定时按 type=object 筛选，每次只接受一个编码。
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17319,6 +17726,7 @@ Options:
   --min-similarity <value>  最小匹配度，范围 [0,1]
   --limit <value>           整次多库搜索最多返回的片段数，范围 1～100
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17363,6 +17771,7 @@ Options:
   --type <value>            知识类型，省略或空字符串表示不限；text/file 不可与非空 objectType 同时使用。
   --object-type <value>     来源对象类型；单独指定时按 type=object 筛选，每次只接受一个编码。
   --data <json|@file|@->    JSON 对象、文件或显式标准输入
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17406,6 +17815,7 @@ Arguments:
 
 Options:
   --knowledge-id <value>  本地知识条目 ID，正整数；不可使用 chunkID 或来源对象 objectID（必填）
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   --ids <ids>             批量目标 ID，逗号分隔并去重
   --batch-fail-fast       失败后跳过剩余目标
   --fields <fields>       返回字段，逗号分隔
@@ -17453,6 +17863,7 @@ Usage: zentao setting work-hours [options]
 获取工时设置（最低版本：23.0 / biz14.0 / max9.0 / ipd6.0）
 
 Options:
+  --options <json>    CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>   返回字段，逗号分隔
   --html-to-markdown  显式将富文本字段转换为 Markdown
   -h, --help          显示命令帮助
@@ -17497,6 +17908,7 @@ Usage: zentao space list [options]
 获取代码库空间列表（最低版本：22.7 / biz13.7 / max8.7 / ipd5.7）
 
 Options:
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17557,6 +17969,7 @@ Arguments:
 Options:
   --space-id <value>        代码库空间 ID，正整数（必填）
   --order-by <value>        排序方式
+  --options <json>          CLI 调用选项（JSON 对象；显式命令行参数优先）
   --fields <fields>         返回字段，逗号分隔
   --html-to-markdown        显式将富文本字段转换为 Markdown
   --max-items <number>      整次命令最多返回条数
@@ -17600,6 +18013,7 @@ Options:
   --acl <value>           访问权限，private 时 members 必须非空
   --members <value>       成员账号数组，账号须存在、未删除且未关闭；acl=private 时必填且非空，服务端自动加入当前创建者
   --data <json|@file|@->  JSON 对象、文件或显式标准输入
+  --options <json>        CLI 调用选项（JSON 对象；显式命令行参数优先）
   -h, --help              显示命令帮助
 ```
 

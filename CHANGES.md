@@ -4,6 +4,7 @@
 
 ### ✨ 新特性 (Feat)
 
+- **`--options <json>` 恢复**: 用 JSON 对象提供 CLI 调用选项并与显式命令行参数合并，显式参数优先（Commander 的空数组默认值不会覆盖 JSON 值）；非法输入在鉴权前即报 `E2009`。
 - **裸 ID 查看简写**: `zentao <module> <id>` 直接等价于 `get`（如 `zentao bug 24314`）。历史使用记录显示这是 AI agent 最高频的用法摩擦（上游 0.4.4 移除后 4 天内 4+ 次失败，错误提示也不指路）；无法识别的参数现在报错并给出正确写法。
 - **备注内嵌图片**: `zentao <module> comment <id> --comment <text> --image <path>`（可多次 `--image`）。上传走 multipart 并显式挂到目标对象，备注正文嵌入内嵌标记；实测服务端会把它规范化为禅道标准占位符（网页端内嵌渲染）。安全路径已验证：显式挂对象的附件不会被同 token 后续写入搬走（album-only 上传才会被搬，见 zentao-cli#25）。
 - **凭据文件**: `ZENTAO_CREDENTIALS_FILE` 指向 0600 的 KEY=VALUE 文件（ZENTAO_URL/ACCOUNT/PASSWORD/TOKEN），供无人值守自动化启用 Token 失效自动重连；真实环境变量优先，权限过宽直接报错。
