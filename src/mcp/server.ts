@@ -12,6 +12,7 @@ import type { UserConfig } from '../types/index.js';
 import type { ZentaoClient } from '../api/index.js';
 import { resolveAssistant } from '../api/assistant.js';
 import { bindPageLinks, registerLinkTool, type PageLinkHandler } from './link-tool.js';
+import { applyRegistryExtensions } from '../modules/extensions.js';
 
 export interface McpAuthContext {
     client: ZentaoClient;
@@ -109,6 +110,7 @@ export function createAuthProvider(options?: { insecure?: boolean; timeout?: num
 }
 
 export function createMcpServer(auth: AuthProvider, options?: McpToolOptions): McpServer {
+    applyRegistryExtensions();
     const server = new McpServer(
         { name: brandText('zentao-cli'), version: getCliVersion() },
         { capabilities: { tools: {} } },

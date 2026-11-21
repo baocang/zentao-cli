@@ -14,9 +14,11 @@ import { registerAddMcpCommand } from './add-mcp.js';
 import { registerModuleCommands } from './register-modules.js';
 import { registerMcpCommand } from './mcp.js';
 import { registerUpgradeCommand } from './upgrade.js';
+import { applyRegistryExtensions } from '../modules/extensions.js';
 
 /** 注册内置子命令与各动态模块子命令 */
 export function registerAllCommands(program: Command): void {
+    applyRegistryExtensions();
     registerHelpCommand(program);
     registerLoginCommand(program);
     registerLogoutCommand(program);
