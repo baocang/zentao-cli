@@ -1,6 +1,6 @@
 # 禅道MCP 连接器（WorkBuddy）
 
-接入方式为 **stdio MCP + 原生凭证表单**，连接器版本 `0.4.4`，最低 WorkBuddy 版本 `5.0.0`。WorkBuddy 托管 Node.js 22，通过 `npx --yes zentao-cli@0.5.0` 启动本地 MCP；用户无需自行安装 CLI。
+接入方式为 **stdio MCP + 原生凭证表单**，连接器版本 `0.5.1`，最低 WorkBuddy 版本 `5.0.0`。WorkBuddy 托管 Node.js 22，通过 `npx --yes @baocang/zentao-cli@0.5.1` 启动本地 MCP；用户无需自行安装 CLI。
 
 规范依据：[WorkBuddy 连接器文档](https://open.workbuddy.cn/docs/connector)。
 

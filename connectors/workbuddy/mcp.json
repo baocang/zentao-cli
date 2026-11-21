@@ -5,7 +5,7 @@
       "command": "npx",
       "args": [
         "--yes",
-        "zentao-cli@0.5.0",
+        "@baocang/zentao-cli@0.5.1",
         "--config",
         "${PLUGIN_ROOT}/empty-config.json",
         "--no-input",
@@ -23,7 +23,9 @@
         "ZENTAO_PASSWORD": "${ZENTAO_PASSWORD}",
         "ZENTAO_TOKEN": "${ZENTAO_TOKEN}"
       },
-      "disabledTools": ["zentao_switch_profile"],
+      "disabledTools": [
+        "zentao_switch_profile"
+      ],
       "timeout": 30000
     }
   }
