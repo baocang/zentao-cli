@@ -1,6 +1,11 @@
 import type { ModuleAction } from '../types/index.js';
 import { ZentaoError } from '../errors.js';
 
+/** Strip ZenTao's prefixed composite IDs (case_48) down to the numeric part. */
+export function normalizeIdLike(value: string): string {
+    return value.replace(/^[a-zA-Z]+_(\d+)$/, '$1');
+}
+
 export function targetId(action: ModuleAction): string | undefined {
     return Object.keys(action.pathParams ?? {}).find(name => name.endsWith('ID') && name !== 'scopeID');
 }
@@ -22,7 +27,7 @@ export function batchTargets(action: ModuleAction, params: Record<string, unknow
     if (ids === undefined) return;
     if (!supportsBatch(action)) invalid('此操作不支持批量对象操作');
     if (params.id !== undefined || (key && params[key] !== undefined)) invalid('--ids 不能与单个目标同时使用');
-    const values = ids.split(',').map(value => value.trim());
+    const values = ids.split(',').map(value => normalizeIdLike(value.trim()));
     if (!values.length || values.some(value => !/^\d+$/.test(value) || !Number.isSafeInteger(Number(value)) || Number(value) < 1)) {
         invalid('每个 ID 必须为正安全整数');
     }

@@ -8,7 +8,8 @@ import type { ModuleAction, ModuleActionOptions } from '../types/index.js';
 import { commandSignal } from '../utils/lifecycle.js';
 
 /** Keep the target intact until all bytes have been received and written. */
-export async function downloadFile(client: ZentaoClient, action: ModuleAction, fileID: string, path: string, options: ModuleActionOptions) {
+export async function downloadFile(client: ZentaoClient, action: ModuleAction, fileID: string, path: string,
+    options: ModuleActionOptions & { resolvePath?: (headers: Headers) => string }) {
     const signal = options.signal ?? commandSignal();
     const { version } = await client.getZentaoConfig({ timeout: options.timeout, insecure: options.insecure, signal });
     if (!getModuleAction('file', 'read', { version })) {
@@ -25,6 +26,8 @@ export async function downloadFile(client: ZentaoClient, action: ModuleAction, f
             method: 'GET', query: { stream: 0 }, responseType: 'response',
             actionAssistant: options.assistant, timeout: options.timeout, insecure: options.insecure, signal,
         });
+        // A caller may derive the final filename from response headers (Content-Disposition).
+        const destination = options.resolvePath ? options.resolvePath(response.headers) : path;
         let bytes = 0;
         if (response.body) {
             for await (const chunk of response.body) {
@@ -34,9 +37,9 @@ export async function downloadFile(client: ZentaoClient, action: ModuleAction, f
         }
         await file.close().catch(fileError);
         if (signal?.aborted) throw new ZentaoError('E5003');
-        await rename(temporary, path).catch(fileError);
+        await rename(temporary, destination).catch(fileError);
         saved = true;
-        return { path, bytes };
+        return { path: destination, bytes };
     } catch (error) {
         if (signal?.aborted) throw new ZentaoError('E5003');
         // The SDK's raw Response can time out during body consumption, after request() returns.

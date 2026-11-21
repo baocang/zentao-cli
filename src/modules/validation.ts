@@ -3,6 +3,7 @@ import { canAutoFill, paginationFields, pathIdType } from './contract.js';
 import { getModuleActionParams } from './helper.js';
 import type { ModuleAction, ModuleDefinition } from '../types/index.js';
 import { ZentaoError } from '../errors.js';
+import { brandText } from '../brand.js';
 
 // The SDK retains these schema constraints at runtime, beyond its public param type.
 export interface ValueSchema {
@@ -75,6 +76,13 @@ export function validateToolParams(mod: ModuleDefinition, action: ModuleAction, 
     const body = (params.data ?? {}) as Record<string, unknown>;
     const write = Boolean(action.requestBody);
     const invalid = (option: string, reason: string): never => { throw new ZentaoError('E2009', { option, reason }); };
+    // ZenTao routeV2 treats a `comment` body key on object updates as the
+    // comment-only boolean switch and silently drops the whole update
+    // (easysoft/zentao-cli#26). auditplan/baseline/weekly accept it for real.
+    if (action.type === 'update' && !['auditplan', 'baseline', 'weekly'].includes(mod.name)
+        && (body.comment !== undefined || params.comment !== undefined)) {
+        invalid('comment', brandText`update 请求不支持 comment 字段（服务端会静默丢弃整个更新），添加备注请使用 zentao ${mod.name} comment <id> --comment <text>`);
+    }
     for (const name of Object.keys(params)) {
         if (name === 'data' && write) continue;
         if (!definitions.some(param => param.name === name)) invalid(name, `操作 ${mod.name}/${action.name} 不支持此参数`);

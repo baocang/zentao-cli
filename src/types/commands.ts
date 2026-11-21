@@ -31,6 +31,8 @@ export interface GlobalOptions {
 export interface ModuleActionOptions extends GlobalOptions {
     /** Destination for a streamed file/read download. */
     output?: string;
+    /** Resolve the final download destination from response headers (file download naming). */
+    resolvePath?: (headers: Headers) => string;
     /** Explicit, validated and deduplicated batch targets. */
     ids?: string;
     maxItems?: string;

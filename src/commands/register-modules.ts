@@ -1,16 +1,18 @@
 import { isDeepStrictEqual } from 'node:util';
 import { ZentaoError } from '../errors.js';
+import { brandText } from '../brand.js';
 import { Command, Option } from 'commander';
 import { getModuleNames, getModule } from '../modules/index.js';
 import { getScopeAliasTarget } from '../mcp/params.js';
 import { actionContract, kebabCase, paginationFields } from '../modules/contract.js';
 import { parseCliValue, prepareCliParams } from '../modules/cli-input.js';
-import { ensureAuth, resolveAuthSource } from '../auth/flow.js';
+import { ensureAuth, resolveAuthSource, tryReauth } from '../auth/flow.js';
 import { fileIdAtSite, supportsFileUrl } from '../modules/file-url.js';
 import { getProfileConfig } from '../config/store.js';
 import { downloadFile } from './file-download.js';
-import { handleModuleCommand, showModuleProps } from './module-handler.js';
+import { downloadFileAttachment, embedCommentImages, handleModuleCommand, showModuleProps } from './module-handler.js';
 import type { ModuleActionOptions } from '../types/index.js';
+import { normalizeIdLike } from '../modules/targets.js';
 import { emitResult } from '../utils/output.js';
 
 /** Commander 的 `collect` 回调：将多次出现的选项累积为数组 */
@@ -23,10 +25,71 @@ export function registerModuleCommands(program: Command): void {
     for (const name of getModuleNames()) {
         const mod = getModule(name)!;
         const resource = program.command(name).description(mod.display ?? name);
-        resource.action(() => resource.outputHelp());
+        // Bare numeric positional dispatches to `get` — the shorthand agents
+        // keep typing (`zentao bug 24314`) even after upstream removed it.
+        resource.argument('[target]', brandText`对象 ID 简写，等价于 zentao ${name} get <target>`);
+        resource.action(async (target: string | undefined, _opts: unknown, command: Command) => {
+            if (target === undefined) {
+                resource.outputHelp();
+                return;
+            }
+            const normalized = normalizeIdLike(target.trim());
+            if (!/^\d+$/.test(normalized) || !Number.isSafeInteger(Number(normalized)) || Number(normalized) < 1) {
+                throw new ZentaoError('E2009', {
+                    option: 'target',
+                    reason: brandText`无法识别 "${target}"；查看对象请使用 zentao ${name} get <id>，全部操作见 zentao ${name} --help`,
+                });
+            }
+            const getAction = mod.actions.find(action => action.name === 'get');
+            if (!getAction) {
+                throw new ZentaoError('E2009', { option: 'target', reason: brandText`模块 ${name} 没有 get 操作，请查看 zentao ${name} --help` });
+            }
+            const options = command.optsWithGlobals() as ModuleActionOptions;
+            const params = await prepareCliParams(mod, getAction, normalized, options, {});
+            const { client, profile } = await ensureAuth(options);
+            await handleModuleCommand(client, mod, 'get', [], profile, options, params);
+        });
         resource.command('props').description('返回对象字段定义（离线）').action((_options, command: Command) => {
             showModuleProps(mod, command.optsWithGlobals());
         });
+        if (name === 'file') {
+            // Non-registry subcommand: binary download bypasses the JSON pipeline.
+            resource.command('download')
+                .description('下载附件到本地文件（原始字节流，支持 Content-Disposition 命名）')
+                .argument('<fileID>', '附件 ID')
+                .option('--output <dir>', '输出目录，默认当前目录')
+                .action(async (...args: unknown[]) => {
+                    const command = args.at(-1) as Command;
+                    const parsed = command.optsWithGlobals() as ModuleActionOptions;
+                    const fileID = args[0] as string;
+                    if (!/^\d+$/.test(fileID)) {
+                        throw new ZentaoError('E2009', { option: 'fileID', reason: '需要有效数字' });
+                    }
+                    const { client, profile } = await ensureAuth(parsed);
+                    try {
+                        await downloadFileAttachment(
+                            client,
+                            fileID,
+                            typeof parsed.output === 'string' ? parsed.output : undefined,
+                            parsed.format ?? 'markdown',
+                        );
+                    } catch (error) {
+                        if (error instanceof ZentaoError && error.code === '1004') {
+                            const reauthed = await tryReauth(profile, parsed);
+                            if (reauthed) {
+                                await downloadFileAttachment(
+                                    reauthed.client,
+                                    fileID,
+                                    typeof parsed.output === 'string' ? parsed.output : undefined,
+                                    parsed.format ?? 'markdown',
+                                );
+                                return;
+                            }
+                        }
+                        throw error;
+                    }
+                });
+        }
         for (const action of mod.actions) {
             const contract = actionContract(mod, action);
             const fileRead = name === 'file' && action.name === 'read';
@@ -76,6 +139,7 @@ export function registerModuleCommands(program: Command): void {
             }
             if (fileRead) cmd.option('--output <path>', '流式保存附件，下载完成后替换目标文件');
             if (contract.batch) cmd.option('--ids <ids>', '批量目标 ID，逗号分隔并去重').option('--batch-fail-fast', '失败后跳过剩余目标');
+            if (action.name === 'comment') cmd.option('--image <path>', '随备注上传并内嵌到正文的图片路径（可多次）', collect);
             if (action.type === 'delete') cmd.option('--yes', '确认删除');
             if (action.type === 'list' || (action.type === 'get' && !fileRead)) cmd.option('--fields <fields>', '返回字段，逗号分隔').option('--html-to-markdown', '显式将富文本字段转换为 Markdown');
             if (action.type === 'list') {
@@ -101,11 +165,45 @@ export function registerModuleCommands(program: Command): void {
                 if (fileRead && options.output !== undefined) {
                     const format = options.format ?? getProfileConfig(profile).defaultOutputFormat;
                     if (format === 'raw') throw new ZentaoError('E2009', { option: 'output', reason: '写入文件时请使用 table、markdown 或 json 输出下载结果' });
-                    const result = await downloadFile(client, action, String(params.fileID), options.output, options);
-                    emitResult(result, { format });
+                    const download = async (activeClient: typeof client): Promise<void> => {
+                        const result = await downloadFile(activeClient, action, String(params.fileID), options.output!, options);
+                        emitResult(result, { format });
+                    };
+                    try {
+                        await download(client);
+                    } catch (error) {
+                        // Expired profile token: re-login once with matching environment credentials.
+                        if (error instanceof ZentaoError && error.code === '1004') {
+                            const reauthed = await tryReauth(profile, options);
+                            if (reauthed) {
+                                await download(reauthed.client);
+                                return;
+                            }
+                        }
+                        throw error;
+                    }
                     return;
                 }
-                await handleModuleCommand(client, mod, action.name, [], profile, options, params);
+                const images = parsed.image as string[] | undefined;
+                const run = async (activeClient: typeof client, activeProfile: typeof profile): Promise<void> => {
+                    const effectiveParams = images?.length
+                        ? await embedCommentImages(activeClient, mod, params, images)
+                        : params;
+                    await handleModuleCommand(activeClient, mod, action.name, [], activeProfile, options, effectiveParams);
+                };
+                try {
+                    await run(client, profile);
+                } catch (error) {
+                    // Expired profile token: re-login once with matching environment credentials.
+                    if (error instanceof ZentaoError && error.code === '1004') {
+                        const reauthed = await tryReauth(profile, options);
+                        if (reauthed) {
+                            await run(reauthed.client, reauthed.profile);
+                            return;
+                        }
+                    }
+                    throw error;
+                }
             });
         }
     }

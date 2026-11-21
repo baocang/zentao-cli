@@ -1,7 +1,7 @@
 import type { Profile } from '../types/index.js';
 import { ZentaoClient, createClient, withRequestSignal } from '../api/index.js';
 import { ZentaoError } from '../errors.js';
-import { getCurrentProfile, getProfileConfig, buildProfile, normalizeServerUrl, findProfileByKey } from '../config/store.js';
+import { getCurrentProfile, getProfileConfig, buildProfile, normalizeServerUrl, findProfileByKey, saveProfile } from '../config/store.js';
 import { commandSignal } from '../utils/lifecycle.js';
 import { login, getEnvCredentials } from './login.js';
 import { resolveAssistant, type AssistantSource } from '../api/assistant.js';
@@ -79,5 +79,35 @@ export async function ensureAuth(options?: { insecure?: boolean; timeout?: numbe
     return {
         client: withRequestSignal(createClient(auth.server, auth.token, clientOpts), signal),
         profile: auth.profile,
+    };
+}
+
+/**
+ * Re-login with environment credentials when a saved profile token has
+ * expired (E1004). Fires only when ZENTAO_URL/ZENTAO_ACCOUNT/ZENTAO_PASSWORD
+ * are all present and identify the same server and account as the profile;
+ * the refreshed token is persisted back into the saved profile.
+ */
+export async function tryReauth(profile: Profile, options?: { insecure?: boolean; timeout?: number; signal?: AbortSignal; assistant?: string; assistantSource?: AssistantSource }): Promise<AuthContext | undefined> {
+    const env = getEnvCredentials();
+    if (!env.url || !env.account || !env.password) return undefined;
+    let server: string;
+    try {
+        server = normalizeServerUrl(env.url);
+    } catch {
+        return undefined;
+    }
+    if (server !== normalizeServerUrl(profile.server) || env.account !== profile.account) return undefined;
+    const signal = options?.signal ?? commandSignal();
+    const result = await login(profile.server, profile.account, env.password, {
+        insecure: options?.insecure,
+        timeout: options?.timeout,
+        signal,
+    });
+    const refreshed = buildProfile(profile.server, profile.account, result.token, result.serverConfig, result.user);
+    saveProfile(refreshed);
+    return {
+        client: withRequestSignal(result.client, signal),
+        profile: refreshed,
     };
 }

@@ -1,7 +1,11 @@
 import type { FileWarning } from 'zentao-api';
 import type { ZentaoClient } from '../api/index.js';
+import { mapSdkError } from '../errors.js';
+import { basename, extname, join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import type { ModuleDefinition, Profile, ModuleActionName, UserConfig } from '../types/index.js';
-import { getAction, getObjectProps } from '../modules/helper.js';
+import { getAction, getModule, getObjectProps } from '../modules/helper.js';
+import { downloadFile } from './file-download.js';
 import { executeModuleCommand } from '../modules/executor.js';
 import { buildParams } from '../modules/args.js';
 import type { ModuleExecutionResult } from '../modules/executor.js';
@@ -12,7 +16,8 @@ import { createInterface } from 'node:readline/promises';
 import { renderObject } from '../utils/render.js';
 import { fileRecoveryDetails, formatError, ZentaoError } from '../errors.js';
 import { commandSignal } from '../utils/lifecycle.js';
-import { batchTargets } from '../modules/targets.js';
+import { batchTargets, targetId } from '../modules/targets.js';
+import { actionObjectTypeFor } from '../modules/extensions.js';
 
 
 async function confirmDelete(format: string, count: number, machineReadable = false): Promise<boolean> {
@@ -45,7 +50,7 @@ function resultMeta(execution: ModuleExecutionResult): Record<string, unknown> |
     return { ...meta, ...(resultObjectType && { resultObjectType }), ...(fileWarnings?.length && { fileWarnings }) };
 }
 
-function renderModuleExecution(
+export function renderModuleExecution(
     execution: ModuleExecutionResult,
     options: ModuleActionOptions,
     config: UserConfig,
@@ -102,7 +107,123 @@ function renderModuleExecution(
         fields: execution.fields,
         jsonPretty: config.jsonPretty,
     });
-    if (output) console.log(output);
+    if (output) {
+        console.log(output);
+    } else if (format === 'markdown' || format === 'table') {
+        const raw = execution.rawResponse as { message?: unknown } | undefined;
+        const serverMessage = raw?.message;
+        console.log(typeof serverMessage === 'string' && serverMessage.trim() ? serverMessage : '操作成功');
+    }
+}
+
+/**
+ * Download an attachment into a local directory, naming the file from the
+ * server's Content-Disposition header.
+ *
+ * Byte transfer is delegated to the shared streaming downloader
+ * (file-download.ts): streamed to a temporary file and atomically renamed.
+ * This wrapper adds the directory semantics, header-based filename
+ * resolution, no-overwrite protection and CLI output.
+ */
+export async function downloadFileAttachment(
+    client: ZentaoClient,
+    fileID: string,
+    output: string | undefined,
+    format: string,
+): Promise<void> {
+    const dir = output ?? '.';
+    mkdirSync(dir, { recursive: true });
+    const readAction = getModule('file')!.actions.find(item => item.name === 'read')!;
+    const result = await downloadFile(client, readAction, fileID, join(dir, `file_${fileID}`), {
+        resolvePath: headers => {
+            const cd = headers.get('Content-Disposition') ?? '';
+            const encodedMatch = cd.match(/filename\*\s*=\s*(?:UTF-8'')?["']?([^"';\n]+)["']?/i);
+            const plainMatch = cd.match(/filename\s*=\s*(?:"([^"]+)"|'([^']+)'|([^;\n]+))/i);
+            const rawFilename = encodedMatch?.[1] ?? plainMatch?.[1] ?? plainMatch?.[2] ?? plainMatch?.[3];
+            let filename = rawFilename?.trim() || `file_${fileID}`;
+            if (encodedMatch) {
+                try {
+                    filename = decodeURIComponent(filename);
+                } catch {
+                    // Keep the undecoded server filename when percent encoding is malformed.
+                }
+            }
+            const destination = join(dir, basename(filename));
+            if (existsSync(destination)) {
+                throw new ZentaoError('E2009', { option: 'output', reason: `目标文件已存在: ${destination}` });
+            }
+            return destination;
+        },
+    });
+
+    if (format === 'json' || format === 'raw') {
+        console.log(JSON.stringify({ ok: true, data: { file: result.path, size: result.bytes } }));
+    } else {
+        console.log(`已下载: ${result.path} (${result.bytes} bytes)`);
+    }
+}
+
+const INLINE_IMAGE_MIME: Record<string, string> = {
+    '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.gif': 'image/gif',
+    '.webp': 'image/webp', '.bmp': 'image/bmp', '.svg': 'image/svg+xml', '.avif': 'image/avif',
+};
+
+/**
+ * Upload images for a comment and embed them inline in the comment body.
+ *
+ * The upload attaches the file to the target object; the comment body then
+ * references the returned file-read URL, which the ZenTao web UI renders
+ * inline. Both calls share the caller's token: the server's uid session-album
+ * re-attachment (easysoft/zentao-cli#25) re-attaches the freshly uploaded
+ * files to this comment's object, which is exactly where they belong.
+ */
+export async function embedCommentImages(
+    client: ZentaoClient,
+    mod: ModuleDefinition,
+    params: Record<string, unknown>,
+    images: string[],
+): Promise<Record<string, unknown>> {
+    const objectType = actionObjectTypeFor(mod.name);
+    const commentAction = mod.actions.find(action => action.name === 'comment');
+    const idKey = commentAction ? targetId(commentAction) : undefined;
+    if (!objectType || !idKey) throw new ZentaoError('E2005', { module: mod.name });
+    const objectID = params[idKey] ?? params.id;
+    if (objectID === undefined) throw new ZentaoError('E2003', { param: idKey });
+
+    const data = { ...(params.data as Record<string, unknown>) };
+    const text = typeof data.comment === 'string' ? data.comment : '';
+    const marks: string[] = [];
+    for (const imagePath of images) {
+        if (!existsSync(imagePath)) {
+            throw new ZentaoError('E2009', { option: 'image', reason: `图片文件不存在: ${imagePath}` });
+        }
+        const ext = extname(imagePath).toLowerCase();
+        const mime = INLINE_IMAGE_MIME[ext];
+        if (!mime) {
+            throw new ZentaoError('E2009', { option: 'image', reason: `不支持的图片格式 ${ext || '(无扩展名)'}，支持 ${Object.keys(INLINE_IMAGE_MIME).join(' ')}` });
+        }
+        const form = new FormData();
+        form.append('file', new Blob([readFileSync(imagePath)], { type: mime }), basename(imagePath));
+        form.append('objectType', objectType);
+        form.append('objectID', String(objectID));
+        let result: { status?: string; id?: number; url?: string };
+        try {
+            result = await client.request('/files', { method: 'POST', body: form }) as typeof result;
+        } catch (error) {
+            throw mapSdkError(error);
+        }
+        if (!result || typeof result !== 'object' || result.id === undefined || (result.status && result.status !== 'success')) {
+            throw new ZentaoError('E2008', {
+                url: '/files',
+                status: '',
+                serverResponse: JSON.stringify(result).slice(0, 300),
+            });
+        }
+        const url = result.url ?? `/file-read-${result.id}${ext}`;
+        marks.push(`<img src="${url}" alt="${basename(imagePath)}" />`);
+    }
+    data.comment = text ? `${text}\n${marks.join('\n')}` : marks.join('\n');
+    return { ...params, data };
 }
 
 type BatchId = number;

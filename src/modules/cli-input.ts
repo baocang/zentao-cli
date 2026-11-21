@@ -5,7 +5,7 @@ import { resolveData } from '../utils/stdin.js';
 import { getMarkdownRenderer } from '../utils/markdown.js';
 import { normalizeToolParams } from '../mcp/params.js';
 import { actionContract, paginationFields } from './contract.js';
-import { batchTargets, targetId } from './targets.js';
+import { batchTargets, normalizeIdLike, targetId } from './targets.js';
 import { isFileGid, type ValueSchema } from './validation.js';
 import { supportsFileUrl } from './file-url.js';
 
@@ -29,8 +29,11 @@ export function parseCliValue(value: string | string[] | boolean, schema: ValueS
     if (Array.isArray(value)) invalid('data', '此字段不能重复');
     if (Array.isArray(schema.type)) return /^\d+$/.test(value) ? Number(value) : value;
     if (schema.type === 'number' || schema.type === 'integer') {
-        if (!value.trim() || !/^[+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?$/i.test(value)) invalid('data', '需要有效数字');
-        return Number(value);
+        // ZenTao list rows return prefixed composite IDs like case_48; accept them.
+        const normalized = typeof value === 'string' ? normalizeIdLike(value) : value;
+        // Exponent notation is rejected so IDs like 1e2 cannot silently become 100.
+        if (!String(normalized).trim() || !/^[+-]?(?:\d+\.?\d*|\.\d+)$/.test(String(normalized))) invalid('data', '需要有效数字');
+        return Number(normalized);
     }
     if (schema.type === 'boolean') {
         if (value === 'true') return true;
