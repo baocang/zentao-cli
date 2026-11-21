@@ -62,6 +62,9 @@ export async function executeModuleCommand(
     if (!action) {
         throw new ZentaoError('E2005', { module: module.name });
     }
+    if (options.sort && !/^[A-Za-z_][\w.]*?(?::(?:asc|desc)|_(?:asc|desc))?$/i.test(options.sort)) {
+        throw new ZentaoError('E2009', { option: 'sort', reason: `无效的排序表达式 "${options.sort}"，示例 id:asc 或 pri_desc` });
+    }
 
     const params = resolvedParams ? { ...resolvedParams } : buildParams(options, actionName, args);
     if (module.name === 'relation' && action.name === 'unlink') {
@@ -218,6 +221,22 @@ export async function executeModuleCommand(
 
     if (action.type === 'list') {
         const data = collected;
+        // The SDK treats a syntactically fine sort on a missing field as a
+        // no-op; surface typos instead of returning "unsorted" data. Skipped
+        // when fields are picked: SDK sorts on the full rows before picking.
+        if (options.sort && data.length && !fields) {
+            const match = options.sort.match(/^(.+?)(?::|_)(asc|desc)$/i);
+            const sortKey = match?.[1] ?? options.sort;
+            const valueAt = (row: Record<string, unknown>, key: string): unknown =>
+                key.split('.').reduce<unknown>((acc, part) => (acc && typeof acc === 'object' ? (acc as Record<string, unknown>)[part] : undefined), row);
+            const present = data.some(row => row && typeof row === 'object' && valueAt(row as Record<string, unknown>, sortKey) !== undefined);
+            if (!present) {
+                throw new ZentaoError('E2009', {
+                    option: 'sort',
+                    reason: `排序字段 "${sortKey}" 不在返回数据中，请检查字段名（示例 id:asc）`,
+                });
+            }
+        }
         const hasMore = pager ? pager.pageID * pager.recPerPage < pager.recTotal : null;
         const meta = { returned: data.length, fetched, page: pager?.pageID ?? null, pageSize: pager?.recPerPage ?? null,
             total: pager?.recTotal ?? null, hasMore, truncated: processedCount > data.length,

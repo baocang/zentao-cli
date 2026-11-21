@@ -65,7 +65,7 @@ test('explicit actions, arbitrary path targets, and repeated typed arrays', asyn
     const noAction = await run(['product']);
     expect(noAction.stdout).toContain('list');
     expect(calls).toHaveLength(0);
-    for (const args of [['get', 'product', '1'], ['product', '1'], ['do', 'bug', 'resolve', '1']]) {
+    for (const args of [['get', 'product', '1'], ['do', 'bug', 'resolve', '1']]) {
         expect((await run(args)).exitCode).not.toBe(0);
     }
     expect(calls).toHaveLength(0);

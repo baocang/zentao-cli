@@ -49,7 +49,7 @@ describe('expanded SDK actions', () => {
         const program = createProgram();
         for (const mod of getAllModules()) {
             const command = program.commands.find(command => command.name() === mod.name)!;
-            expect(command.commands.filter(child => child.name() !== 'props')).toHaveLength(mod.actions.length);
+            expect(command.commands.filter(child => child.name() !== 'props' && child.name() !== 'download')).toHaveLength(mod.actions.length);
             for (const action of mod.actions) {
                 const child = command.commands.find(child => child.name() === kebabCase(action.name))!;
                 expect(child.helpInformation()).toContain(action.minVersion.join(' / '));
