@@ -4,6 +4,8 @@ import { actionContract, actionIsReadOnly } from '../modules/contract.js';
 import { z } from 'zod';
 import { LOCAL_FILE_UPLOAD_UNAVAILABLE, withoutLocalUploads } from '../modules/file-policy.js';
 import { getModuleActionParams } from '../modules/helper.js';
+import { realpathSync } from 'node:fs';
+import { sep } from 'node:path';
 import type { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult } from '@modelcontextprotocol/sdk/types.js';
 import { getAction, getAllModules, getModule } from '../modules/helper.js';
@@ -16,6 +18,7 @@ import { validateAssistant } from '../api/assistant.js';
 import { getScopeAliasTarget, normalizeToolParams } from './params.js';
 import { fileIdAtSite, supportsFileUrl } from '../modules/file-url.js';
 import { moduleOutputSchema, outputSchema, toolError, toolResult } from './results.js';
+import { supportsBatch, targetId } from '../modules/targets.js';
 
 export interface McpToolOptions {
     /** Startup default; individual tool calls may override or disable it. */
@@ -25,13 +28,36 @@ export interface McpToolOptions {
     splitTools?: boolean;
     /** Local transports may upload paths; remote callers must never read host files. */
     allowLocalFiles?: boolean;
+    /**
+     * Opt-in allowlist root for remote multipart uploads (HTTP MCP). When set,
+     * file paths are accepted only inside this directory after resolution.
+     */
+    localUploadRoot?: string;
 }
 
 function isReadAction(action: ModuleAction): boolean { return actionIsReadOnly(action); }
 
 function isActionAvailable(action: ModuleAction, options: McpToolOptions): boolean {
-    return (!options.readOnly || isReadAction(action))
-        && (options.allowLocalFiles !== false || action.requestBody?.mediaType !== 'multipart/form-data');
+    if (options.readOnly && !isReadAction(action)) return false;
+    if (action.requestBody?.mediaType !== 'multipart/form-data') return true;
+    // Multipart uploads need local file access: allowed on local transports,
+    // or remotely only when an explicit upload root allowlist is configured.
+    return options.allowLocalFiles !== false || options.localUploadRoot !== undefined;
+}
+
+/** Restrict remote upload paths to the configured root after resolving symlinks. */
+function ensureUploadPathWithinRoot(filePath: string, root: string): void {
+    let resolved: string;
+    let resolvedRoot: string;
+    try {
+        resolved = realpathSync(filePath);
+        resolvedRoot = realpathSync(root);
+    } catch {
+        throw new ZentaoError('E2009', { option: 'file', reason: '文件或根目录不存在' });
+    }
+    if (resolved !== resolvedRoot && !resolved.startsWith(resolvedRoot.endsWith(sep) ? resolvedRoot : resolvedRoot + sep)) {
+        throw new ZentaoError('E2009', { option: 'file', reason: '上传路径超出允许的根目录 ZENTAO_MCP_UPLOAD_ROOT' });
+    }
 }
 
 function buildToolDescription(mod: ModuleDefinition): string {
@@ -68,10 +94,16 @@ function buildToolSchemas(mod: ModuleDefinition) {
         shape.pick = z.string().optional().describe('返回字段，逗号分隔');
     }
     if (hasList) {
+        shape.all = z.boolean().optional().describe('显式遍历全部页面后本地处理');
+        shape.maxItems = z.number().int().positive().optional().describe('整次调用最多返回条数');
         shape.filter = z.array(z.string()).optional().describe('当前页过滤，组内逗号为 AND、多组为 OR；远端筛选见 params.filters');
         shape.sort = z.string().optional().describe('当前页排序，如 pri:asc');
         shape.search = z.array(z.string()).optional().describe('当前页搜索，组内逗号为 AND、多组为 OR');
         shape.searchFields = z.string().optional().describe('搜索字段，逗号分隔');
+    }
+    if (mod.actions.some(action => supportsBatch(action))) {
+        shape.ids = z.array(z.number().int().positive()).optional().describe('批量目标 ID；get/update/delete/action 类操作逐个执行并返回逐项结果');
+        shape.batchFailFast = z.boolean().optional().describe('批量失败后跳过剩余目标');
     }
     if (names.has('pageID')) shape.page = z.number().int().positive().optional().describe('页码，从 1 开始');
     if (names.has('recPerPage')) shape.recPerPage = z.number().int().min(1).max(1000).optional().describe('每页 1–1000 条');
@@ -114,6 +146,10 @@ interface ToolInput {
     searchFields?: string;
     page?: number;
     recPerPage?: number;
+    all?: boolean;
+    maxItems?: number;
+    ids?: number[];
+    batchFailFast?: boolean;
 }
 
 async function handleProfileTool(auth: AuthProvider, signal?: AbortSignal, assistant?: string): Promise<CallToolResult> {
@@ -162,6 +198,13 @@ async function handleModuleTool(
             throw new ZentaoError('E2009', { option, reason: `不适用于 ${mod.name}/${action.name}` });
         }
     }
+    if ((input.all !== undefined || input.maxItems !== undefined) && action.type !== 'list') {
+        throw new ZentaoError('E2009', { option: 'all/maxItems', reason: `不适用于 ${mod.name}/${action.name}` });
+    }
+    if (input.ids !== undefined) {
+        if (!supportsBatch(action)) throw new ZentaoError('E2009', { option: 'ids', reason: `此操作不支持批量对象操作` });
+        if (!input.ids.length) throw new ZentaoError('E2009', { option: 'ids', reason: '至少需要一个目标 ID' });
+    }
     let absoluteUrl: string | undefined;
     let checkedSite: string | undefined;
     const params = normalizeToolParams(mod, action, input, url => {
@@ -169,6 +212,15 @@ async function handleModuleTool(
         checkedSite = auth.getSiteUrl?.();
         if (checkedSite !== undefined) fileIdAtSite(url, checkedSite);
     });
+    if (action.requestBody?.mediaType === 'multipart/form-data' && options.allowLocalFiles === false && options.localUploadRoot !== undefined) {
+        const flat = params.file;
+        const nested = (params.data as Record<string, unknown> | undefined)?.file;
+        const filePath = typeof flat === 'string' ? flat : typeof nested === 'string' ? nested : undefined;
+        if (!filePath) {
+            throw new ZentaoError('E2009', { option: 'file', reason: '需要本地文件路径' });
+        }
+        ensureUploadPathWithinRoot(filePath, options.localUploadRoot);
+    }
     const { client, config } = await auth.getContext(signal);
     // Bind to the actual client even when the provider switched sites or exposes no offline site.
     if (absoluteUrl !== undefined && checkedSite !== client.siteUrl) {
@@ -184,11 +236,57 @@ async function handleModuleTool(
         search: input.search,
         searchFields: input.searchFields,
         recPerPage: input.recPerPage != null ? String(input.recPerPage) : undefined,
+        all: input.all,
+        maxItems: input.maxItems != null ? String(input.maxItems) : undefined,
+        batchFailFast: input.batchFailFast,
         format: 'json',
     };
 
-    const execute = () => executeModuleCommand(withRequestSignal(client, signal), mod, actionName, [], opts, config, params);
-    const execution = await (options.allowLocalFiles === false ? withoutLocalUploads(execute) : execute());
+    const execute = (activeParams: Record<string, unknown>) =>
+        executeModuleCommand(withRequestSignal(client, signal), mod, actionName, [], opts, config, activeParams);
+    const guarded = <T,>(run: () => Promise<T>): Promise<T> =>
+        options.allowLocalFiles === false && options.localUploadRoot === undefined
+            ? withoutLocalUploads(run)
+            : run();
+
+    if (input.ids?.length) {
+        const key = targetId(action)!;
+        const data: Array<Record<string, unknown>> = [];
+        let failed = 0;
+        let skipped = 0;
+        const errors: Array<{ objectID: number; error: { code?: string; message: string } }> = [];
+        for (let index = 0; index < input.ids.length; index++) {
+            const id = input.ids[index];
+            signal?.throwIfAborted();
+            try {
+                const execution = await guarded(() => execute({ ...params, [key]: id }));
+                data.push({ objectID: id, ok: true, data: execution.data ?? execution.rawResponse ?? null });
+            } catch (error) {
+                signal?.throwIfAborted();
+                failed++;
+                const normalized = error instanceof ZentaoError ? error : new Error(String(error));
+                errors.push({
+                    objectID: id,
+                    error: {
+                        ...(normalized instanceof ZentaoError ? { code: `E${normalized.code}` } : {}),
+                        message: normalized.message,
+                    },
+                });
+                data.push({ objectID: id, ok: false, error: { message: normalized.message } });
+                if (input.batchFailFast) {
+                    skipped = input.ids.length - index - 1;
+                    break;
+                }
+            }
+        }
+        return toolResult({
+            ok: failed === 0,
+            data,
+            meta: { success: input.ids.length - failed - skipped, failed, skipped, ...(errors.length ? { errors } : {}) },
+        });
+    }
+
+    const execution = await guarded(() => execute(params));
     const metadata = {
         ...(execution.fileWarnings?.length ? { fileWarnings: execution.fileWarnings } : {}),
         ...(execution.resultObjectType ? { resultObjectType: execution.resultObjectType } : {}),
@@ -255,7 +353,7 @@ export function registerModuleTools(server: McpServer, auth: AuthProvider, optio
                             + '顶层 url 可代替文件 ID，接受当前站点的附件读取或下载链接。',
                     } : {}),
                     available: selectedModules.some(selected => selected.name === mod.name) && isActionAvailable(definition, options),
-                    ...(options.allowLocalFiles === false && definition.requestBody?.mediaType === 'multipart/form-data'
+                    ...(options.allowLocalFiles === false && options.localUploadRoot === undefined && definition.requestBody?.mediaType === 'multipart/form-data'
                         ? { unavailableReason: LOCAL_FILE_UPLOAD_UNAVAILABLE } : {}),
                     example: actionExample(mod, definition, options.splitTools),
                 });

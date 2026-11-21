@@ -55,7 +55,9 @@ function sseResult(text: string): any {
 
 function rawRequest(url: URL, rawHeaders: string[], body: string | string[] = '{}'): Promise<{ status: number; body: string }> {
     return new Promise((resolve, reject) => {
-        const req = request(url, { method: 'POST', headers: rawHeaders }, res => {
+        // Bun's node:http shim drops the implicit Host when given array headers;
+        // send it explicitly so the request is valid HTTP/1.1.
+        const req = request(url, { method: 'POST', headers: [...rawHeaders, 'Host', url.host] }, res => {
             let text = '';
             res.setEncoding('utf8');
             res.on('data', chunk => { text += chunk; });
